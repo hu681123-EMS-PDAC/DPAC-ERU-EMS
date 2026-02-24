@@ -201,7 +201,7 @@
         </div>
         <div class="row g-2 mb-2">
             <div class="col-6">
-                <label class="label-sm">🍬 血糖 (Glu) 正常值  =500 <60</label>
+                <label class="label-sm">🍬 血糖 (Glu) 正常值  =500 &lt;60</label>
                 <div class="input-group">
                     <input type="number" id="glu" class="form-control" placeholder="70-140">
                     <span class="input-group-text">mg/dL</span>
@@ -365,7 +365,6 @@
         document.getElementById('contactTime').value = now.toTimeString().slice(0,5);
     };
 
-    // 【修改點 2】顯示邏輯更新：加入「綜合」的處理
     function toggleProblems() {
         const type = document.getElementById('caseType').value;
         const traumaArea = document.getElementById('traumaArea');
@@ -425,7 +424,6 @@
             return el ? el.value : '';
         };
 
-        // 【修改點 3】合併創傷與非創傷的陣列資料
         const combinedProblems = [getVals('.t-prob'), getVals('.nt-prob')].filter(Boolean).join(", ");
 
         const payload = {
@@ -446,7 +444,6 @@
             transportMode: document.getElementById('transportMode').value,
             
             caseType: caseType,
-            // 這裡套用合併後的陣列
             problems: combinedProblems,
             
             injuryParts: getVals('.i-check'),
@@ -464,18 +461,35 @@
         };
 
         try {
-            await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
+            // 加入 mode: 'no-cors' 防止跨域錯誤
+            await fetch(GAS_URL, { 
+                method: 'POST', 
+                mode: 'no-cors',
+                headers: {
+                    'Content-Type': 'text/plain;charset=utf-8',
+                },
+                body: JSON.stringify(payload) 
+            });
             
             const triageInfo = payload.startTriage ? `\n檢傷: ${payload.startTriage}` : '';
             const critInfo = payload.isCritical === '是' ? '🔥危急個案' : '';
             
-            await liff.sendMessages([{ 
-                "type": "text", 
-                "text": `🚑 救護紀錄成功 ${critInfo}\n人員: ${payload.emsStaff}\n編號: ${payload.plateNum}\n分類: ${payload.caseType}${triageInfo}\n後送: ${payload.transportMode}` 
-            }]);
-            liff.closeWindow();
+            const successMsg = `🚑 救護紀錄成功 ${critInfo}\n人員: ${payload.emsStaff}\n編號: ${payload.plateNum}\n分類: ${payload.caseType}${triageInfo}\n後送: ${payload.transportMode}`;
+
+            // 判斷是否在 LINE App 內，避免電腦瀏覽器測試時因發送訊息失敗而報錯
+            if (liff.isInClient()) {
+                await liff.sendMessages([{ 
+                    "type": "text", 
+                    "text": successMsg 
+                }]);
+                liff.closeWindow();
+            } else {
+                alert("✅ 資料已成功上傳！\n\n您輸入的資料：\n" + successMsg + "\n\n(提示：因不在 LINE App 內，故無法發送對話框訊息，但資料已寫入)");
+                btn.disabled = false; 
+                btn.innerText = "✅ 確認上傳紀錄"; 
+            }
         } catch (e) { 
-            alert("上傳失敗: " + e); 
+            alert("上傳失敗: " + e.message); 
             btn.disabled = false; btn.innerText = "✅ 確認上傳紀錄"; 
         }
     }
