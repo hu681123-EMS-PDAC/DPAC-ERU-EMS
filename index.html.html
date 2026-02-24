@@ -29,16 +29,19 @@
         .btn-group-toggle .btn { margin-bottom: 8px; margin-right: 5px; border-radius: 20px !important; font-size: 0.85rem; padding: 6px 14px; }
         .w-100-group .btn { border-radius: 8px !important; margin-right: 0; margin-bottom: 0; }
         
-        #preview { width: 100%; display: none; margin-top: 10px; border-radius: 8px; }
         .btn-submit { background: #d9534f; color: white; width: 100%; padding: 15px; font-weight: bold; border-radius: 10px; border: none; font-size: 1.2rem; }
         .gcs-select { background-color: #f8f9fa; }
         .input-group-text { font-size: 0.8rem; background-color: #e9ecef; border-radius: 0 8px 8px 0; min-width: 65px; justify-content: center; }
+        
+        /* 多圖預覽區塊樣式 */
+        #previewContainer { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 15px; }
+        .preview-img { width: calc(33% - 6px); aspect-ratio: 1; object-fit: cover; border-radius: 8px; border: 1px solid #ddd; }
     </style>
 </head>
 <body>
 
 <div class="card p-3">
-    <h4 class="text-center mb-4">🚑 救護紀錄系統</h4>
+    <h4 class="text-center mb-4">🚑 救護紀錄紀錄系統</h4>
     
     <form id="emsForm">
         <div class="section-title">1. 基本資料</div>
@@ -169,14 +172,14 @@
         <div class="section-title">5. 生命徵象 (Vital Signs)</div>
         <div class="row g-2 mb-2">
             <div class="col-6">
-                <label class="label-sm">💓 血壓 (BP) 收縮壓（高壓）：小於120 mmHg  舒張壓（低壓）：小於80 mmHg </label>
+                <label class="label-sm">💓 血壓 (BP) 正常值 <120/<80</label>
                 <div class="input-group">
                     <input type="text" id="bp" class="form-control" placeholder="120/80">
                     <span class="input-group-text">mmHg</span>
                 </div>
             </div>
             <div class="col-6">
-                <label class="label-sm">🫀 脈搏 (PR)正常值為每分鐘60至100次</label>
+                <label class="label-sm">🫀 脈搏 (PR) 正常值 60-100</label>
                 <div class="input-group">
                     <input type="number" id="pr" class="form-control" placeholder="60-100">
                     <span class="input-group-text">次/分</span>
@@ -185,14 +188,14 @@
         </div>
         <div class="row g-2 mb-2">
             <div class="col-6">
-                <label class="label-sm">🫁 呼吸 (RR) 正常值為每分鐘12至20次 </label>
+                <label class="label-sm">🫁 呼吸 (RR) 正常值 12-20</label>
                 <div class="input-group">
                     <input type="number" id="rr" class="form-control" placeholder="12-20">
                     <span class="input-group-text">次/分</span>
                 </div>
             </div>
             <div class="col-6">
-                <label class="label-sm">🩸 血氧 (SpO2) 通常應大於或等於95%</label>
+                <label class="label-sm">🩸 血氧 (SpO2) 正常值 ≥95%</label>
                 <div class="input-group">
                     <input type="number" id="spo2" class="form-control" placeholder="≥95">
                     <span class="input-group-text">%</span>
@@ -201,14 +204,14 @@
         </div>
         <div class="row g-2 mb-2">
             <div class="col-6">
-                <label class="label-sm">🍬 血糖 (Glu) 正常值  =500 &lt;60</label>
+                <label class="label-sm">🍬 血糖 (Glu)</label>
                 <div class="input-group">
                     <input type="number" id="glu" class="form-control" placeholder="70-140">
                     <span class="input-group-text">mg/dL</span>
                 </div>
             </div>
             <div class="col-6">
-                <label class="label-sm">🌡️ 體溫 (BT) 正常範圍約36-37.9℃</label>
+                <label class="label-sm">🌡️ 體溫 (BT) 正常範圍 36-37.9℃</label>
                 <div class="input-group">
                     <input type="number" id="bt" class="form-control" placeholder="36.5" step="0.1">
                     <span class="input-group-text">°C</span>
@@ -217,14 +220,14 @@
         </div>
         <div class="row g-2 mb-2">
             <div class="col-6">
-                <label class="label-sm">👁️ 瞳孔-左 (Pupil L) 正常值 瞳孔：2.5~3.5mm</label>
+                <label class="label-sm">👁️ 瞳孔-左 (Pupil L)</label>
                 <div class="input-group">
                     <input type="number" id="pupilL" class="form-control" placeholder="2.5" step="0.5">
                     <span class="input-group-text">mm</span>
                 </div>
             </div>
             <div class="col-6">
-                <label class="label-sm">👁️ 瞳孔-右 (Pupil R) 正常值 瞳孔：2.5~3.5mm</label>
+                <label class="label-sm">👁️ 瞳孔-右 (Pupil R)</label>
                 <div class="input-group">
                     <input type="number" id="pupilR" class="form-control" placeholder="2.5" step="0.5">
                     <span class="input-group-text">mm</span>
@@ -342,10 +345,10 @@
 			
         </div>
 
-        <div class="section-title">9. 其他備註與照片</div>
+        <div class="section-title">9. 其他備註與照片 (最多3張)</div>
         <textarea id="memo" class="form-control mb-3" rows="2" placeholder="請輸入額外觀察資訊..."></textarea>
-        <input type="file" id="photo" class="form-control mb-4" accept="image/*" capture="camera" onchange="cmp(event)">
-        <img id="preview" class="img-fluid mb-4">
+        <input type="file" id="photo" class="form-control mb-3" accept="image/*" multiple onchange="cmp(event)">
+        <div id="previewContainer"></div>
 
         <button type="button" id="submitBtn" class="btn btn-submit" onclick="send()">✅ 確認上傳紀錄</button>
     </form>
@@ -353,11 +356,11 @@
 
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <script>
-    // 記得將以下網址換成你的最新 GAS 網址 (結尾需為 /exec)
     const GAS_URL = "https://script.google.com/macros/s/AKfycbyOoBuM2NZ4uhZmVWE7qHqqyA9xY4-7-82aFPT69hHXdDXjSG3wuEApDbrD26KyfUODGQ/exec"; 
-    // 記得將以下 ID 換成你的 LIFF ID
     const LIFF_ID = "2009198292-oRMLEX95";
-    let imgB64 = "";
+    
+    // 修改為陣列來存放多張圖片的 Base64
+    let imgB64Array = [];
 
     window.onload = function() {
         const now = new Date();
@@ -373,15 +376,14 @@
         if (type === '創傷') {
             traumaArea.style.display = 'block';
             nonTraumaArea.style.display = 'none';
-            document.querySelectorAll('.nt-prob').forEach(el => el.checked = false); // 清除非創傷勾選
+            document.querySelectorAll('.nt-prob').forEach(el => el.checked = false); 
         } else if (type === '非創傷') {
             traumaArea.style.display = 'none';
             nonTraumaArea.style.display = 'block';
-            document.querySelectorAll('.t-prob').forEach(el => el.checked = false); // 清除創傷勾選
+            document.querySelectorAll('.t-prob').forEach(el => el.checked = false); 
         } else if (type === '綜合') {
             traumaArea.style.display = 'block';
             nonTraumaArea.style.display = 'block';
-            // 綜合案件不清除任何勾選，允許兩者同時存在
         } else {
             traumaArea.style.display = 'none';
             nonTraumaArea.style.display = 'none';
@@ -391,24 +393,49 @@
 
     liff.init({ liffId: LIFF_ID });
 
+    // 新的圖片處理函數 (支援多選，限制3張)
     function cmp(e) {
-        const file = e.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-            const img = new Image();
-            img.onload = () => {
-                const cvs = document.createElement('canvas');
-                const scale = Math.min(800 / img.width, 1);
-                cvs.width = img.width * scale; cvs.height = img.height * scale;
-                cvs.getContext('2d').drawImage(img, 0, 0, cvs.width, cvs.height);
-                imgB64 = cvs.toDataURL('image/jpeg', 0.6);
-                document.getElementById('preview').style.display = 'block';
-                document.getElementById('preview').src = imgB64;
+        const files = e.target.files;
+        if (!files || files.length === 0) return;
+
+        // 檢查是否超過3張
+        if (files.length > 3) {
+            alert("⚠️ 最多只能上傳 3 張照片！系統將自動為您保留前 3 張。");
+        }
+
+        const previewContainer = document.getElementById('previewContainer');
+        previewContainer.innerHTML = ''; // 每次選取清空舊的預覽
+        imgB64Array = []; // 清空陣列
+
+        // 最多處理前 3 個檔案
+        const maxFiles = Math.min(files.length, 3);
+
+        for (let i = 0; i < maxFiles; i++) {
+            const file = files[i];
+            const reader = new FileReader();
+            
+            reader.onload = (ev) => {
+                const img = new Image();
+                img.onload = () => {
+                    const cvs = document.createElement('canvas');
+                    const scale = Math.min(800 / img.width, 1);
+                    cvs.width = img.width * scale; 
+                    cvs.height = img.height * scale;
+                    cvs.getContext('2d').drawImage(img, 0, 0, cvs.width, cvs.height);
+                    
+                    const b64 = cvs.toDataURL('image/jpeg', 0.6);
+                    imgB64Array.push(b64);
+                    
+                    // 建立圖片標籤顯示預覽
+                    const previewImg = document.createElement('img');
+                    previewImg.src = b64;
+                    previewImg.className = 'preview-img';
+                    previewContainer.appendChild(previewImg);
+                };
+                img.src = ev.target.result;
             };
-            img.src = ev.target.result;
-        };
-        reader.readAsDataURL(file);
+            reader.readAsDataURL(file);
+        }
     }
 
     async function send() {
@@ -457,11 +484,16 @@
             history: getVals('.h-check'),
             allergy: getVals('.a-check'),
             memo: document.getElementById('memo').value,
-            photoData: imgB64
+            
+            // 寫入最多 3 張照片的資料
+            photo1: imgB64Array[0] || "",
+            photo2: imgB64Array[1] || "",
+            photo3: imgB64Array[2] || "",
+            // 保留原本欄位，避免 GAS 沒改到而報錯 (預設存第一張)
+            photoData: imgB64Array[0] || ""
         };
 
         try {
-            // 加入 mode: 'no-cors' 防止跨域錯誤
             await fetch(GAS_URL, { 
                 method: 'POST', 
                 mode: 'no-cors',
@@ -476,7 +508,6 @@
             
             const successMsg = `🚑 救護紀錄成功 ${critInfo}\n人員: ${payload.emsStaff}\n編號: ${payload.plateNum}\n分類: ${payload.caseType}${triageInfo}\n後送: ${payload.transportMode}`;
 
-            // 判斷是否在 LINE App 內，避免電腦瀏覽器測試時因發送訊息失敗而報錯
             if (liff.isInClient()) {
                 await liff.sendMessages([{ 
                     "type": "text", 
@@ -484,9 +515,11 @@
                 }]);
                 liff.closeWindow();
             } else {
-                alert("✅ 資料已成功上傳！\n\n您輸入的資料：\n" + successMsg + "\n\n(提示：因不在 LINE App 內，故無法發送對話框訊息，但資料已寫入)");
+                alert("✅ 資料已成功上傳！\n\n您輸入的資料：\n" + successMsg + "\n\n(提示：因不在 LINE App 內，故無法發送對話框訊息)");
                 btn.disabled = false; 
                 btn.innerText = "✅ 確認上傳紀錄"; 
+                // 可自行決定是否在外部測試成功後重整網頁
+                // window.location.reload();
             }
         } catch (e) { 
             alert("上傳失敗: " + e.message); 
@@ -496,5 +529,4 @@
 </script>
 </body>
 </html>
-
 
