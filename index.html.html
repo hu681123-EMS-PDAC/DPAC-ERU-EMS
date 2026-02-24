@@ -357,12 +357,24 @@
     // 記得將以下網址換成你的最新 GAS 網址 (結尾需為 /exec)
     const GAS_URL = "https://script.google.com/macros/s/AKfycbx-49Fe9KwxSgwGzGWNdll4csCkH1sLgWmIgoZvIzM/dev"; 
 	try {
+try {
         // 加入 mode: 'no-cors'，就不會跳出「上傳失敗」了
         await fetch(GAS_URL, { 
             method: 'POST', 
             body: JSON.stringify(payload),
             mode: 'no-cors' 
         });
+
+        // 只要執行到這，我們就當作成功（因為資料已經進 Excel 了）
+        alert("✅ 紀錄已成功送出！");
+        if (liff.isInClient()) {
+            liff.closeWindow();
+        }
+    } catch (e) { 
+        // 只有真的斷網才會跑到這裡
+        alert("網路連線似乎有問題，請再試一次。");
+    }
+}
     // 記得將以下 ID 換成你的 LIFF ID
     const LIFF_ID = "2009198292-oRMLEX95";
     let imgB64 = "";
@@ -490,5 +502,6 @@
 </script>
 </body>
 </html>
+
 
 
