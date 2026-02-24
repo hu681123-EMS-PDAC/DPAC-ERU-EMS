@@ -72,9 +72,10 @@
         <div class="mb-3">
             <label class="label-sm text-danger">⚠️ 請先選擇案件類型</label>
             <select id="caseType" class="form-select fw-bold border-danger shadow-sm" onchange="toggleProblems()">
-                <option value="">-- 點擊選擇 (創傷/非創傷) --</option>
+                <option value="">-- 點擊選擇 (創傷/非創傷/綜合) --</option>
                 <option value="創傷">🔴 創傷案件 (Trauma)</option>
                 <option value="非創傷">🔵 非創傷案件 (Non-Trauma)</option>
+                <option value="綜合">🟣 綜合案件 (創傷+非創傷)</option>
             </select>
         </div>
 
@@ -100,7 +101,6 @@
 				<input type="checkbox" class="btn-check t-prob" id="tr17" value="動物咬傷"><label class="btn btn-outline-danger" for="tr17">動物咬傷</label>
 				<input type="checkbox" class="btn-check t-prob" id="tr18" value="蜂螫"><label class="btn btn-outline-danger" for="tr18">蜂螫</label>
 				<input type="checkbox" class="btn-check t-prob" id="tr19" value="其他外科問題"><label class="btn btn-outline-danger" for="tr19">其他外科問題</label>
-				
             </div>
         </div>
 
@@ -125,8 +125,6 @@
 				<input type="checkbox" class="btn-check nt-prob" id="nt16" value="中風徵兆"><label class="btn btn-outline-primary" for="nt16">中風徵兆</label>
 				<input type="checkbox" class="btn-check nt-prob" id="nt17" value="意識改變"><label class="btn btn-outline-primary" for="nt17">意識改變</label>
 				<input type="checkbox" class="btn-check nt-prob" id="nt18" value="其他內科問題"><label class="btn btn-outline-primary" for="nt18">其他內科問題</label>
-				
-				
             </div>
         </div>
 
@@ -149,7 +147,6 @@
             <input type="checkbox" class="btn-check i-check" id="i15" value="右手掌"><label class="btn btn-outline-dark" for="i15">右手掌</label>
 			 <input type="checkbox" class="btn-check i-check" id="i16" value="左腳掌"><label class="btn btn-outline-dark" for="i16">左腳掌</label>
             <input type="checkbox" class="btn-check i-check" id="i17" value="右腳掌"><label class="btn btn-outline-dark" for="i17">右腳掌</label>	
-			
         </div>
 
         <div class="section-title">4. 意識狀態 (AVPU / GCS)</div>
@@ -356,7 +353,9 @@
 
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <script>
+    // 記得將以下網址換成你的最新 GAS 網址 (結尾需為 /exec)
     const GAS_URL = "https://script.google.com/macros/s/AKfycbyOoBuM2NZ4uhZmVWE7qHqqyA9xY4-7-82aFPT69hHXdDXjSG3wuEApDbrD26KyfUODGQ/exec"; 
+    // 記得將以下 ID 換成你的 LIFF ID
     const LIFF_ID = "2009198292-oRMLEX95";
     let imgB64 = "";
 
@@ -366,14 +365,28 @@
         document.getElementById('contactTime').value = now.toTimeString().slice(0,5);
     };
 
+    // 【修改點 2】顯示邏輯更新：加入「綜合」的處理
     function toggleProblems() {
         const type = document.getElementById('caseType').value;
-        document.getElementById('traumaArea').style.display = (type === '創傷') ? 'block' : 'none';
-        document.getElementById('nonTraumaArea').style.display = (type === '非創傷') ? 'block' : 'none';
-        if(type === '創傷') {
-            document.querySelectorAll('.nt-prob').forEach(el => el.checked = false);
-        } else if(type === '非創傷') {
-            document.querySelectorAll('.t-prob').forEach(el => el.checked = false);
+        const traumaArea = document.getElementById('traumaArea');
+        const nonTraumaArea = document.getElementById('nonTraumaArea');
+
+        if (type === '創傷') {
+            traumaArea.style.display = 'block';
+            nonTraumaArea.style.display = 'none';
+            document.querySelectorAll('.nt-prob').forEach(el => el.checked = false); // 清除非創傷勾選
+        } else if (type === '非創傷') {
+            traumaArea.style.display = 'none';
+            nonTraumaArea.style.display = 'block';
+            document.querySelectorAll('.t-prob').forEach(el => el.checked = false); // 清除創傷勾選
+        } else if (type === '綜合') {
+            traumaArea.style.display = 'block';
+            nonTraumaArea.style.display = 'block';
+            // 綜合案件不清除任何勾選，允許兩者同時存在
+        } else {
+            traumaArea.style.display = 'none';
+            nonTraumaArea.style.display = 'none';
+            document.querySelectorAll('.t-prob, .nt-prob').forEach(el => el.checked = false);
         }
     }
 
@@ -407,11 +420,13 @@
         btn.disabled = true; btn.innerText = "資料上傳中...";
         const getVals = (cls) => Array.from(document.querySelectorAll(cls + ':checked')).map(c => c.value).join(", ");
         
-        // 取得單選按鈕的值
         const getRadio = (name) => {
             const el = document.querySelector(`input[name="${name}"]:checked`);
             return el ? el.value : '';
         };
+
+        // 【修改點 3】合併創傷與非創傷的陣列資料
+        const combinedProblems = [getVals('.t-prob'), getVals('.nt-prob')].filter(Boolean).join(", ");
 
         const payload = {
             date: document.getElementById('date').value,
@@ -426,13 +441,14 @@
             accidentLoc: document.getElementById('accidentLoc').value,
             treatLoc: document.getElementById('treatLoc').value,
             
-            // 已移動至 Vital Signs 之後
             isCritical: getRadio('isCritical'),
             startTriage: getRadio('startTriage'),
             transportMode: document.getElementById('transportMode').value,
             
             caseType: caseType,
-            problems: caseType === '創傷' ? getVals('.t-prob') : getVals('.nt-prob'),
+            // 這裡套用合併後的陣列
+            problems: combinedProblems,
+            
             injuryParts: getVals('.i-check'),
             avpu: document.getElementById('avpu').value,
             gcs: `E${document.getElementById('gcsE').value}V${document.getElementById('gcsV').value}M${document.getElementById('gcsM').value}`,
@@ -465,6 +481,456 @@
     }
 </script>
 </body>
-
 </html>
+        .input-group-text { font-size: 0.8rem; background-color: #e9ecef; border-radius: 0 8px 8px 0; min-width: 65px; justify-content: center; }
+    </style>
+</head>
+<body>
+
+<div class="card p-3">
+    <h4 class="text-center mb-4">🚑 救護紀錄紀錄系統</h4>
+    
+    <form id="emsForm">
+        <div class="section-title">1. 基本資料</div>
+        <div class="row g-2 mb-2">
+            <div class="col-6"><label class="label-sm">📅 日期</label><input type="date" id="date" class="form-control"></div>
+            <div class="col-6"><label class="label-sm">🕒 接觸時間</label><input type="time" id="contactTime" class="form-control"></div>
+        </div>
+        <div class="row g-2 mb-2">
+            <div class="col-6"><label class="label-sm">🧑‍⚕️ 救護人員姓名</label><input type="text" id="emsStaff" class="form-control" placeholder="姓名"></div>
+            <div class="col-6"><label class="label-sm">📞 追蹤電話</label><input type="tel" id="phone" class="form-control" placeholder="聯絡電話"></div>
+        </div>
+        <div class="row g-2 mb-2">
+            <div class="col-7"><label class="label-sm">🏢 所屬團隊</label><input type="text" id="team" class="form-control" placeholder="分隊/單位名稱"></div>
+            <div class="col-5"><label class="label-sm">🆔 號碼牌編號</label><input type="text" id="plateNum" class="form-control" placeholder="No."></div>
+        </div>
+        <div class="row g-2 mb-2">
+            <div class="col-5"><label class="label-sm">👤 患者姓名</label><input type="text" id="name" class="form-control" placeholder="姓名"></div>
+            <div class="col-3"><label class="label-sm">👫 性別</label><select id="gender" class="form-select"><option value="男">男</option><option value="女">女</option></select></div>
+            <div class="col-4"><label class="label-sm">🎂 年紀</label><input type="number" id="age" class="form-control" placeholder="歲"></div>
+        </div>
+        <div class="mb-2">
+            <label class="label-sm">📍 事故位置</label>
+            <input type="text" id="accidentLoc" class="form-control" placeholder="事發具體地點">
+        </div>
+        <div class="mb-3">
+            <label class="label-sm">🏥 處置位置</label>
+            <input type="text" id="treatLoc" class="form-control" placeholder="例如：醫護站、救護車內">
+        </div>
+
+        <div class="section-title">2. 傷病問題 (分類)</div>
+        <div class="mb-3">
+            <label class="label-sm text-danger">⚠️ 請先選擇案件類型</label>
+            <select id="caseType" class="form-select fw-bold border-danger shadow-sm" onchange="toggleProblems()">
+                <option value="">-- 點擊選擇 (創傷/非創傷/綜合) --</option>
+                <option value="創傷">🔴 創傷案件 (Trauma)</option>
+                <option value="非創傷">🔵 非創傷案件 (Non-Trauma)</option>
+                <option value="綜合">🟣 綜合案件 (創傷+非創傷)</option>
+            </select>
+        </div>
+
+        <div id="traumaArea" class="problem-area mb-3">
+            <label class="label-sm">🩹 創傷細項 (可複選)：</label>
+            <div class="btn-group-toggle">
+                <input type="checkbox" class="btn-check t-prob" id="tr1" value="車禍"><label class="btn btn-outline-danger" for="tr1">車禍</label>
+                <input type="checkbox" class="btn-check t-prob" id="tr2" value="高處墜落"><label class="btn btn-outline-danger" for="tr2">墜落</label>
+                <input type="checkbox" class="btn-check t-prob" id="tr3" value="一般外傷"><label class="btn btn-outline-danger" for="tr3">一般外傷</label>
+                <input type="checkbox" class="btn-check t-prob" id="tr4" value="瘀傷"><label class="btn btn-outline-danger" for="tr4">瘀傷</label>
+                <input type="checkbox" class="btn-check t-prob" id="tr5" value="割傷/刺傷/穿刺傷"><label class="btn btn-outline-danger" for="tr5">割傷/刺傷/穿刺傷</label>
+                <input type="checkbox" class="btn-check t-prob" id="tr6" value="燒燙傷"><label class="btn btn-outline-danger" for="tr6">燒燙傷</label>
+                <input type="checkbox" class="btn-check t-prob" id="tr7" value="壓砸傷"><label class="btn btn-outline-danger" for="tr7">壓砸傷</label>
+				<input type="checkbox" class="btn-check t-prob" id="tr8" value="擦傷"><label class="btn btn-outline-danger" for="tr8">擦傷</label>
+				<input type="checkbox" class="btn-check t-prob" id="tr9" value="換藥"><label class="btn btn-outline-danger" for="tr9">換藥</label>
+				<input type="checkbox" class="btn-check t-prob" id="tr10" value="瘀傷"><label class="btn btn-outline-danger" for="tr10">瘀傷</label>
+				<input type="checkbox" class="btn-check t-prob" id="tr11" value="拉傷/扭傷"><label class="btn btn-outline-danger" for="tr11">拉傷/扭傷</label>
+				<input type="checkbox" class="btn-check t-prob" id="tr12" value="疼痛腫脹"><label class="btn btn-outline-danger" for="tr12">疼痛腫脹</label>
+				<input type="checkbox" class="btn-check t-prob" id="tr13" value="摩擦紅腫"><label class="btn btn-outline-danger" for="tr13">摩擦紅腫</label>
+				<input type="checkbox" class="btn-check t-prob" id="tr14" value="曬傷"><label class="btn btn-outline-danger" for="tr14">曬傷</label>
+				<input type="checkbox" class="btn-check t-prob" id="tr15" value="脫臼/骨折"><label class="btn btn-outline-danger" for="tr15">脫臼/骨折</label>
+				<input type="checkbox" class="btn-check t-prob" id="tr16" value="眼內異物"><label class="btn btn-outline-danger" for="tr16">眼內異物</label>
+				<input type="checkbox" class="btn-check t-prob" id="tr17" value="動物咬傷"><label class="btn btn-outline-danger" for="tr17">動物咬傷</label>
+				<input type="checkbox" class="btn-check t-prob" id="tr18" value="蜂螫"><label class="btn btn-outline-danger" for="tr18">蜂螫</label>
+				<input type="checkbox" class="btn-check t-prob" id="tr19" value="其他外科問題"><label class="btn btn-outline-danger" for="tr19">其他外科問題</label>
+            </div>
+        </div>
+
+        <div id="nonTraumaArea" class="problem-area mb-3">
+            <label class="label-sm">🩺 非創傷細項 (可複選)：</label>
+            <div class="btn-group-toggle">
+                <input type="checkbox" class="btn-check nt-prob" id="nt1" value="胸痛/悶"><label class="btn btn-outline-primary" for="nt1">胸痛/悶</label>
+                <input type="checkbox" class="btn-check nt-prob" id="nt2" value="呼吸問題/氣喘"><label class="btn btn-outline-primary" for="nt2">呼吸問題/氣喘</label>
+                <input type="checkbox" class="btn-check nt-prob" id="nt3" value="抽筋"><label class="btn btn-outline-primary" for="nt3">抽筋</label>
+                <input type="checkbox" class="btn-check nt-prob" id="nt4" value="腹痛"><label class="btn btn-outline-primary" for="nt4">腹痛</label>
+                <input type="checkbox" class="btn-check nt-prob" id="nt5" value="胸痛"><label class="btn btn-outline-primary" for="nt5">胸痛(C)</label>
+                <input type="checkbox" class="btn-check nt-prob" id="nt6" value="低血糖"><label class="btn btn-outline-primary" for="nt6">低血糖</label>
+                <input type="checkbox" class="btn-check nt-prob" id="nt7" value="肢體無力"><label class="btn btn-outline-primary" for="nt7">肢體無力</label>
+                <input type="checkbox" class="btn-check nt-prob" id="nt8" value="發燒"><label class="btn btn-outline-primary" for="nt8">發燒</label>
+				<input type="checkbox" class="btn-check nt-prob" id="nt9" value="暈眩/暈厥/暈倒"><label class="btn btn-outline-primary" for="nt9">暈眩/暈厥/暈倒</label>
+				<input type="checkbox" class="btn-check nt-prob" id="nt10" value="換氣過度"><label class="btn btn-outline-primary" for="nt10">換氣過度</label>
+				<input type="checkbox" class="btn-check nt-prob" id="nt11" value="過敏"><label class="btn btn-outline-primary" for="nt11">過敏</label>
+				<input type="checkbox" class="btn-check nt-prob" id="nt12" value="熱衰竭/熱中暑"><label class="btn btn-outline-primary" for="nt12">熱衰竭/熱中暑</label>
+				<input type="checkbox" class="btn-check nt-prob" id="nt13" value="失溫"><label class="btn btn-outline-primary" for="nt13">失溫</label>
+				<input type="checkbox" class="btn-check nt-prob" id="nt14" value="懷孕"><label class="btn btn-outline-primary" for="nt14">懷孕</label>
+				<input type="checkbox" class="btn-check nt-prob" id="nt15" value="癲癇"><label class="btn btn-outline-primary" for="nt15">癲癇</label>
+				<input type="checkbox" class="btn-check nt-prob" id="nt16" value="中風徵兆"><label class="btn btn-outline-primary" for="nt16">中風徵兆</label>
+				<input type="checkbox" class="btn-check nt-prob" id="nt17" value="意識改變"><label class="btn btn-outline-primary" for="nt17">意識改變</label>
+				<input type="checkbox" class="btn-check nt-prob" id="nt18" value="其他內科問題"><label class="btn btn-outline-primary" for="nt18">其他內科問題</label>
+            </div>
+        </div>
+
+        <div class="section-title">3. 受傷部位 (L/R)</div>
+        <div class="btn-group-toggle mb-3">
+            <input type="checkbox" class="btn-check i-check" id="i1" value="頭部"><label class="btn btn-outline-dark" for="i1">頭部</label>
+            <input type="checkbox" class="btn-check i-check" id="i2" value="頸部"><label class="btn btn-outline-dark" for="i2">頸部</label>
+            <input type="checkbox" class="btn-check i-check" id="i3" value="胸部"><label class="btn btn-outline-dark" for="i3">胸部</label>
+            <input type="checkbox" class="btn-check i-check" id="i4" value="腹部"><label class="btn btn-outline-dark" for="i4">腹部</label>
+            <input type="checkbox" class="btn-check i-check" id="i5" value="背/腰部"><label class="btn btn-outline-dark" for="i5">背/腰</label>
+            <input type="checkbox" class="btn-check i-check" id="i6" value="左手"><label class="btn btn-outline-dark" for="i6">左手</label>
+            <input type="checkbox" class="btn-check i-check" id="i7" value="右手"><label class="btn btn-outline-dark" for="i7">右手</label>
+            <input type="checkbox" class="btn-check i-check" id="i8" value="左腳"><label class="btn btn-outline-dark" for="i8">左腳</label>
+            <input type="checkbox" class="btn-check i-check" id="i9" value="右腳"><label class="btn btn-outline-dark" for="i9">右腳</label>
+			 <input type="checkbox" class="btn-check i-check" id="i10" value="左大腿"><label class="btn btn-outline-dark" for="i10">左大腿</label>
+            <input type="checkbox" class="btn-check i-check" id="i11" value="右大腿"><label class="btn btn-outline-dark" for="i11">右大腿</label>
+			 <input type="checkbox" class="btn-check i-check" id="i12" value="左小腿"><label class="btn btn-outline-dark" for="i12">左小腿</label>
+            <input type="checkbox" class="btn-check i-check" id="i13" value="右小腿"><label class="btn btn-outline-dark" for="i13">右小腿</label>
+			 <input type="checkbox" class="btn-check i-check" id="i14" value="左手掌"><label class="btn btn-outline-dark" for="i14">左手掌</label>
+            <input type="checkbox" class="btn-check i-check" id="i15" value="右手掌"><label class="btn btn-outline-dark" for="i15">右手掌</label>
+			 <input type="checkbox" class="btn-check i-check" id="i16" value="左腳掌"><label class="btn btn-outline-dark" for="i16">左腳掌</label>
+            <input type="checkbox" class="btn-check i-check" id="i17" value="右腳掌"><label class="btn btn-outline-dark" for="i17">右腳掌</label>	
+        </div>
+
+        <div class="section-title">4. 意識狀態 (AVPU / GCS)</div>
+        <div class="mb-2">
+            <label class="label-sm">🧠 AVPU 快速評估</label>
+            <select id="avpu" class="form-select bg-light">
+                <option value="A">A - 清醒 (Alert)</option>
+                <option value="V">V - 對聲音有反應 (Voice)</option>
+                <option value="P">P - 對痛有反應 (Pain)</option>
+                <option value="U">U - 無反應 (Unresponsive)</option>
+            </select>
+        </div>
+        <div class="mb-1"><label class="label-sm">📊 Glasgow Coma Scale (GCS)</label></div>
+        <div class="row g-1 mb-3">
+            <div class="col-4"><select id="gcsE" class="form-select gcs-select"><option value="4">E4-自然</option><option value="3">E3-對聲音</option><option value="2">E2-對疼痛</option><option value="1">E1-不睜眼</option></select></div>
+            <div class="col-4"><select id="gcsV" class="form-select gcs-select"><option value="5">V5-清楚</option><option value="4">V4-混亂</option><option value="3">V3-單字</option><option value="2">V2-呻吟</option><option value="1">V1-無語言</option><option value="T">VT-插管</option></select></div>
+            <div class="col-4"><select id="gcsM" class="form-select gcs-select"><option value="6">M6-遵照</option><option value="5">M5-移除</option><option value="4">M4-縮回</option><option value="3">M3-彎曲</option><option value="2">M2-伸展</option><option value="1">M1-無動作</option></select></div>
+        </div>
+        
+        <div class="section-title">5. 生命徵象 (Vital Signs)</div>
+        <div class="row g-2 mb-2">
+            <div class="col-6">
+                <label class="label-sm">💓 血壓 (BP) 收縮壓（高壓）：小於120 mmHg  舒張壓（低壓）：小於80 mmHg </label>
+                <div class="input-group">
+                    <input type="text" id="bp" class="form-control" placeholder="120/80">
+                    <span class="input-group-text">mmHg</span>
+                </div>
+            </div>
+            <div class="col-6">
+                <label class="label-sm">🫀 脈搏 (PR)正常值為每分鐘60至100次</label>
+                <div class="input-group">
+                    <input type="number" id="pr" class="form-control" placeholder="60-100">
+                    <span class="input-group-text">次/分</span>
+                </div>
+            </div>
+        </div>
+        <div class="row g-2 mb-2">
+            <div class="col-6">
+                <label class="label-sm">🫁 呼吸 (RR) 正常值為每分鐘12至20次 </label>
+                <div class="input-group">
+                    <input type="number" id="rr" class="form-control" placeholder="12-20">
+                    <span class="input-group-text">次/分</span>
+                </div>
+            </div>
+            <div class="col-6">
+                <label class="label-sm">🩸 血氧 (SpO2) 通常應大於或等於95%</label>
+                <div class="input-group">
+                    <input type="number" id="spo2" class="form-control" placeholder="≥95">
+                    <span class="input-group-text">%</span>
+                </div>
+            </div>
+        </div>
+        <div class="row g-2 mb-2">
+            <div class="col-6">
+                <label class="label-sm">🍬 血糖 (Glu) 正常值  =500 <60</label>
+                <div class="input-group">
+                    <input type="number" id="glu" class="form-control" placeholder="70-140">
+                    <span class="input-group-text">mg/dL</span>
+                </div>
+            </div>
+            <div class="col-6">
+                <label class="label-sm">🌡️ 體溫 (BT) 正常範圍約36-37.9℃</label>
+                <div class="input-group">
+                    <input type="number" id="bt" class="form-control" placeholder="36.5" step="0.1">
+                    <span class="input-group-text">°C</span>
+                </div>
+            </div>
+        </div>
+        <div class="row g-2 mb-2">
+            <div class="col-6">
+                <label class="label-sm">👁️ 瞳孔-左 (Pupil L) 正常值 瞳孔：2.5~3.5mm</label>
+                <div class="input-group">
+                    <input type="number" id="pupilL" class="form-control" placeholder="2.5" step="0.5">
+                    <span class="input-group-text">mm</span>
+                </div>
+            </div>
+            <div class="col-6">
+                <label class="label-sm">👁️ 瞳孔-右 (Pupil R) 正常值 瞳孔：2.5~3.5mm</label>
+                <div class="input-group">
+                    <input type="number" id="pupilR" class="form-control" placeholder="2.5" step="0.5">
+                    <span class="input-group-text">mm</span>
+                </div>
+            </div>
+        </div>
+        <div class="row g-2 mb-3">
+            <div class="col-12">
+                <label class="label-sm">🎨 膚色/外觀 (Skin Color)</label>
+                <select id="skin" class="form-select bg-light">
+                    <option value="正常">正常 (Normal)</option>
+                    <option value="蒼白">蒼白 (Pale)</option>
+                    <option value="發紺">發紺 (Cyanotic)</option>
+                    <option value="潮紅">潮紅 (Flushed)</option>
+                    <option value="黃疸">黃疸 (Jaundiced)</option>
+                    <option value="濕冷">濕冷 (Clammy)</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="section-title">6. 現場檢傷與後送評估</div>
+        
+        <div class="row g-2 mb-3">
+            <div class="col-12">
+                <label class="label-sm">🚨 是否為危急個案 (Critical)</label>
+                <div class="btn-group w-100 w-100-group" role="group">
+                    <input type="radio" class="btn-check" name="isCritical" id="critYes" value="是" autocomplete="off">
+                    <label class="btn btn-outline-danger" for="critYes">🔥 是 (Yes)</label>
+                    <input type="radio" class="btn-check" name="isCritical" id="critNo" value="否" autocomplete="off" checked>
+                    <label class="btn btn-outline-success" for="critNo">🛡️ 否 (No)</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label class="label-sm">🏷️ 初次 START 檢傷分類</label>
+            <div class="btn-group w-100 w-100-group" role="group">
+                <input type="radio" class="btn-check btn-start-green" name="startTriage" id="startGreen" value="綠區(輕傷)" autocomplete="off">
+                <label class="btn btn-outline-success" for="startGreen">🟢 綠區</label>
+
+                <input type="radio" class="btn-check btn-start-yellow" name="startTriage" id="startYellow" value="黃區(中傷)" autocomplete="off">
+                <label class="btn btn-outline-warning" for="startYellow">🟡 黃區</label>
+
+                <input type="radio" class="btn-check btn-start-red" name="startTriage" id="startRed" value="紅區(重傷)" autocomplete="off">
+                <label class="btn btn-outline-danger" for="startRed">🔴 紅區</label>
+
+                <input type="radio" class="btn-check btn-start-black" name="startTriage" id="startBlack" value="黑區(死亡)" autocomplete="off">
+                <label class="btn btn-outline-dark" for="startBlack">⚫ 黑區</label>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label class="label-sm">🚑 後送/處置模式 (Transport Mode)</label>
+            <select id="transportMode" class="form-select fw-bold text-primary">
+                <option value="消防救護車">🚑 消防救護車</option>
+                <option value="民間救護車">🚐 民間救護車</option>
+                <option value="自行離去">🚶 自行離去</option>
+                <option value="親友接送">🚗 親友接送</option>
+            </select>
+        </div>
+
+        <div class="section-title">7. 病患處置狀態 (複選)</div>
+        <div class="btn-group-toggle mb-3">
+            <input type="checkbox" class="btn-check treat-check" id="t1" value="清洗傷口"><label class="btn btn-outline-success" for="t1">清洗傷口</label>
+            <input type="checkbox" class="btn-check treat-check" id="t2" value="止血"><label class="btn btn-outline-success" for="t2">止血</label>
+            <input type="checkbox" class="btn-check treat-check" id="t3" value="包紮"><label class="btn btn-outline-success" for="t3">包紮</label>
+            <input type="checkbox" class="btn-check treat-check" id="t4" value="保暖"><label class="btn btn-outline-success" for="t4">保暖</label>
+            <input type="checkbox" class="btn-check treat-check" id="t5" value="氧氣治療"><label class="btn btn-outline-success" for="t5">氧氣治療</label>
+            <input type="checkbox" class="btn-check treat-check" id="t6" value="IV建立"><label class="btn btn-outline-success" for="t6">IV 建立</label>
+            <input type="checkbox" class="btn-check treat-check" id="t7" value="CPR+AED"><label class="btn btn-outline-success" for="t7">CPR+AED</label>
+            <input type="checkbox" class="btn-check treat-check" id="t8" value="心理支持"><label class="btn btn-outline-success" for="t8">心理支持</label>
+			 <input type="checkbox" class="btn-check treat-check" id="t9" value="給予噴劑"><label class="btn btn-outline-success" for="t9">給予噴劑</label>
+			 <input type="checkbox" class="btn-check treat-check" id="t10" value="冰敷"><label class="btn btn-outline-success" for="t10">冰敷</label>
+			 <input type="checkbox" class="btn-check treat-check" id="t11" value="濕紗冷敷"><label class="btn btn-outline-success" for="t11">濕紗冷敷</label>
+			 <input type="checkbox" class="btn-check treat-check" id="t12" value="挑刺"><label class="btn btn-outline-success" for="t12">挑刺</label>
+			 <input type="checkbox" class="btn-check treat-check" id="t13" value="繃帶固定"><label class="btn btn-outline-success" for="t13">繃帶固定</label>
+			<input type="checkbox" class="btn-check treat-check" id="t14" value="骨折固定"><label class="btn btn-outline-success" for="t14">骨折固定</label>
+			<input type="checkbox" class="btn-check treat-check" id="t15" value="三角巾固定"><label class="btn btn-outline-success" for="t15">三角巾固定</label>
+			<input type="checkbox" class="btn-check treat-check" id="t16" value="軟式護木固定"><label class="btn btn-outline-success" for="t16">軟式護木固定</label>
+			<input type="checkbox" class="btn-check treat-check" id="t17" value="頸圈/背板"><label class="btn btn-outline-success" for="t17">頸圈/背板</label>
+			<input type="checkbox" class="btn-check treat-check" id="t18" value="其他"><label class="btn btn-outline-success" for="t18">其他</label>	
+			
+        </div>
+
+        <div class="section-title">8. 病史與過敏史</div>
+        <div class="mb-1"><span class="badge bg-secondary">📜 既往病史</span></div>
+        <div class="btn-group-toggle mb-2">
+            <input type="checkbox" class="btn-check h-check" id="h1" value="無過去病史"><label class="btn btn-outline-dark" for="h1">無過去病史</label>
+            <input type="checkbox" class="btn-check h-check" id="h2" value="糖尿病"><label class="btn btn-outline-dark" for="h2">糖尿病</label>
+            <input type="checkbox" class="btn-check h-check" id="h3" value="心臟疾病"><label class="btn btn-outline-dark" for="h3">心臟疾病</label>
+            <input type="checkbox" class="btn-check h-check" id="h4" value="氣喘"><label class="btn btn-outline-dark" for="h4">氣喘</label>
+            <input type="checkbox" class="btn-check h-check" id="h5" value="中風"><label class="btn btn-outline-dark" for="h5">中風</label>
+			   <input type="checkbox" class="btn-check h-check" id="h6" value="異位性皮膚炎"><label class="btn btn-outline-dark" for="h6">異位性皮膚炎</label>
+			   <input type="checkbox" class="btn-check h-check" id="h7" value="骨折開刀"><label class="btn btn-outline-dark" for="h7">骨折開刀</label>
+			   <input type="checkbox" class="btn-check h-check" id="h8" value="慣性脫臼"><label class="btn btn-outline-dark" for="h8">慣性脫臼</label>
+			   <input type="checkbox" class="btn-check h-check" id="h9" value="癌症"><label class="btn btn-outline-dark" for="h9">癌症</label>
+			   <input type="checkbox" class="btn-check h-check" id="h10" value="癲癇"><label class="btn btn-outline-dark" for="h10">癲癇</label>
+			   <input type="checkbox" class="btn-check h-check" id="h11" value="精神疾病"><label class="btn btn-outline-dark" for="h11">精神疾病</label>
+			   <input type="checkbox" class="btn-check h-check" id="h12" value="消化系統疾病"><label class="btn btn-outline-dark" for="h12">消化系統疾病</label>
+			   <input type="checkbox" class="btn-check h-check" id="h13" value="腎臟疾病"><label class="btn btn-outline-dark" for="h13">腎臟疾病</label>
+			   <input type="checkbox" class="btn-check h-check" id="h14" value="肝臟疾病"><label class="btn btn-outline-dark" for="h14">肝臟疾病</label>
+			   <input type="checkbox" class="btn-check h-check" id="h15" value="不詳"><label class="btn btn-outline-dark" for="h15">不詳</label>
+			   <input type="checkbox" class="btn-check h-check" id="h16" value="其他"><label class="btn btn-outline-dark" for="h16">其他</label>
+			
+			
+        </div>
+        <div class="mb-1"><span class="badge bg-warning text-dark">⚠️ 過敏史</span></div>
+        <div class="btn-group-toggle mb-3">
+            <input type="checkbox" class="btn-check a-check" id="a1" value="無已知過敏"><label class="btn btn-outline-warning" for="a1">無已知過敏</label>
+            <input type="checkbox" class="btn-check a-check" id="a3" value="藥物過敏"><label class="btn btn-outline-warning" for="a3">藥物過敏</label>
+		    <input type="checkbox" class="btn-check a-check" id="a5" value="環境過敏"><label class="btn btn-outline-warning" for="a5">環境過敏</label>
+			<input type="checkbox" class="btn-check a-check" id="a7" value="不詳"><label class="btn btn-outline-warning" for="a7">不詳</label>
+			<input type="checkbox" class="btn-check a-check" id="a9" value="其他"><label class="btn btn-outline-warning" for="a9">其他</label>
+			
+			
+        </div>
+
+        <div class="section-title">9. 其他備註與照片</div>
+        <textarea id="memo" class="form-control mb-3" rows="2" placeholder="請輸入額外觀察資訊..."></textarea>
+        <input type="file" id="photo" class="form-control mb-4" accept="image/*" capture="camera" onchange="cmp(event)">
+        <img id="preview" class="img-fluid mb-4">
+
+        <button type="button" id="submitBtn" class="btn btn-submit" onclick="send()">✅ 確認上傳紀錄</button>
+    </form>
+</div>
+
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<script>
+    // 記得將以下網址換成你的最新 GAS 網址 (結尾需為 /exec)
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbyOoBuM2NZ4uhZmVWE7qHqqyA9xY4-7-82aFPT69hHXdDXjSG3wuEApDbrD26KyfUODGQ/exec"; 
+    // 記得將以下 ID 換成你的 LIFF ID
+    const LIFF_ID = "2009198292-oRMLEX95";
+    let imgB64 = "";
+
+    window.onload = function() {
+        const now = new Date();
+        document.getElementById('date').value = now.toISOString().split('T')[0];
+        document.getElementById('contactTime').value = now.toTimeString().slice(0,5);
+    };
+
+    // 【修改點 2】顯示邏輯更新：加入「綜合」的處理
+    function toggleProblems() {
+        const type = document.getElementById('caseType').value;
+        const traumaArea = document.getElementById('traumaArea');
+        const nonTraumaArea = document.getElementById('nonTraumaArea');
+
+        if (type === '創傷') {
+            traumaArea.style.display = 'block';
+            nonTraumaArea.style.display = 'none';
+            document.querySelectorAll('.nt-prob').forEach(el => el.checked = false); // 清除非創傷勾選
+        } else if (type === '非創傷') {
+            traumaArea.style.display = 'none';
+            nonTraumaArea.style.display = 'block';
+            document.querySelectorAll('.t-prob').forEach(el => el.checked = false); // 清除創傷勾選
+        } else if (type === '綜合') {
+            traumaArea.style.display = 'block';
+            nonTraumaArea.style.display = 'block';
+            // 綜合案件不清除任何勾選，允許兩者同時存在
+        } else {
+            traumaArea.style.display = 'none';
+            nonTraumaArea.style.display = 'none';
+            document.querySelectorAll('.t-prob, .nt-prob').forEach(el => el.checked = false);
+        }
+    }
+
+    liff.init({ liffId: LIFF_ID });
+
+    function cmp(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            const img = new Image();
+            img.onload = () => {
+                const cvs = document.createElement('canvas');
+                const scale = Math.min(800 / img.width, 1);
+                cvs.width = img.width * scale; cvs.height = img.height * scale;
+                cvs.getContext('2d').drawImage(img, 0, 0, cvs.width, cvs.height);
+                imgB64 = cvs.toDataURL('image/jpeg', 0.6);
+                document.getElementById('preview').style.display = 'block';
+                document.getElementById('preview').src = imgB64;
+            };
+            img.src = ev.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+
+    async function send() {
+        const btn = document.getElementById('submitBtn');
+        const caseType = document.getElementById('caseType').value;
+        if(!caseType) { alert("請先選擇案件類型(分類)"); return; }
+
+        btn.disabled = true; btn.innerText = "資料上傳中...";
+        const getVals = (cls) => Array.from(document.querySelectorAll(cls + ':checked')).map(c => c.value).join(", ");
+        
+        const getRadio = (name) => {
+            const el = document.querySelector(`input[name="${name}"]:checked`);
+            return el ? el.value : '';
+        };
+
+        // 【修改點 3】合併創傷與非創傷的陣列資料
+        const combinedProblems = [getVals('.t-prob'), getVals('.nt-prob')].filter(Boolean).join(", ");
+
+        const payload = {
+            date: document.getElementById('date').value,
+            time: document.getElementById('contactTime').value,
+            emsStaff: document.getElementById('emsStaff').value,
+            phone: document.getElementById('phone').value,
+            team: document.getElementById('team').value,
+            plateNum: document.getElementById('plateNum').value,
+            name: document.getElementById('name').value,
+            gender: document.getElementById('gender').value,
+            age: document.getElementById('age').value,
+            accidentLoc: document.getElementById('accidentLoc').value,
+            treatLoc: document.getElementById('treatLoc').value,
+            
+            isCritical: getRadio('isCritical'),
+            startTriage: getRadio('startTriage'),
+            transportMode: document.getElementById('transportMode').value,
+            
+            caseType: caseType,
+            // 這裡套用合併後的陣列
+            problems: combinedProblems,
+            
+            injuryParts: getVals('.i-check'),
+            avpu: document.getElementById('avpu').value,
+            gcs: `E${document.getElementById('gcsE').value}V${document.getElementById('gcsV').value}M${document.getElementById('gcsM').value}`,
+            bt: document.getElementById('bt').value,
+            skin: document.getElementById('skin').value,
+            pupil: `L:${document.getElementById('pupilL').value}mm, R:${document.getElementById('pupilR').value}mm`,
+            vitals: `BP:${document.getElementById('bp').value}, PR:${document.getElementById('pr').value}, RR:${document.getElementById('rr').value}, SpO2:${document.getElementById('spo2').value}, Glu:${document.getElementById('glu').value}, BT:${document.getElementById('bt').value}, Pupil:L${document.getElementById('pupilL').value}/R${document.getElementById('pupilR').value}, Skin:${document.getElementById('skin').value}`,
+            treatments: getVals('.treat-check'),
+            history: getVals('.h-check'),
+            allergy: getVals('.a-check'),
+            memo: document.getElementById('memo').value,
+            photoData: imgB64
+        };
+
+        try {
+            await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
+            
+            const triageInfo = payload.startTriage ? `\n檢傷: ${payload.startTriage}` : '';
+            const critInfo = payload.isCritical === '是' ? '🔥危急個案' : '';
+            
+            await liff.sendMessages([{ 
+                "type": "text", 
+                "text": `🚑 救護紀錄成功 ${critInfo}\n人員: ${payload.emsStaff}\n編號: ${payload.plateNum}\n分類: ${payload.caseType}${triageInfo}\n後送: ${payload.transportMode}` 
+            }]);
+            liff.closeWindow();
+        } catch (e) { 
+            alert("上傳失敗: " + e); 
+            btn.disabled = false; btn.innerText = "✅ 確認上傳紀錄"; 
+        }
+    }
+</script>
+</body>
+</html>
+
 
