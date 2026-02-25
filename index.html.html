@@ -29,12 +29,12 @@
         .btn-group-toggle .btn { margin-bottom: 8px; margin-right: 5px; border-radius: 20px !important; font-size: 0.85rem; padding: 6px 14px; }
         .w-100-group .btn { border-radius: 8px !important; margin-right: 0; margin-bottom: 0; }
         
-        .btn-submit { background: #d9534f; color: white; width: 100%; padding: 15px; font-weight: bold; border-radius: 10px; border: none; font-size: 1.2rem; }
+        .btn-submit { background: #d9534f; color: white; width: 100%; padding: 15px; font-weight: bold; border-radius: 10px; border: none; font-size: 1.2rem; margin-top: 15px; }
         .gcs-select { background-color: #f8f9fa; }
         .input-group-text { font-size: 0.8rem; background-color: #e9ecef; border-radius: 0 8px 8px 0; min-width: 65px; justify-content: center; }
         
         /* 多圖預覽區塊樣式 */
-        #previewContainer { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 15px; }
+        #previewContainer { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 5px; }
         .preview-img { width: calc(33% - 6px); aspect-ratio: 1; object-fit: cover; border-radius: 8px; border: 1px solid #ddd; }
     </style>
 </head>
@@ -172,7 +172,7 @@
         <div class="section-title">5. 生命徵象 (Vital Signs)</div>
         <div class="row g-2 mb-2">
             <div class="col-6">
-                <label class="label-sm">💓 血壓 (BP) 正常值 <120/<80</label>
+                <label class="label-sm">💓 血壓 (BP) 正常值 &lt;120/&lt;80</label>
                 <div class="input-group">
                     <input type="text" id="bp" class="form-control" placeholder="120/80">
                     <span class="input-group-text">mmHg</span>
@@ -347,7 +347,13 @@
 
         <div class="section-title">9. 其他備註與照片 (最多3張)</div>
         <textarea id="memo" class="form-control mb-3" rows="2" placeholder="請輸入額外觀察資訊..."></textarea>
-        <input type="file" id="photo" class="form-control mb-3" accept="image/*" multiple onchange="cmp(event)">
+        
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <label class="label-sm mb-0">📸 現場/傷情照片</label>
+            <span id="photoCountText" class="badge bg-secondary">目前已選: 0/3 張</span>
+        </div>
+        <input type="file" id="photo" class="form-control mb-2" accept="image/*" multiple onchange="cmp(event)">
+        <button type="button" class="btn btn-sm btn-outline-danger w-100 mb-3" onclick="clearPhotos()">🗑️ 清除重選</button>
         <div id="previewContainer"></div>
 
         <button type="button" id="submitBtn" class="btn btn-submit" onclick="send()">✅ 確認上傳紀錄</button>
@@ -359,7 +365,7 @@
     const GAS_URL = "https://script.google.com/macros/s/AKfycbyOoBuM2NZ4uhZmVWE7qHqqyA9xY4-7-82aFPT69hHXdDXjSG3wuEApDbrD26KyfUODGQ/exec"; 
     const LIFF_ID = "2009198292-oRMLEX95";
     
-    // 修改為陣列來存放多張圖片的 Base64
+    // 將儲存照片的陣列拉到最外面
     let imgB64Array = [];
 
     window.onload = function() {
@@ -393,22 +399,33 @@
 
     liff.init({ liffId: LIFF_ID });
 
-    // 新的圖片處理函數 (支援多選，限制3張)
+    // 新增：清除照片的功能，方便使用者按錯重來
+    function clearPhotos() {
+        imgB64Array = [];
+        document.getElementById('previewContainer').innerHTML = '';
+        document.getElementById('photo').value = '';
+        document.getElementById('photoCountText').innerText = '目前已選: 0/3 張';
+        document.getElementById('photoCountText').className = 'badge bg-secondary';
+    }
+
+    // 修正的圖片處理函數 (支援「累積」疊加照片，不隨便覆蓋)
     function cmp(e) {
         const files = e.target.files;
         if (!files || files.length === 0) return;
 
-        // 檢查是否超過3張
-        if (files.length > 3) {
-            alert("⚠️ 最多只能上傳 3 張照片！系統將自動為您保留前 3 張。");
+        const previewContainer = document.getElementById('previewContainer');
+        const countText = document.getElementById('photoCountText');
+
+        // 計算還能再塞幾張照片
+        let availableSlots = 3 - imgB64Array.length;
+        if (availableSlots <= 0) {
+            alert("⚠️ 最多只能上傳 3 張照片！若要更改請點擊「清除重選」。");
+            e.target.value = ''; // 將 input 清空避免卡住
+            return;
         }
 
-        const previewContainer = document.getElementById('previewContainer');
-        previewContainer.innerHTML = ''; // 每次選取清空舊的預覽
-        imgB64Array = []; // 清空陣列
-
-        // 最多處理前 3 個檔案
-        const maxFiles = Math.min(files.length, 3);
+        // 確保不會超過上限
+        const maxFiles = Math.min(files.length, availableSlots);
 
         for (let i = 0; i < maxFiles; i++) {
             const file = files[i];
@@ -424,18 +441,31 @@
                     cvs.getContext('2d').drawImage(img, 0, 0, cvs.width, cvs.height);
                     
                     const b64 = cvs.toDataURL('image/jpeg', 0.6);
-                    imgB64Array.push(b64);
                     
-                    // 建立圖片標籤顯示預覽
-                    const previewImg = document.createElement('img');
-                    previewImg.src = b64;
-                    previewImg.className = 'preview-img';
-                    previewContainer.appendChild(previewImg);
+                    // 雙重保險確認不超過3張
+                    if (imgB64Array.length < 3) {
+                        imgB64Array.push(b64); // "累積" 進去，而不是清空
+                        
+                        const previewImg = document.createElement('img');
+                        previewImg.src = b64;
+                        previewImg.className = 'preview-img';
+                        previewContainer.appendChild(previewImg);
+                        
+                        countText.innerText = `目前已選: ${imgB64Array.length}/3 張`;
+                        if (imgB64Array.length === 3) {
+                            countText.className = 'badge bg-success';
+                        } else {
+                            countText.className = 'badge bg-warning text-dark';
+                        }
+                    }
                 };
                 img.src = ev.target.result;
             };
             reader.readAsDataURL(file);
         }
+        
+        // 重要：重置 input 數值，這樣即使手機使用者選完再按一次，觸發機制也會正常運作
+        e.target.value = ''; 
     }
 
     async function send() {
@@ -475,59 +505,11 @@
             
             injuryParts: getVals('.i-check'),
             avpu: document.getElementById('avpu').value,
-            gcs: `E${document.getElementById('gcsE').value}V${document.getElementById('gcsV').value}M${document.getElementById('gcsM').value}`,
-            bt: document.getElementById('bt').value,
-            skin: document.getElementById('skin').value,
-            pupil: `L:${document.getElementById('pupilL').value}mm, R:${document.getElementById('pupilR').value}mm`,
-            vitals: `BP:${document.getElementById('bp').value}, PR:${document.getElementById('pr').value}, RR:${document.getElementById('rr').value}, SpO2:${document.getElementById('spo2').value}, Glu:${document.getElementById('glu').value}, BT:${document.getElementById('bt').value}, Pupil:L${document.getElementById('pupilL').value}/R${document.getElementById('pupilR').value}, Skin:${document.getElementById('skin').value}`,
-            treatments: getVals('.treat-check'),
-            history: getVals('.h-check'),
-            allergy: getVals('.a-check'),
-            memo: document.getElementById('memo').value,
-            
-            // 寫入最多 3 張照片的資料
-            photo1: imgB64Array[0] || "",
-            photo2: imgB64Array[1] || "",
-            photo3: imgB64Array[2] || "",
-            // 保留原本欄位，避免 GAS 沒改到而報錯 (預設存第一張)
-            photoData: imgB64Array[0] || ""
-        };
-
-        try {
-            await fetch(GAS_URL, { 
-                method: 'POST', 
-                mode: 'no-cors',
-                headers: {
-                    'Content-Type': 'text/plain;charset=utf-8',
-                },
-                body: JSON.stringify(payload) 
-            });
-            
-            const triageInfo = payload.startTriage ? `\n檢傷: ${payload.startTriage}` : '';
-            const critInfo = payload.isCritical === '是' ? '🔥危急個案' : '';
-            
-            const successMsg = `🚑 救護紀錄成功 ${critInfo}\n人員: ${payload.emsStaff}\n編號: ${payload.plateNum}\n分類: ${payload.caseType}${triageInfo}\n後送: ${payload.transportMode}`;
-
-            if (liff.isInClient()) {
-                await liff.sendMessages([{ 
-                    "type": "text", 
-                    "text": successMsg 
-                }]);
-                liff.closeWindow();
-            } else {
-                alert("✅ 資料已成功上傳！\n\n您輸入的資料：\n" + successMsg + "\n\n(提示：因不在 LINE App 內，故無法發送對話框訊息)");
-                btn.disabled = false; 
-                btn.innerText = "✅ 確認上傳紀錄"; 
-                // 可自行決定是否在外部測試成功後重整網頁
-                // window.location.reload();
-            }
-        } catch (e) { 
-            alert("上傳失敗: " + e.message); 
-            btn.disabled = false; btn.innerText = "✅ 確認上傳紀錄"; 
-        }
+            gcs: `E${document.getElementById('gcsE').value}V${document.getElementById('gcsV').value}M${document
     }
 </script>
 </body>
 </html>
+
 
 
