@@ -11,7 +11,7 @@
         .section-title { background: #d9534f; color: white; padding: 8px 12px; border-radius: 6px; font-weight: bold; margin-bottom: 12px; font-size: 1rem; }
         .label-sm { font-size: 0.85rem; font-weight: 600; color: #555; margin-bottom: 4px; display: block; }
         .form-control, .form-select { font-size: 0.95rem; padding: 10px; border-radius: 8px; }
-        .problem-area { display: none; padding: 12px; border-radius: 8px; background-color: #fff; border: 1px dashed #ccc; }
+        .problem-area { display: none; padding: 12px; border-radius: 8px; background-color: #fff; border: 1px dashed #ccc; margin-bottom: 15px; }
         
         /* 按鈕樣式優化 & 視覺標籤化 */
         .btn-check:checked + .btn-outline-danger { background-color: #dc3545; color: white; }
@@ -82,7 +82,7 @@
             </select>
         </div>
 
-        <div id="traumaArea" class="problem-area mb-3">
+        <div id="traumaArea" class="problem-area">
             <label class="label-sm">🩹 創傷細項 (可複選)：</label>
             <div class="btn-group-toggle">
                 <input type="checkbox" class="btn-check t-prob" id="tr1" value="車禍"><label class="btn btn-outline-danger" for="tr1">車禍</label>
@@ -92,42 +92,40 @@
                 <input type="checkbox" class="btn-check t-prob" id="tr5" value="割傷/刺傷/穿刺傷"><label class="btn btn-outline-danger" for="tr5">割傷/刺傷/穿刺傷</label>
                 <input type="checkbox" class="btn-check t-prob" id="tr6" value="燒燙傷"><label class="btn btn-outline-danger" for="tr6">燒燙傷</label>
                 <input type="checkbox" class="btn-check t-prob" id="tr7" value="壓砸傷"><label class="btn btn-outline-danger" for="tr7">壓砸傷</label>
-				<input type="checkbox" class="btn-check t-prob" id="tr8" value="擦傷"><label class="btn btn-outline-danger" for="tr8">擦傷</label>
-				<input type="checkbox" class="btn-check t-prob" id="tr9" value="換藥"><label class="btn btn-outline-danger" for="tr9">換藥</label>
-				<input type="checkbox" class="btn-check t-prob" id="tr10" value="瘀傷"><label class="btn btn-outline-danger" for="tr10">瘀傷</label>
-				<input type="checkbox" class="btn-check t-prob" id="tr11" value="拉傷/扭傷"><label class="btn btn-outline-danger" for="tr11">拉傷/扭傷</label>
-				<input type="checkbox" class="btn-check t-prob" id="tr12" value="疼痛腫脹"><label class="btn btn-outline-danger" for="tr12">疼痛腫脹</label>
-				<input type="checkbox" class="btn-check t-prob" id="tr13" value="摩擦紅腫"><label class="btn btn-outline-danger" for="tr13">摩擦紅腫</label>
-				<input type="checkbox" class="btn-check t-prob" id="tr14" value="曬傷"><label class="btn btn-outline-danger" for="tr14">曬傷</label>
-				<input type="checkbox" class="btn-check t-prob" id="tr15" value="脫臼/骨折"><label class="btn btn-outline-danger" for="tr15">脫臼/骨折</label>
-				<input type="checkbox" class="btn-check t-prob" id="tr16" value="眼內異物"><label class="btn btn-outline-danger" for="tr16">眼內異物</label>
-				<input type="checkbox" class="btn-check t-prob" id="tr17" value="動物咬傷"><label class="btn btn-outline-danger" for="tr17">動物咬傷</label>
-				<input type="checkbox" class="btn-check t-prob" id="tr18" value="蜂螫"><label class="btn btn-outline-danger" for="tr18">蜂螫</label>
-				<input type="checkbox" class="btn-check t-prob" id="tr19" value="其他外科問題"><label class="btn btn-outline-danger" for="tr19">其他外科問題</label>
+                <input type="checkbox" class="btn-check t-prob" id="tr8" value="擦傷"><label class="btn btn-outline-danger" for="tr8">擦傷</label>
+                <input type="checkbox" class="btn-check t-prob" id="tr9" value="換藥"><label class="btn btn-outline-danger" for="tr9">換藥</label>
+                <input type="checkbox" class="btn-check t-prob" id="tr11" value="拉傷/扭傷"><label class="btn btn-outline-danger" for="tr11">拉傷/扭傷</label>
+                <input type="checkbox" class="btn-check t-prob" id="tr12" value="疼痛腫脹"><label class="btn btn-outline-danger" for="tr12">疼痛腫脹</label>
+                <input type="checkbox" class="btn-check t-prob" id="tr13" value="摩擦紅腫"><label class="btn btn-outline-danger" for="tr13">摩擦紅腫</label>
+                <input type="checkbox" class="btn-check t-prob" id="tr14" value="曬傷"><label class="btn btn-outline-danger" for="tr14">曬傷</label>
+                <input type="checkbox" class="btn-check t-prob" id="tr15" value="脫臼/骨折"><label class="btn btn-outline-danger" for="tr15">脫臼/骨折</label>
+                <input type="checkbox" class="btn-check t-prob" id="tr16" value="眼內異物"><label class="btn btn-outline-danger" for="tr16">眼內異物</label>
+                <input type="checkbox" class="btn-check t-prob" id="tr17" value="動物咬傷"><label class="btn btn-outline-danger" for="tr17">動物咬傷</label>
+                <input type="checkbox" class="btn-check t-prob" id="tr18" value="蜂螫"><label class="btn btn-outline-danger" for="tr18">蜂螫</label>
+                <input type="checkbox" class="btn-check t-prob" id="tr19" value="其他外科問題"><label class="btn btn-outline-danger" for="tr19">其他外科問題</label>
             </div>
         </div>
 
-        <div id="nonTraumaArea" class="problem-area mb-3">
+        <div id="nonTraumaArea" class="problem-area">
             <label class="label-sm">🩺 非創傷細項 (可複選)：</label>
             <div class="btn-group-toggle">
                 <input type="checkbox" class="btn-check nt-prob" id="nt1" value="胸痛/悶"><label class="btn btn-outline-primary" for="nt1">胸痛/悶</label>
                 <input type="checkbox" class="btn-check nt-prob" id="nt2" value="呼吸問題/氣喘"><label class="btn btn-outline-primary" for="nt2">呼吸問題/氣喘</label>
                 <input type="checkbox" class="btn-check nt-prob" id="nt3" value="抽筋"><label class="btn btn-outline-primary" for="nt3">抽筋</label>
                 <input type="checkbox" class="btn-check nt-prob" id="nt4" value="腹痛"><label class="btn btn-outline-primary" for="nt4">腹痛</label>
-                <input type="checkbox" class="btn-check nt-prob" id="nt5" value="胸痛"><label class="btn btn-outline-primary" for="nt5">胸痛(C)</label>
                 <input type="checkbox" class="btn-check nt-prob" id="nt6" value="低血糖"><label class="btn btn-outline-primary" for="nt6">低血糖</label>
                 <input type="checkbox" class="btn-check nt-prob" id="nt7" value="肢體無力"><label class="btn btn-outline-primary" for="nt7">肢體無力</label>
                 <input type="checkbox" class="btn-check nt-prob" id="nt8" value="發燒"><label class="btn btn-outline-primary" for="nt8">發燒</label>
-				<input type="checkbox" class="btn-check nt-prob" id="nt9" value="暈眩/暈厥/暈倒"><label class="btn btn-outline-primary" for="nt9">暈眩/暈厥/暈倒</label>
-				<input type="checkbox" class="btn-check nt-prob" id="nt10" value="換氣過度"><label class="btn btn-outline-primary" for="nt10">換氣過度</label>
-				<input type="checkbox" class="btn-check nt-prob" id="nt11" value="過敏"><label class="btn btn-outline-primary" for="nt11">過敏</label>
-				<input type="checkbox" class="btn-check nt-prob" id="nt12" value="熱衰竭/熱中暑"><label class="btn btn-outline-primary" for="nt12">熱衰竭/熱中暑</label>
-				<input type="checkbox" class="btn-check nt-prob" id="nt13" value="失溫"><label class="btn btn-outline-primary" for="nt13">失溫</label>
-				<input type="checkbox" class="btn-check nt-prob" id="nt14" value="懷孕"><label class="btn btn-outline-primary" for="nt14">懷孕</label>
-				<input type="checkbox" class="btn-check nt-prob" id="nt15" value="癲癇"><label class="btn btn-outline-primary" for="nt15">癲癇</label>
-				<input type="checkbox" class="btn-check nt-prob" id="nt16" value="中風徵兆"><label class="btn btn-outline-primary" for="nt16">中風徵兆</label>
-				<input type="checkbox" class="btn-check nt-prob" id="nt17" value="意識改變"><label class="btn btn-outline-primary" for="nt17">意識改變</label>
-				<input type="checkbox" class="btn-check nt-prob" id="nt18" value="其他內科問題"><label class="btn btn-outline-primary" for="nt18">其他內科問題</label>
+                <input type="checkbox" class="btn-check nt-prob" id="nt9" value="暈眩/暈厥/暈倒"><label class="btn btn-outline-primary" for="nt9">暈眩/暈厥/暈倒</label>
+                <input type="checkbox" class="btn-check nt-prob" id="nt10" value="換氣過度"><label class="btn btn-outline-primary" for="nt10">換氣過度</label>
+                <input type="checkbox" class="btn-check nt-prob" id="nt11" value="過敏"><label class="btn btn-outline-primary" for="nt11">過敏</label>
+                <input type="checkbox" class="btn-check nt-prob" id="nt12" value="熱衰竭/熱中暑"><label class="btn btn-outline-primary" for="nt12">熱衰竭/熱中暑</label>
+                <input type="checkbox" class="btn-check nt-prob" id="nt13" value="失溫"><label class="btn btn-outline-primary" for="nt13">失溫</label>
+                <input type="checkbox" class="btn-check nt-prob" id="nt14" value="懷孕"><label class="btn btn-outline-primary" for="nt14">懷孕</label>
+                <input type="checkbox" class="btn-check nt-prob" id="nt15" value="癲癇"><label class="btn btn-outline-primary" for="nt15">癲癇</label>
+                <input type="checkbox" class="btn-check nt-prob" id="nt16" value="中風徵兆"><label class="btn btn-outline-primary" for="nt16">中風徵兆</label>
+                <input type="checkbox" class="btn-check nt-prob" id="nt17" value="意識改變"><label class="btn btn-outline-primary" for="nt17">意識改變</label>
+                <input type="checkbox" class="btn-check nt-prob" id="nt18" value="其他內科問題"><label class="btn btn-outline-primary" for="nt18">其他內科問題</label>
             </div>
         </div>
 
@@ -142,13 +140,13 @@
             <input type="checkbox" class="btn-check i-check" id="i7" value="右手"><label class="btn btn-outline-dark" for="i7">右手</label>
             <input type="checkbox" class="btn-check i-check" id="i8" value="左腳"><label class="btn btn-outline-dark" for="i8">左腳</label>
             <input type="checkbox" class="btn-check i-check" id="i9" value="右腳"><label class="btn btn-outline-dark" for="i9">右腳</label>
-			 <input type="checkbox" class="btn-check i-check" id="i10" value="左大腿"><label class="btn btn-outline-dark" for="i10">左大腿</label>
+            <input type="checkbox" class="btn-check i-check" id="i10" value="左大腿"><label class="btn btn-outline-dark" for="i10">左大腿</label>
             <input type="checkbox" class="btn-check i-check" id="i11" value="右大腿"><label class="btn btn-outline-dark" for="i11">右大腿</label>
-			 <input type="checkbox" class="btn-check i-check" id="i12" value="左小腿"><label class="btn btn-outline-dark" for="i12">左小腿</label>
+            <input type="checkbox" class="btn-check i-check" id="i12" value="左小腿"><label class="btn btn-outline-dark" for="i12">左小腿</label>
             <input type="checkbox" class="btn-check i-check" id="i13" value="右小腿"><label class="btn btn-outline-dark" for="i13">右小腿</label>
-			 <input type="checkbox" class="btn-check i-check" id="i14" value="左手掌"><label class="btn btn-outline-dark" for="i14">左手掌</label>
+            <input type="checkbox" class="btn-check i-check" id="i14" value="左手掌"><label class="btn btn-outline-dark" for="i14">左手掌</label>
             <input type="checkbox" class="btn-check i-check" id="i15" value="右手掌"><label class="btn btn-outline-dark" for="i15">右手掌</label>
-			 <input type="checkbox" class="btn-check i-check" id="i16" value="左腳掌"><label class="btn btn-outline-dark" for="i16">左腳掌</label>
+            <input type="checkbox" class="btn-check i-check" id="i16" value="左腳掌"><label class="btn btn-outline-dark" for="i16">左腳掌</label>
             <input type="checkbox" class="btn-check i-check" id="i17" value="右腳掌"><label class="btn btn-outline-dark" for="i17">右腳掌</label>	
         </div>
 
@@ -309,7 +307,6 @@
 			<input type="checkbox" class="btn-check treat-check" id="t16" value="軟式護木固定"><label class="btn btn-outline-success" for="t16">軟式護木固定</label>
 			<input type="checkbox" class="btn-check treat-check" id="t17" value="頸圈/背板"><label class="btn btn-outline-success" for="t17">頸圈/背板</label>
 			<input type="checkbox" class="btn-check treat-check" id="t18" value="其他"><label class="btn btn-outline-success" for="t18">其他</label>	
-			
         </div>
 
         <div class="section-title">8. 病史與過敏史</div>
@@ -320,19 +317,17 @@
             <input type="checkbox" class="btn-check h-check" id="h3" value="心臟疾病"><label class="btn btn-outline-dark" for="h3">心臟疾病</label>
             <input type="checkbox" class="btn-check h-check" id="h4" value="氣喘"><label class="btn btn-outline-dark" for="h4">氣喘</label>
             <input type="checkbox" class="btn-check h-check" id="h5" value="中風"><label class="btn btn-outline-dark" for="h5">中風</label>
-			   <input type="checkbox" class="btn-check h-check" id="h6" value="異位性皮膚炎"><label class="btn btn-outline-dark" for="h6">異位性皮膚炎</label>
-			   <input type="checkbox" class="btn-check h-check" id="h7" value="骨折開刀"><label class="btn btn-outline-dark" for="h7">骨折開刀</label>
-			   <input type="checkbox" class="btn-check h-check" id="h8" value="慣性脫臼"><label class="btn btn-outline-dark" for="h8">慣性脫臼</label>
-			   <input type="checkbox" class="btn-check h-check" id="h9" value="癌症"><label class="btn btn-outline-dark" for="h9">癌症</label>
-			   <input type="checkbox" class="btn-check h-check" id="h10" value="癲癇"><label class="btn btn-outline-dark" for="h10">癲癇</label>
-			   <input type="checkbox" class="btn-check h-check" id="h11" value="精神疾病"><label class="btn btn-outline-dark" for="h11">精神疾病</label>
-			   <input type="checkbox" class="btn-check h-check" id="h12" value="消化系統疾病"><label class="btn btn-outline-dark" for="h12">消化系統疾病</label>
-			   <input type="checkbox" class="btn-check h-check" id="h13" value="腎臟疾病"><label class="btn btn-outline-dark" for="h13">腎臟疾病</label>
-			   <input type="checkbox" class="btn-check h-check" id="h14" value="肝臟疾病"><label class="btn btn-outline-dark" for="h14">肝臟疾病</label>
-			   <input type="checkbox" class="btn-check h-check" id="h15" value="不詳"><label class="btn btn-outline-dark" for="h15">不詳</label>
-			   <input type="checkbox" class="btn-check h-check" id="h16" value="其他"><label class="btn btn-outline-dark" for="h16">其他</label>
-			
-			
+            <input type="checkbox" class="btn-check h-check" id="h6" value="異位性皮膚炎"><label class="btn btn-outline-dark" for="h6">異位性皮膚炎</label>
+            <input type="checkbox" class="btn-check h-check" id="h7" value="骨折開刀"><label class="btn btn-outline-dark" for="h7">骨折開刀</label>
+            <input type="checkbox" class="btn-check h-check" id="h8" value="慣性脫臼"><label class="btn btn-outline-dark" for="h8">慣性脫臼</label>
+            <input type="checkbox" class="btn-check h-check" id="h9" value="癌症"><label class="btn btn-outline-dark" for="h9">癌症</label>
+            <input type="checkbox" class="btn-check h-check" id="h10" value="癲癇"><label class="btn btn-outline-dark" for="h10">癲癇</label>
+            <input type="checkbox" class="btn-check h-check" id="h11" value="精神疾病"><label class="btn btn-outline-dark" for="h11">精神疾病</label>
+            <input type="checkbox" class="btn-check h-check" id="h12" value="消化系統疾病"><label class="btn btn-outline-dark" for="h12">消化系統疾病</label>
+            <input type="checkbox" class="btn-check h-check" id="h13" value="腎臟疾病"><label class="btn btn-outline-dark" for="h13">腎臟疾病</label>
+            <input type="checkbox" class="btn-check h-check" id="h14" value="肝臟疾病"><label class="btn btn-outline-dark" for="h14">肝臟疾病</label>
+            <input type="checkbox" class="btn-check h-check" id="h15" value="不詳"><label class="btn btn-outline-dark" for="h15">不詳</label>
+            <input type="checkbox" class="btn-check h-check" id="h16" value="其他"><label class="btn btn-outline-dark" for="h16">其他</label>
         </div>
         <div class="mb-1"><span class="badge bg-warning text-dark">⚠️ 過敏史</span></div>
         <div class="btn-group-toggle mb-3">
@@ -341,8 +336,6 @@
 		    <input type="checkbox" class="btn-check a-check" id="a5" value="環境過敏"><label class="btn btn-outline-warning" for="a5">環境過敏</label>
 			<input type="checkbox" class="btn-check a-check" id="a7" value="不詳"><label class="btn btn-outline-warning" for="a7">不詳</label>
 			<input type="checkbox" class="btn-check a-check" id="a9" value="其他"><label class="btn btn-outline-warning" for="a9">其他</label>
-			
-			
         </div>
 
         <div class="section-title">9. 其他備註與照片 (最多3張)</div>
@@ -365,72 +358,103 @@
     const GAS_URL = "https://script.google.com/macros/s/AKfycbyOoBuM2NZ4uhZmVWE7qHqqyA9xY4-7-82aFPT69hHXdDXjSG3wuEApDbrD26KyfUODGQ/exec"; 
     const LIFF_ID = "2009198292-oRMLEX95";
     
-    // 將儲存照片的陣列拉到最外面
+    // 全局變數存放 Base64 照片
     let imgB64Array = [];
 
+    // 頁面載入時初始化
     window.onload = function() {
         const now = new Date();
         document.getElementById('date').value = now.toISOString().split('T')[0];
         document.getElementById('contactTime').value = now.toTimeString().slice(0,5);
+        try {
+            liff.init({ liffId: LIFF_ID });
+        } catch (err) {
+            console.error('LIFF 初始化失敗', err);
+        }
     };
 
+    // 【修復】強制更新傷病分類區塊的顯示/隱藏
     function toggleProblems() {
         const type = document.getElementById('caseType').value;
         const traumaArea = document.getElementById('traumaArea');
         const nonTraumaArea = document.getElementById('nonTraumaArea');
 
+        // 先重置所有勾選
+        document.querySelectorAll('.t-prob, .nt-prob').forEach(el => el.checked = false);
+
         if (type === '創傷') {
             traumaArea.style.display = 'block';
             nonTraumaArea.style.display = 'none';
-            document.querySelectorAll('.nt-prob').forEach(el => el.checked = false); 
         } else if (type === '非創傷') {
             traumaArea.style.display = 'none';
             nonTraumaArea.style.display = 'block';
-            document.querySelectorAll('.t-prob').forEach(el => el.checked = false); 
         } else if (type === '綜合') {
             traumaArea.style.display = 'block';
             nonTraumaArea.style.display = 'block';
         } else {
             traumaArea.style.display = 'none';
             nonTraumaArea.style.display = 'none';
-            document.querySelectorAll('.t-prob, .nt-prob').forEach(el => el.checked = false);
         }
     }
 
-    liff.init({ liffId: LIFF_ID });
-
-    // 新增：清除照片的功能，方便使用者按錯重來
+    // 清空照片功能
     function clearPhotos() {
         imgB64Array = [];
         document.getElementById('previewContainer').innerHTML = '';
         document.getElementById('photo').value = '';
-        document.getElementById('photoCountText').innerText = '目前已選: 0/3 張';
-        document.getElementById('photoCountText').className = 'badge bg-secondary';
+        const countText = document.getElementById('photoCountText');
+        countText.innerText = '目前已選: 0/3 張';
+        countText.className = 'badge bg-secondary';
     }
 
-    // 修正的圖片處理函數 (支援「累積」疊加照片，不隨便覆蓋)
-    function cmp(e) {
+    // 【修復】使用 Promise 處理圖片，確保轉換完成後才更新 UI 數字
+    async function cmp(e) {
         const files = e.target.files;
         if (!files || files.length === 0) return;
 
         const previewContainer = document.getElementById('previewContainer');
         const countText = document.getElementById('photoCountText');
 
-        // 計算還能再塞幾張照片
         let availableSlots = 3 - imgB64Array.length;
         if (availableSlots <= 0) {
             alert("⚠️ 最多只能上傳 3 張照片！若要更改請點擊「清除重選」。");
-            e.target.value = ''; // 將 input 清空避免卡住
+            e.target.value = ''; 
             return;
         }
 
-        // 確保不會超過上限
         const maxFiles = Math.min(files.length, availableSlots);
 
+        // 逐一處理圖片 (保證順序與同步計數)
         for (let i = 0; i < maxFiles; i++) {
             const file = files[i];
-            const reader = new FileReader();
+            const base64Str = await processFileToB64(file); // 等待轉換完成
             
+            if (imgB64Array.length < 3) {
+                imgB64Array.push(base64Str);
+                
+                const previewImg = document.createElement('img');
+                previewImg.src = base64Str;
+                previewImg.className = 'preview-img';
+                previewContainer.appendChild(previewImg);
+                
+                // 更新數字
+                countText.innerText = `目前已選: ${imgB64Array.length}/3 張`;
+                if (imgB64Array.length === 3) {
+                    countText.className = 'badge bg-success';
+                } else {
+                    countText.className = 'badge bg-warning text-dark';
+                }
+            }
+        }
+        
+        // 處理完畢後清空 input 的值，避免手機瀏覽器卡住無法選同一張
+        e.target.value = ''; 
+    }
+
+    // 將 FileReader 封裝成 Promise，解決非同步數字不更新的 bug
+    function processFileToB64(file) {
+        return new Promise((resolve) => {
+            const reader = new FileReader();
             reader.onload = (ev) => {
                 const img = new Image();
                 img.onload = () => {
@@ -439,41 +463,23 @@
                     cvs.width = img.width * scale; 
                     cvs.height = img.height * scale;
                     cvs.getContext('2d').drawImage(img, 0, 0, cvs.width, cvs.height);
-                    
-                    const b64 = cvs.toDataURL('image/jpeg', 0.6);
-                    
-                    // 雙重保險確認不超過3張
-                    if (imgB64Array.length < 3) {
-                        imgB64Array.push(b64); // "累積" 進去，而不是清空
-                        
-                        const previewImg = document.createElement('img');
-                        previewImg.src = b64;
-                        previewImg.className = 'preview-img';
-                        previewContainer.appendChild(previewImg);
-                        
-                        countText.innerText = `目前已選: ${imgB64Array.length}/3 張`;
-                        if (imgB64Array.length === 3) {
-                            countText.className = 'badge bg-success';
-                        } else {
-                            countText.className = 'badge bg-warning text-dark';
-                        }
-                    }
+                    resolve(cvs.toDataURL('image/jpeg', 0.6));
                 };
                 img.src = ev.target.result;
             };
             reader.readAsDataURL(file);
-        }
-        
-        // 重要：重置 input 數值，這樣即使手機使用者選完再按一次，觸發機制也會正常運作
-        e.target.value = ''; 
+        });
     }
 
+    // 發送資料到 GAS
     async function send() {
         const btn = document.getElementById('submitBtn');
         const caseType = document.getElementById('caseType').value;
         if(!caseType) { alert("請先選擇案件類型(分類)"); return; }
 
-        btn.disabled = true; btn.innerText = "資料上傳中...";
+        btn.disabled = true; 
+        btn.innerText = "資料上傳中 (含照片)...";
+        
         const getVals = (cls) => Array.from(document.querySelectorAll(cls + ':checked')).map(c => c.value).join(", ");
         
         const getRadio = (name) => {
@@ -505,11 +511,60 @@
             
             injuryParts: getVals('.i-check'),
             avpu: document.getElementById('avpu').value,
-            gcs: `E${document.getElementById('gcsE').value}V${document.getElementById('gcsV').value}M${document
+            gcs: `E${document.getElementById('gcsE').value}V${document.getElementById('gcsV').value}M${document.getElementById('gcsM').value}`,
+            bt: document.getElementById('bt').value,
+            skin: document.getElementById('skin').value,
+            pupil: `L:${document.getElementById('pupilL').value}mm, R:${document.getElementById('pupilR').value}mm`,
+            vitals: `BP:${document.getElementById('bp').value}, PR:${document.getElementById('pr').value}, RR:${document.getElementById('rr').value}, SpO2:${document.getElementById('spo2').value}, Glu:${document.getElementById('glu').value}, BT:${document.getElementById('bt').value}, Pupil:L${document.getElementById('pupilL').value}/R${document.getElementById('pupilR').value}, Skin:${document.getElementById('skin').value}`,
+            treatments: getVals('.treat-check'),
+            history: getVals('.h-check'),
+            allergy: getVals('.a-check'),
+            memo: document.getElementById('memo').value,
+            
+            // 寫入照片
+            photo1: imgB64Array[0] || "",
+            photo2: imgB64Array[1] || "",
+            photo3: imgB64Array[2] || ""
+        };
+
+        try {
+            await fetch(GAS_URL, { 
+                method: 'POST', 
+                mode: 'no-cors',
+                headers: {
+                    'Content-Type': 'text/plain;charset=utf-8',
+                },
+                body: JSON.stringify(payload) 
+            });
+            
+            const triageInfo = payload.startTriage ? `\n檢傷: ${payload.startTriage}` : '';
+            const critInfo = payload.isCritical === '是' ? '🔥危急個案' : '';
+            
+            const successMsg = `🚑 救護紀錄成功 ${critInfo}\n人員: ${payload.emsStaff}\n編號: ${payload.plateNum}\n分類: ${payload.caseType}${triageInfo}\n後送: ${payload.transportMode}`;
+
+            if (liff.isInClient()) {
+                await liff.sendMessages([{ 
+                    "type": "text", 
+                    "text": successMsg 
+                }]);
+                liff.closeWindow();
+            } else {
+                alert("✅ 資料已成功上傳！\n\n(提示：因不在 LINE App 內，無法發送對話框訊息)");
+                btn.disabled = false; 
+                btn.innerText = "✅ 確認上傳紀錄"; 
+                // 若需自動重新整理，可解除下面這行的註解
+                // window.location.reload(); 
+            }
+        } catch (e) { 
+            alert("系統錯誤: " + e.message); 
+            btn.disabled = false; 
+            btn.innerText = "✅ 確認上傳紀錄"; 
+        }
     }
 </script>
 </body>
 </html>
+
 
 
 
