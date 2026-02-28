@@ -385,6 +385,7 @@
         try { liff.init({ liffId: LIFF_ID }); } catch (err) {}
     };
 
+    // --- 高精度 GPS 定位與標準 Google Maps 網址邏輯修正 ---
     function getLocation() {
         const locInput = document.getElementById('accidentLoc');
         const status = document.getElementById('locationStatus');
@@ -403,9 +404,12 @@
 
         navigator.geolocation.getCurrentPosition(
             (position) => {
-                const lat = position.coords.latitude;
-                const lng = position.coords.longitude;
-                const mapUrl = `https://www.google.com/maps/dir/?api=1&destination=$${lat},${lng}`;
+                // 取得十進位經緯度，精確到小數點後6位
+                const lat = position.coords.latitude.toFixed(6);
+                const lng = position.coords.longitude.toFixed(6);
+                
+                // 產生標準且可直接點擊導航的 Google Maps 網址
+                const mapUrl = `https://maps.google.com/?q=${lat},${lng}`;
                 
                 locInput.value = mapUrl;
                 status.innerText = "✅ 定位成功！已填入導航連結";
@@ -525,8 +529,6 @@
         };
 
         const combinedProblems = [getVals('.t-prob'), getVals('.nt-prob')].filter(Boolean).join(", ");
-        
-        // 確保您原本新增的「補充」輸入框，不會漏掉且會安全附加進字串內一併傳送給表格
         const probDetail = [getValById('traumaDetail'), getValById('nonTraumaDetail')].filter(Boolean).join(" / ");
 
         const p1 = typeof imgB64Array[0] === 'string' ? imgB64Array[0] : "";
