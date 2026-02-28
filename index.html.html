@@ -377,7 +377,7 @@
         try { liff.init({ liffId: LIFF_ID }); } catch (err) {}
     };
 
-    // 🌐【新增】GPS 定位功能
+    // 🌐【更新】GPS 定位功能：改為可直接導航的路徑規劃網址
     function getLocation() {
         const locInput = document.getElementById('accidentLoc');
         const status = document.getElementById('locationStatus');
@@ -399,11 +399,12 @@
             (position) => {
                 const lat = position.coords.latitude;
                 const lng = position.coords.longitude;
-                // 產生標準 Google 地圖連結
-                const mapUrl = `https://www.google.com/maps?q=${lat},${lng}`;
+                
+                // ★ 產生 Google 地圖的「導航/路線規劃」標準網址
+                const mapUrl = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
                 
                 locInput.value = mapUrl;
-                status.innerText = "✅ 定位成功！已填入地圖連結";
+                status.innerText = "✅ 定位成功！已填入導航連結";
                 status.className = "text-success";
                 
                 // 恢復按鈕
@@ -592,6 +593,8 @@
 </script>
 </body>
 </html>
+</html>
+
 
 
 
