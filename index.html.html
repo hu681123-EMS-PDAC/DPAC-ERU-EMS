@@ -13,12 +13,14 @@
         .form-control, .form-select { font-size: 0.95rem; padding: 10px; border-radius: 8px; }
         .problem-area { display: none; padding: 12px; border-radius: 8px; background-color: #fff; border: 1px dashed #ccc; margin-bottom: 15px; }
         
+        /* 按鈕樣式優化 & 視覺標籤化 */
         .btn-check:checked + .btn-outline-danger { background-color: #dc3545; color: white; }
         .btn-check:checked + .btn-outline-primary { background-color: #0d6efd; color: white; }
         .btn-check:checked + .btn-outline-dark { background-color: #495057; color: white; }
         .btn-check:checked + .btn-outline-success { background-color: #198754; color: white; }
         .btn-check:checked + .btn-outline-warning { background-color: #ffc107; color: black; }
         
+        /* START 檢傷專用色 */
         .btn-start-green:checked + label { background-color: #198754 !important; color: white !important; }
         .btn-start-yellow:checked + label { background-color: #ffc107 !important; color: black !important; }
         .btn-start-red:checked + label { background-color: #dc3545 !important; color: white !important; }
@@ -31,6 +33,7 @@
         .gcs-select { background-color: #f8f9fa; }
         .input-group-text { font-size: 0.8rem; background-color: #e9ecef; border-radius: 0 8px 8px 0; min-width: 65px; justify-content: center; }
         
+        /* 多圖預覽區塊樣式 */
         #previewContainer { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 5px; }
         .preview-img { width: calc(33% - 6px); aspect-ratio: 1; object-fit: cover; border-radius: 8px; border: 1px solid #ddd; }
     </style>
@@ -59,10 +62,18 @@
             <div class="col-3"><label class="label-sm">👫 性別</label><select id="gender" class="form-select"><option value="男">男</option><option value="女">女</option></select></div>
             <div class="col-4"><label class="label-sm">🎂 年紀</label><input type="number" id="age" class="form-control" placeholder="歲"></div>
         </div>
+        
         <div class="mb-2">
             <label class="label-sm">📍 事故位置</label>
-            <input type="text" id="accidentLoc" class="form-control" placeholder="事發具體地點">
+            <div class="input-group">
+                <input type="text" id="accidentLoc" class="form-control" placeholder="輸入地址或點擊右側定位">
+                <button class="btn btn-outline-primary" type="button" onclick="getLocation()" id="btnLoc">
+                    🌐 定位
+                </button>
+            </div>
+            <small id="locationStatus" class="text-muted" style="font-size: 0.75rem; margin-top: 4px; display: block;"></small>
         </div>
+        
         <div class="mb-3">
             <label class="label-sm">🏥 處置位置</label>
             <input type="text" id="treatLoc" class="form-control" placeholder="例如：醫護站、救護車內">
@@ -168,41 +179,65 @@
         <div class="row g-2 mb-2">
             <div class="col-6">
                 <label class="label-sm">💓 血壓 (BP) 正常值 &lt;120/&lt;80</label>
-                <div class="input-group"><input type="text" id="bp" class="form-control" placeholder="120/80"><span class="input-group-text">mmHg</span></div>
+                <div class="input-group">
+                    <input type="text" id="bp" class="form-control" placeholder="120/80">
+                    <span class="input-group-text">mmHg</span>
+                </div>
             </div>
             <div class="col-6">
                 <label class="label-sm">🫀 脈搏 (PR) 正常值 60-100</label>
-                <div class="input-group"><input type="number" id="pr" class="form-control" placeholder="60-100"><span class="input-group-text">次/分</span></div>
+                <div class="input-group">
+                    <input type="number" id="pr" class="form-control" placeholder="60-100">
+                    <span class="input-group-text">次/分</span>
+                </div>
             </div>
         </div>
         <div class="row g-2 mb-2">
             <div class="col-6">
                 <label class="label-sm">🫁 呼吸 (RR) 正常值 12-20</label>
-                <div class="input-group"><input type="number" id="rr" class="form-control" placeholder="12-20"><span class="input-group-text">次/分</span></div>
+                <div class="input-group">
+                    <input type="number" id="rr" class="form-control" placeholder="12-20">
+                    <span class="input-group-text">次/分</span>
+                </div>
             </div>
             <div class="col-6">
                 <label class="label-sm">🩸 血氧 (SpO2) 正常值 ≥95%</label>
-                <div class="input-group"><input type="number" id="spo2" class="form-control" placeholder="≥95"><span class="input-group-text">%</span></div>
+                <div class="input-group">
+                    <input type="number" id="spo2" class="form-control" placeholder="≥95">
+                    <span class="input-group-text">%</span>
+                </div>
             </div>
         </div>
         <div class="row g-2 mb-2">
             <div class="col-6">
                 <label class="label-sm">🍬 血糖 (Glu)</label>
-                <div class="input-group"><input type="number" id="glu" class="form-control" placeholder="70-140"><span class="input-group-text">mg/dL</span></div>
+                <div class="input-group">
+                    <input type="number" id="glu" class="form-control" placeholder="70-140">
+                    <span class="input-group-text">mg/dL</span>
+                </div>
             </div>
             <div class="col-6">
                 <label class="label-sm">🌡️ 體溫 (BT) 正常範圍 36-37.9℃</label>
-                <div class="input-group"><input type="number" id="bt" class="form-control" placeholder="36.5" step="0.1"><span class="input-group-text">°C</span></div>
+                <div class="input-group">
+                    <input type="number" id="bt" class="form-control" placeholder="36.5" step="0.1">
+                    <span class="input-group-text">°C</span>
+                </div>
             </div>
         </div>
         <div class="row g-2 mb-2">
             <div class="col-6">
                 <label class="label-sm">👁️ 瞳孔-左 (Pupil L)</label>
-                <div class="input-group"><input type="number" id="pupilL" class="form-control" placeholder="2.5" step="0.5"><span class="input-group-text">mm</span></div>
+                <div class="input-group">
+                    <input type="number" id="pupilL" class="form-control" placeholder="2.5" step="0.5">
+                    <span class="input-group-text">mm</span>
+                </div>
             </div>
             <div class="col-6">
                 <label class="label-sm">👁️ 瞳孔-右 (Pupil R)</label>
-                <div class="input-group"><input type="number" id="pupilR" class="form-control" placeholder="2.5" step="0.5"><span class="input-group-text">mm</span></div>
+                <div class="input-group">
+                    <input type="number" id="pupilR" class="form-control" placeholder="2.5" step="0.5">
+                    <span class="input-group-text">mm</span>
+                </div>
             </div>
         </div>
         <div class="row g-2 mb-3">
@@ -220,6 +255,7 @@
         </div>
 
         <div class="section-title">6. 現場檢傷與後送評估</div>
+        
         <div class="row g-2 mb-3">
             <div class="col-12">
                 <label class="label-sm">🚨 是否為危急個案 (Critical)</label>
@@ -231,24 +267,29 @@
                 </div>
             </div>
         </div>
+
         <div class="mb-3">
             <label class="label-sm">🏷️ 初次 START 檢傷分類</label>
             <div class="btn-group w-100 w-100-group" role="group">
                 <input type="radio" class="btn-check btn-start-green" name="startTriage" id="startGreen" value="綠區(輕傷)" autocomplete="off">
                 <label class="btn btn-outline-success" for="startGreen">🟢 綠區</label>
+
                 <input type="radio" class="btn-check btn-start-yellow" name="startTriage" id="startYellow" value="黃區(中傷)" autocomplete="off">
                 <label class="btn btn-outline-warning" for="startYellow">🟡 黃區</label>
+
                 <input type="radio" class="btn-check btn-start-red" name="startTriage" id="startRed" value="紅區(重傷)" autocomplete="off">
                 <label class="btn btn-outline-danger" for="startRed">🔴 紅區</label>
+
                 <input type="radio" class="btn-check btn-start-black" name="startTriage" id="startBlack" value="黑區(死亡)" autocomplete="off">
                 <label class="btn btn-outline-dark" for="startBlack">⚫ 黑區</label>
             </div>
         </div>
+
         <div class="mb-3">
             <label class="label-sm">🚑 後送/處置模式 (Transport Mode)</label>
             <select id="transportMode" class="form-select fw-bold text-primary">
                 <option value="自行離去">🚶 自行離去</option>
-                <option value="消防救護車">🚑 消防救護車</option>
+				<option value="消防救護車">🚑 消防救護車</option>
                 <option value="民間救護車">🚐 民間救護車</option>
                 <option value="親友接送">🚗 親友接送</option>
             </select>
@@ -264,16 +305,16 @@
             <input type="checkbox" class="btn-check treat-check" id="t6" value="IV建立"><label class="btn btn-outline-success" for="t6">IV 建立</label>
             <input type="checkbox" class="btn-check treat-check" id="t7" value="CPR+AED"><label class="btn btn-outline-success" for="t7">CPR+AED</label>
             <input type="checkbox" class="btn-check treat-check" id="t8" value="心理支持"><label class="btn btn-outline-success" for="t8">心理支持</label>
-            <input type="checkbox" class="btn-check treat-check" id="t9" value="給予噴劑"><label class="btn btn-outline-success" for="t9">給予噴劑</label>
-            <input type="checkbox" class="btn-check treat-check" id="t10" value="冰敷"><label class="btn btn-outline-success" for="t10">冰敷</label>
-            <input type="checkbox" class="btn-check treat-check" id="t11" value="濕紗冷敷"><label class="btn btn-outline-success" for="t11">濕紗冷敷</label>
-            <input type="checkbox" class="btn-check treat-check" id="t12" value="挑刺"><label class="btn btn-outline-success" for="t12">挑刺</label>
-            <input type="checkbox" class="btn-check treat-check" id="t13" value="繃帶固定"><label class="btn btn-outline-success" for="t13">繃帶固定</label>
-            <input type="checkbox" class="btn-check treat-check" id="t14" value="骨折固定"><label class="btn btn-outline-success" for="t14">骨折固定</label>
-            <input type="checkbox" class="btn-check treat-check" id="t15" value="三角巾固定"><label class="btn btn-outline-success" for="t15">三角巾固定</label>
-            <input type="checkbox" class="btn-check treat-check" id="t16" value="軟式護木固定"><label class="btn btn-outline-success" for="t16">軟式護木固定</label>
-            <input type="checkbox" class="btn-check treat-check" id="t17" value="頸圈/背板"><label class="btn btn-outline-success" for="t17">頸圈/背板</label>
-            <input type="checkbox" class="btn-check treat-check" id="t18" value="其他"><label class="btn btn-outline-success" for="t18">其他</label>	
+			 <input type="checkbox" class="btn-check treat-check" id="t9" value="給予噴劑"><label class="btn btn-outline-success" for="t9">給予噴劑</label>
+			 <input type="checkbox" class="btn-check treat-check" id="t10" value="冰敷"><label class="btn btn-outline-success" for="t10">冰敷</label>
+			 <input type="checkbox" class="btn-check treat-check" id="t11" value="濕紗冷敷"><label class="btn btn-outline-success" for="t11">濕紗冷敷</label>
+			 <input type="checkbox" class="btn-check treat-check" id="t12" value="挑刺"><label class="btn btn-outline-success" for="t12">挑刺</label>
+			 <input type="checkbox" class="btn-check treat-check" id="t13" value="繃帶固定"><label class="btn btn-outline-success" for="t13">繃帶固定</label>
+			<input type="checkbox" class="btn-check treat-check" id="t14" value="骨折固定"><label class="btn btn-outline-success" for="t14">骨折固定</label>
+			<input type="checkbox" class="btn-check treat-check" id="t15" value="三角巾固定"><label class="btn btn-outline-success" for="t15">三角巾固定</label>
+			<input type="checkbox" class="btn-check treat-check" id="t16" value="軟式護木固定"><label class="btn btn-outline-success" for="t16">軟式護木固定</label>
+			<input type="checkbox" class="btn-check treat-check" id="t17" value="頸圈/背板"><label class="btn btn-outline-success" for="t17">頸圈/背板</label>
+			<input type="checkbox" class="btn-check treat-check" id="t18" value="其他"><label class="btn btn-outline-success" for="t18">其他</label>	
         </div>
 
         <div class="section-title">8. 病史與過敏史</div>
@@ -300,9 +341,9 @@
         <div class="btn-group-toggle mb-3">
             <input type="checkbox" class="btn-check a-check" id="a1" value="無已知過敏"><label class="btn btn-outline-warning" for="a1">無已知過敏</label>
             <input type="checkbox" class="btn-check a-check" id="a3" value="藥物過敏"><label class="btn btn-outline-warning" for="a3">藥物過敏</label>
-            <input type="checkbox" class="btn-check a-check" id="a5" value="環境過敏"><label class="btn btn-outline-warning" for="a5">環境過敏</label>
-            <input type="checkbox" class="btn-check a-check" id="a7" value="不詳"><label class="btn btn-outline-warning" for="a7">不詳</label>
-            <input type="checkbox" class="btn-check a-check" id="a9" value="其他"><label class="btn btn-outline-warning" for="a9">其他</label>
+		    <input type="checkbox" class="btn-check a-check" id="a5" value="環境過敏"><label class="btn btn-outline-warning" for="a5">環境過敏</label>
+			<input type="checkbox" class="btn-check a-check" id="a7" value="不詳"><label class="btn btn-outline-warning" for="a7">不詳</label>
+			<input type="checkbox" class="btn-check a-check" id="a9" value="其他"><label class="btn btn-outline-warning" for="a9">其他</label>
         </div>
 
         <div class="section-title">9. 其他備註與照片 (最多3張)</div>
@@ -322,7 +363,7 @@
 
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <script>
-    // ！！！請將這裡替換成您剛剛「新部署」拿到的網址！！！
+    // ！！！請將這裡替換成您自己的 GAS 網址！！！
     const GAS_URL = "https://script.google.com/macros/s/AKfycbyOoBuM2NZ4uhZmVWE7qHqqyA9xY4-7-82aFPT69hHXdDXjSG3wuEApDbrD26KyfUODGQ/exec"; 
     const LIFF_ID = "2009198292-oRMLEX95";
     
@@ -335,6 +376,53 @@
         document.getElementById('contactTime').value = now.toTimeString().slice(0,5);
         try { liff.init({ liffId: LIFF_ID }); } catch (err) {}
     };
+
+    // 🌐【新增】GPS 定位功能
+    function getLocation() {
+        const locInput = document.getElementById('accidentLoc');
+        const status = document.getElementById('locationStatus');
+        const btn = document.getElementById('btnLoc');
+
+        if (!navigator.geolocation) {
+            status.innerText = "❌ 瀏覽器不支援定位功能";
+            status.className = "text-danger";
+            return;
+        }
+
+        // 鎖定按鈕避免重複點擊
+        btn.disabled = true;
+        btn.innerText = "⌛...";
+        status.innerText = "正在連線 GPS 取得座標...";
+        status.className = "text-primary";
+
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+                // 產生標準 Google 地圖連結
+                const mapUrl = `https://www.google.com/maps?q=${lat},${lng}`;
+                
+                locInput.value = mapUrl;
+                status.innerText = "✅ 定位成功！已填入地圖連結";
+                status.className = "text-success";
+                
+                // 恢復按鈕
+                btn.disabled = false;
+                btn.innerText = "🌐 定位";
+            },
+            (error) => {
+                let errorMsg = "❌ 定位失敗";
+                if(error.code === 1) errorMsg = "❌ 請允許瀏覽器存取位置權限";
+                if(error.code === 3) errorMsg = "❌ 定位連線逾時";
+                
+                status.innerText = errorMsg;
+                status.className = "text-danger";
+                btn.disabled = false;
+                btn.innerText = "🌐 定位";
+            },
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 } // 強制使用高精度 GPS
+        );
+    }
 
     function toggleProblems() {
         const type = document.getElementById('caseType').value;
@@ -435,7 +523,6 @@
 
         const combinedProblems = [getVals('.t-prob'), getVals('.nt-prob')].filter(Boolean).join(", ");
 
-        // ★ 核心防呆：確保沒照片時傳的是乾淨的空字串，而不是 undefined
         const p1 = typeof imgB64Array[0] === 'string' ? imgB64Array[0] : "";
         const p2 = typeof imgB64Array[1] === 'string' ? imgB64Array[1] : "";
         const p3 = typeof imgB64Array[2] === 'string' ? imgB64Array[2] : "";
@@ -505,7 +592,6 @@
 </script>
 </body>
 </html>
-
 
 
 
