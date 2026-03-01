@@ -293,12 +293,12 @@
             <label class="label-sm">🚑 後送/處置模式 (Transport Mode)</label>
             <select id="transportMode" class="form-select fw-bold text-primary">
                 <option value="自行離去">🚶 自行離去</option>
-				 <option value="醫護站留觀"> 醫護站留觀</option>
-				<option value="消防救護車">🚑 消防救護車</option>
+                <option value="醫護站留觀">🛏️ 醫護站留觀</option>
+                <option value="消防救護車">🚑 消防救護車</option>
                 <option value="民間救護車">🚐 民間救護車</option>
                 <option value="親友接送">🚗 親友接送</option>
-				
             </select>
+            <input type="text" id="transportModeDetail" class="form-control form-control-sm detail-input mt-2" placeholder="✍️ 後送/處置模式補充說明 (例如：送往中山醫院 / 留觀30分鐘)">
         </div>
 
         <div class="section-title">7. 病患處置狀態 (複選)</div>
@@ -316,11 +316,11 @@
 			 <input type="checkbox" class="btn-check treat-check" id="t11" value="濕紗冷敷"><label class="btn btn-outline-success" for="t11">濕紗冷敷</label>
 			 <input type="checkbox" class="btn-check treat-check" id="t12" value="挑刺"><label class="btn btn-outline-success" for="t12">挑刺</label>
 			 <input type="checkbox" class="btn-check treat-check" id="t13" value="繃帶固定"><label class="btn btn-outline-success" for="t13">繃帶固定</label>
-			<input type="checkbox" class="btn-check treat-check" id="t14" value="骨折固定"><label class="btn btn-outline-success" for="t14">骨折固定</label>
-			<input type="checkbox" class="btn-check treat-check" id="t15" value="三角巾固定"><label class="btn btn-outline-success" for="t15">三角巾固定</label>
-			<input type="checkbox" class="btn-check treat-check" id="t16" value="軟式護木固定"><label class="btn btn-outline-success" for="t16">軟式護木固定</label>
-			<input type="checkbox" class="btn-check treat-check" id="t17" value="頸圈/背板"><label class="btn btn-outline-success" for="t17">頸圈/背板</label>
-			<input type="checkbox" class="btn-check treat-check" id="t18" value="其他"><label class="btn btn-outline-success" for="t18">其他</label>	
+			 <input type="checkbox" class="btn-check treat-check" id="t14" value="骨折固定"><label class="btn btn-outline-success" for="t14">骨折固定</label>
+			 <input type="checkbox" class="btn-check treat-check" id="t15" value="三角巾固定"><label class="btn btn-outline-success" for="t15">三角巾固定</label>
+			 <input type="checkbox" class="btn-check treat-check" id="t16" value="軟式護木固定"><label class="btn btn-outline-success" for="t16">軟式護木固定</label>
+			 <input type="checkbox" class="btn-check treat-check" id="t17" value="頸圈/背板"><label class="btn btn-outline-success" for="t17">頸圈/背板</label>
+			 <input type="checkbox" class="btn-check treat-check" id="t18" value="其他"><label class="btn btn-outline-success" for="t18">其他</label>	
         </div>
         <input type="text" id="treatmentsDetail" class="form-control form-control-sm detail-input mb-3" placeholder="✍️ 處置補充說明">
         
@@ -387,7 +387,6 @@
         try { liff.init({ liffId: LIFF_ID }); } catch (err) {}
     };
 
-    // --- 高精度 GPS 定位與標準 Google Maps 網址邏輯修正 ---
     function getLocation() {
         const locInput = document.getElementById('accidentLoc');
         const status = document.getElementById('locationStatus');
@@ -406,11 +405,8 @@
 
         navigator.geolocation.getCurrentPosition(
             (position) => {
-                // 取得十進位經緯度，精確到小數點後6位
                 const lat = position.coords.latitude.toFixed(6);
                 const lng = position.coords.longitude.toFixed(6);
-                
-                // 產生標準且可直接點擊導航的 Google Maps 網址
                 const mapUrl = `https://maps.google.com/?q=${lat},${lng}`;
                 
                 locInput.value = mapUrl;
@@ -532,6 +528,11 @@
 
         const combinedProblems = [getVals('.t-prob'), getVals('.nt-prob')].filter(Boolean).join(", ");
         const probDetail = [getValById('traumaDetail'), getValById('nonTraumaDetail')].filter(Boolean).join(" / ");
+        
+        // 抓取後送處置模式與其補充說明並合併
+        const transportBase = document.getElementById('transportMode').value;
+        const transportDetail = getValById('transportModeDetail');
+        const transportFull = transportDetail ? transportBase + " (補充: " + transportDetail + ")" : transportBase;
 
         const p1 = typeof imgB64Array[0] === 'string' ? imgB64Array[0] : "";
         const p2 = typeof imgB64Array[1] === 'string' ? imgB64Array[1] : "";
@@ -551,7 +552,7 @@
             treatLoc: document.getElementById('treatLoc').value,
             isCritical: getRadio('isCritical'),
             startTriage: getRadio('startTriage'),
-            transportMode: document.getElementById('transportMode').value,
+            transportMode: transportFull, // 使用合併後的完整後送資訊
             caseType: caseType,
             problems: probDetail ? combinedProblems + " (補充: " + probDetail + ")" : combinedProblems,
             injuryParts: getValById('injuryPartsDetail') ? getVals('.i-check') + " (補充: " + getValById('injuryPartsDetail') + ")" : getVals('.i-check'),
@@ -582,10 +583,67 @@
             
             const triageInfo = payload.startTriage ? `\n檢傷: ${payload.startTriage}` : '';
             const critInfo = payload.isCritical === '是' ? '🔥危急個案' : '';
-            const successMsg = `🚑 救護紀錄成功 ${critInfo}\n人員: ${payload.emsStaff}\n編號: ${payload.plateNum}\n分類: ${payload.caseType}${triageInfo}\n後送: ${payload.transportMode}`;
-
+            const locUri = payload.accidentLoc.startsWith('http') ? payload.accidentLoc : `https://maps.google.com/?q=${encodeURIComponent(payload.accidentLoc)}`;
+            
             if (liff.isInClient()) {
-                await liff.sendMessages([{ "type": "text", "text": successMsg }]);
+                await liff.sendMessages([{
+                    "type": "flex",
+                    "altText": "🚑 救護紀錄摘要-" + payload.name,
+                    "contents": {
+                        "type": "bubble",
+                        "header": {
+                            "type": "box",
+                            "layout": "vertical",
+                            "contents": [{ "type": "text", "text": "🚑 EMS 救護任務摘要", "weight": "bold", "color": "#ffffff", "size": "md" }],
+                            "backgroundColor": payload.isCritical === '是' ? "#d9534f" : "#2c3e50"
+                        },
+                        "body": {
+                            "type": "box",
+                            "layout": "vertical",
+                            "spacing": "md",
+                            "contents": [
+                                {
+                                    "type": "box",
+                                    "layout": "horizontal",
+                                    "contents": [
+                                        { "type": "text", "text": "狀態", "size": "xs", "color": "#aaaaaa", "flex": 1 },
+                                        { "type": "text", "text": payload.isCritical === '是' ? '🚨 危急' : '🛡️ 穩定', "size": "xs", "color": payload.isCritical === '是' ? '#ff0000' : '#28a745', "flex": 3, "weight": "bold", "align": "end" }
+                                    ]
+                                },
+                                { "type": "separator" },
+                                {
+                                    "type": "box",
+                                    "layout": "vertical",
+                                    "spacing": "xs",
+                                    "contents": [
+                                        { "type": "text", "text": `患者：${payload.name || '未知'} (${payload.gender}/${payload.age || '?'}歲)`, "size": "sm", "weight": "bold" },
+                                        { "type": "box", "layout": "horizontal", "contents": [
+                                            { "type": "text", "text": "地點", "size": "sm", "color": "#aaaaaa", "flex": 1 },
+                                            { "type": "text", "text": "📍 點我導航", "size": "sm", "color": "#0000ff", "flex": 3, "align": "end", "action": { "type": "uri", "label": "導航", "uri": locUri } }
+                                        ]},
+                                        { "type": "text", "text": `檢傷：${payload.startTriage || '未填'}`, "size": "sm" },
+                                        { "type": "text", "text": `後送：${payload.transportMode}`, "size": "sm", "wrap": true }
+                                    ]
+                                },
+                                {
+                                    "type": "box",
+                                    "layout": "vertical",
+                                    "backgroundColor": "#f0f0f0",
+                                    "paddingAll": "8px",
+                                    "contents": [
+                                        { "type": "text", "text": `BP: ${payload.bp || '--'} | PR: ${payload.pr || '--'} | RR: ${payload.rr || '--'}`, "size": "xs", "margin": "xs" },
+                                        { "type": "text", "text": `SpO2: ${payload.spo2 || '--'}% | GCS: ${payload.gcs}`, "size": "xs" }
+                                    ]
+                                }
+                            ]
+                        },
+                        "footer": {
+                            "type": "box",
+                            "layout": "vertical",
+                            "contents": [{ "type": "text", "text": "回報人：" + payload.emsStaff, "size": "xxs", "color": "#aaaaaa", "align": "center" }]
+                        }
+                    }
+                }]);
                 liff.closeWindow();
             } else {
                 alert("✅ 資料已成功上傳！\n\n(提示：因不在 LINE App 內，無法發送對話框訊息)");
@@ -601,6 +659,7 @@
 </script>
 </body>
 </html>
+
 
 
 
