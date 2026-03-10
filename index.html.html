@@ -30,6 +30,7 @@
         .w-100-group .btn { border-radius: 8px !important; margin-right: 0; margin-bottom: 0; }
         
         .btn-submit { background: #d9534f; color: white; width: 100%; padding: 15px; font-weight: bold; border-radius: 10px; border: none; font-size: 1.2rem; margin-top: 15px; }
+        .btn-reset { background: #6c757d; color: white; width: 100%; padding: 10px; font-weight: bold; border-radius: 10px; border: none; font-size: 1rem; margin-top: 10px; }
         .gcs-select { background-color: #f8f9fa; }
         .input-group-text { font-size: 0.8rem; background-color: #e9ecef; border-radius: 0 8px 8px 0; min-width: 65px; justify-content: center; }
         
@@ -385,24 +386,29 @@
         <div id="previewContainer"></div>
 
         <button type="button" id="submitBtn" class="btn btn-submit" onclick="send()">✅ 確認上傳紀錄</button>
+        <button type="button" class="btn btn-reset" onclick="resetForm()">🗑️ 清除所有填寫 (重新填寫)</button>
     </form>
 </div>
 
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <script>
     // ！！！請將這裡替換成您自己的 GAS 網址！！！
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbyqZnlnxEhxKOMD_L5ANf-pVN1qcustCPGYWCPTc_2JF0ywALZXqchwO_t6mVUgxDMk5w/exec"; 
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbymtZhx7a7THsGJAkkx7-mdK_68OuGsIcryMHLL8YSQbfDGJfrhd7m4Gx8ysA5M-yUOpA/exec"; 
     const LIFF_ID = "2009198292-oRMLEX95";
     
     // 全局變數存放 Base64 照片
     let imgB64Array = [];
 
     window.onload = function() {
+        setInitialDateTime();
+        try { liff.init({ liffId: LIFF_ID }); } catch (err) {}
+    };
+
+    function setInitialDateTime() {
         const now = new Date();
         document.getElementById('date').value = now.toISOString().split('T')[0];
         document.getElementById('contactTime').value = now.toTimeString().slice(0,5);
-        try { liff.init({ liffId: LIFF_ID }); } catch (err) {}
-    };
+    }
 
     function getLocation() {
         const locInput = document.getElementById('accidentLoc');
@@ -472,6 +478,24 @@
         const countText = document.getElementById('photoCountText');
         countText.innerText = '目前已選: 0/3 張';
         countText.className = 'badge bg-secondary';
+    }
+
+    // 新增：重置整個表單
+    function resetForm() {
+        if (!confirm("確定要清空所有填寫的資料嗎？(此操作無法復原)")) return;
+        
+        document.getElementById('emsForm').reset();
+        clearPhotos();
+        setInitialDateTime(); // 重新設定為當前時間
+        
+        // 隱藏問題細項區域
+        document.getElementById('traumaArea').style.display = 'none';
+        document.getElementById('nonTraumaArea').style.display = 'none';
+        
+        // 清除定位狀態文字
+        document.getElementById('locationStatus').innerText = '';
+        
+        window.scrollTo(0, 0); // 捲動到最上方
     }
 
     async function cmp(e) {
@@ -675,6 +699,12 @@
                 liff.closeWindow();
             } else {
                 alert("✅ 資料已成功上傳！\n\n(提示：因不在 LINE App 內，無法發送對話框訊息)");
+                
+                // 新增：上傳成功後詢問是否重置表單
+                if(confirm("上傳成功！是否要清空表單以填寫下一筆紀錄？")) {
+                    resetForm();
+                }
+                
                 btn.disabled = false; 
                 btn.innerText = "✅ 確認上傳紀錄"; 
             }
@@ -687,5 +717,6 @@
 </script>
 </body>
 </html>
+
 
 
