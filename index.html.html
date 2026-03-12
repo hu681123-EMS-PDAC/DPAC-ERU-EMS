@@ -55,7 +55,7 @@
             <div class="col-6"><label class="label-sm">📞 追蹤電話</label><input type="tel" id="phone" class="form-control" placeholder="聯絡電話"></div>
         </div>
         <div class="row g-2 mb-2">
-            <div class="col-7"><label class="label-sm">🏢 所屬團隊</label><input type="text" id="team" class="form-control" placeholder="分隊/單位名稱"></div>
+            <div class="col-7"><label class="label-sm">🏢 小隊名稱</label><input type="text" id="team" class="form-control" placeholder="分隊/單位名稱"></div>
             <div class="col-5"><label class="label-sm">🆔 號碼牌編號</label><input type="text" id="plateNum" class="form-control" placeholder="No."></div>
         </div>
         <div class="row g-2 mb-2">
@@ -374,15 +374,20 @@
         </div>
         <input type="text" id="allergyDetail" class="form-control form-control-sm detail-input mb-3" placeholder="✍️ 過敏史補充">
         
-        <div class="section-title">9. 其他備註與照片 (最多3張)</div>
+        <div class="section-title">9. 其他備註與照片</div>
         <textarea id="memo" class="form-control mb-3" rows="2" placeholder="請輸入額外觀察資訊..."></textarea>
         
-        <div class="d-flex justify-content-between align-items-center mb-2">
+        <div class="d-flex justify-content-between align-items-center mb-1">
             <label class="label-sm mb-0">📸 現場/傷情照片</label>
-            <span id="photoCountText" class="badge bg-secondary">目前已選: 0/3 張</span>
+            <span id="photoCountText" class="badge bg-secondary">目前: 0/3 張</span>
         </div>
-        <input type="file" id="photo" class="form-control mb-2" accept="image/*" multiple onchange="cmp(event)">
-        <button type="button" class="btn btn-sm btn-outline-danger w-100 mb-3" onclick="clearPhotos()">🗑️ 清除重選</button>
+        <small class="text-muted d-block mb-2" style="font-size: 0.75rem;">
+            💡 提示：點擊下方可直接使用手機相機拍照。可分次拍攝，最多 3 張。
+        </small>
+        
+        <input type="file" id="photo" class="form-control mb-2" accept="image/*" capture="environment" multiple onchange="cmp(event)">
+        
+        <button type="button" class="btn btn-sm btn-outline-danger w-100 mb-3" onclick="clearPhotos()">🗑️ 清除重拍</button>
         <div id="previewContainer"></div>
 
         <button type="button" id="submitBtn" class="btn btn-submit" onclick="send()">✅ 確認上傳紀錄</button>
@@ -476,26 +481,22 @@
         document.getElementById('previewContainer').innerHTML = '';
         document.getElementById('photo').value = '';
         const countText = document.getElementById('photoCountText');
-        countText.innerText = '目前已選: 0/3 張';
+        countText.innerText = '目前: 0/3 張';
         countText.className = 'badge bg-secondary';
     }
 
-    // 新增：重置整個表單
     function resetForm() {
         if (!confirm("確定要清空所有填寫的資料嗎？(此操作無法復原)")) return;
         
         document.getElementById('emsForm').reset();
         clearPhotos();
-        setInitialDateTime(); // 重新設定為當前時間
+        setInitialDateTime(); 
         
-        // 隱藏問題細項區域
         document.getElementById('traumaArea').style.display = 'none';
         document.getElementById('nonTraumaArea').style.display = 'none';
-        
-        // 清除定位狀態文字
         document.getElementById('locationStatus').innerText = '';
         
-        window.scrollTo(0, 0); // 捲動到最上方
+        window.scrollTo(0, 0); 
     }
 
     async function cmp(e) {
@@ -507,7 +508,7 @@
 
         let availableSlots = 3 - imgB64Array.length;
         if (availableSlots <= 0) {
-            alert("⚠️ 最多只能上傳 3 張照片！若要更改請點擊「清除重選」。");
+            alert("⚠️ 最多只能上傳 3 張照片！若要更改請點擊「清除重拍」。");
             e.target.value = ''; 
             return;
         }
@@ -526,10 +527,12 @@
                 previewImg.className = 'preview-img';
                 previewContainer.appendChild(previewImg);
                 
-                countText.innerText = `目前已選: ${imgB64Array.length}/3 張`;
+                countText.innerText = `目前: ${imgB64Array.length}/3 張`;
                 countText.className = imgB64Array.length === 3 ? 'badge bg-success' : 'badge bg-warning text-dark';
             }
         }
+        // 每次拍完/選完照片後清空 input 的 value
+        // 這樣可以讓使用者再次點擊時，能繼續啟動相機拍攝第2張、第3張
         e.target.value = ''; 
     }
 
@@ -570,7 +573,6 @@
         const combinedProblems = [getVals('.t-prob'), getVals('.nt-prob')].filter(Boolean).join(", ");
         const probDetail = [getValById('traumaDetail'), getValById('nonTraumaDetail')].filter(Boolean).join(" / ");
         
-        // 抓取後送處置模式與其補充說明並合併
         const transportBase = document.getElementById('transportMode').value;
         const transportDetail = getValById('transportModeDetail');
         const transportFull = transportDetail ? transportBase + " (補充: " + transportDetail + ")" : transportBase;
@@ -593,7 +595,7 @@
             treatLoc: document.getElementById('treatLoc').value,
             isCritical: getRadio('isCritical'),
             startTriage: getRadio('startTriage'),
-            transportMode: transportFull, // 使用合併後的完整後送資訊
+            transportMode: transportFull,
             caseType: caseType,
             problems: probDetail ? combinedProblems + " (補充: " + probDetail + ")" : combinedProblems,
             injuryParts: getValById('injuryPartsDetail') ? getVals('.i-check') + " (補充: " + getValById('injuryPartsDetail') + ")" : getVals('.i-check'),
@@ -699,12 +701,9 @@
                 liff.closeWindow();
             } else {
                 alert("✅ 資料已成功上傳！\n\n(提示：因不在 LINE App 內，無法發送對話框訊息)");
-                
-                // 新增：上傳成功後詢問是否重置表單
                 if(confirm("上傳成功！是否要清空表單以填寫下一筆紀錄？")) {
                     resetForm();
                 }
-                
                 btn.disabled = false; 
                 btn.innerText = "✅ 確認上傳紀錄"; 
             }
