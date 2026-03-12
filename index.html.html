@@ -308,15 +308,15 @@
             <p class="text-muted mb-1" style="font-size: 0.75rem;">📋 留觀/追蹤紀錄 (例如: 14:20 A 清醒 120/80)：</p>
             <div class="input-group input-group-sm mb-1">
                 <span class="input-group-text">一</span>
-                <input type="text" id="obs1" class="form-control">
+                <input type="text" id="obs1" class="form-control" placeholder="時分 / 意識 / 生命徵象">
             </div>
             <div class="input-group input-group-sm mb-1">
                 <span class="input-group-text">二</span>
-                <input type="text" id="obs2" class="form-control">
+                <input type="text" id="obs2" class="form-control" placeholder="時分 / 意識 / 生命徵象">
             </div>
             <div class="input-group input-group-sm">
                 <span class="input-group-text">三</span>
-                <input type="text" id="obs3" class="form-control">
+                <input type="text" id="obs3" class="form-control" placeholder="時分 / 意識 / 生命徵象">
             </div>
         </div>
 
@@ -330,16 +330,16 @@
             <input type="checkbox" class="btn-check treat-check" id="t6" value="IV建立"><label class="btn btn-outline-success" for="t6">IV 建立</label>
             <input type="checkbox" class="btn-check treat-check" id="t7" value="CPR+AED"><label class="btn btn-outline-success" for="t7">CPR+AED</label>
             <input type="checkbox" class="btn-check treat-check" id="t8" value="心理支持"><label class="btn btn-outline-success" for="t8">心理支持</label>
-			 <input type="checkbox" class="btn-check treat-check" id="t9" value="給予噴劑"><label class="btn btn-outline-success" for="t9">給予噴劑</label>
-			 <input type="checkbox" class="btn-check treat-check" id="t10" value="冰敷"><label class="btn btn-outline-success" for="t10">冰敷</label>
-			 <input type="checkbox" class="btn-check treat-check" id="t11" value="濕紗冷敷"><label class="btn btn-outline-success" for="t11">濕紗冷敷</label>
-			 <input type="checkbox" class="btn-check treat-check" id="t12" value="挑刺"><label class="btn btn-outline-success" for="t12">挑刺</label>
-			 <input type="checkbox" class="btn-check treat-check" id="t13" value="繃帶固定"><label class="btn btn-outline-success" for="t13">繃帶固定</label>
-			 <input type="checkbox" class="btn-check treat-check" id="t14" value="骨折固定"><label class="btn btn-outline-success" for="t14">骨折固定</label>
-			 <input type="checkbox" class="btn-check treat-check" id="t15" value="三角巾固定"><label class="btn btn-outline-success" for="t15">三角巾固定</label>
-			 <input type="checkbox" class="btn-check treat-check" id="t16" value="軟式護木固定"><label class="btn btn-outline-success" for="t16">軟式護木固定</label>
-			 <input type="checkbox" class="btn-check treat-check" id="t17" value="頸圈/背板"><label class="btn btn-outline-success" for="t17">頸圈/背板</label>
-			 <input type="checkbox" class="btn-check treat-check" id="t18" value="其他"><label class="btn btn-outline-success" for="t18">其他</label>	
+			<input type="checkbox" class="btn-check treat-check" id="t9" value="給予噴劑"><label class="btn btn-outline-success" for="t9">給予噴劑</label>
+			<input type="checkbox" class="btn-check treat-check" id="t10" value="冰敷"><label class="btn btn-outline-success" for="t10">冰敷</label>
+			<input type="checkbox" class="btn-check treat-check" id="t11" value="濕紗冷敷"><label class="btn btn-outline-success" for="t11">濕紗冷敷</label>
+			<input type="checkbox" class="btn-check treat-check" id="t12" value="挑刺"><label class="btn btn-outline-success" for="t12">挑刺</label>
+			<input type="checkbox" class="btn-check treat-check" id="t13" value="繃帶固定"><label class="btn btn-outline-success" for="t13">繃帶固定</label>
+			<input type="checkbox" class="btn-check treat-check" id="t14" value="骨折固定"><label class="btn btn-outline-success" for="t14">骨折固定</label>
+			<input type="checkbox" class="btn-check treat-check" id="t15" value="三角巾固定"><label class="btn btn-outline-success" for="t15">三角巾固定</label>
+			<input type="checkbox" class="btn-check treat-check" id="t16" value="軟式護木固定"><label class="btn btn-outline-success" for="t16">軟式護木固定</label>
+			<input type="checkbox" class="btn-check treat-check" id="t17" value="頸圈/背板"><label class="btn btn-outline-success" for="t17">頸圈/背板</label>
+			<input type="checkbox" class="btn-check treat-check" id="t18" value="其他"><label class="btn btn-outline-success" for="t18">其他</label>	
         </div>
         <input type="text" id="treatmentsDetail" class="form-control form-control-sm detail-input mb-3" placeholder="✍️ 處置補充說明">
         
@@ -602,53 +602,57 @@
         btn.innerText = "資料上傳中 (含照片)...";
         
         const getVals = (cls) => Array.from(document.querySelectorAll(cls + ':checked')).map(c => c.value).join(", ");
-        const getValById = (id) => { const el = document.getElementById(id); return el && el.value ? el.value : ""; };
+        // 【優化】直接使用 getElementById 抓值，避免因 value 為字串而誤判的問題
+        const getValByDOM = (id) => { const el = document.getElementById(id); return el ? el.value.trim() : ""; };
         const getRadio = (name) => {
             const el = document.querySelector(`input[name="${name}"]:checked`);
             return el ? el.value : '';
         };
 
         const combinedProblems = [getVals('.t-prob'), getVals('.nt-prob')].filter(Boolean).join(", ");
-        const probDetail = [getValById('traumaDetail'), getValById('nonTraumaDetail')].filter(Boolean).join(" / ");
+        const probDetail = [getValByDOM('traumaDetail'), getValByDOM('nonTraumaDetail')].filter(Boolean).join(" / ");
         
         // 抓取後送處置模式與其補充說明並合併
         const transportBase = document.getElementById('transportMode').value;
-        const transportDetail = getValById('transportModeDetail');
+        const transportDetail = getValByDOM('transportModeDetail');
         const transportFull = transportDetail ? transportBase + " (補充: " + transportDetail + ")" : transportBase;
 
         // 完整組合 Payload
         const payload = {
-            date: document.getElementById('date').value,
-            time: document.getElementById('contactTime').value,
-            emsStaff: document.getElementById('emsStaff').value,
-            phone: document.getElementById('phone').value,
-            team: document.getElementById('team').value,
-            plateNum: document.getElementById('plateNum').value,
-            name: document.getElementById('name').value,
-            gender: document.getElementById('gender').value,
-            age: document.getElementById('age').value,
-            accidentLoc: document.getElementById('accidentLoc').value,
-            treatLoc: document.getElementById('treatLoc').value,
+            date: getValByDOM('date'),
+            time: getValByDOM('contactTime'),
+            emsStaff: getValByDOM('emsStaff'),
+            phone: getValByDOM('phone'),
+            team: getValByDOM('team'),
+            plateNum: getValByDOM('plateNum'),
+            name: getValByDOM('name'),
+            gender: getValByDOM('gender'),
+            age: getValByDOM('age'),
+            accidentLoc: getValByDOM('accidentLoc'),
+            treatLoc: getValByDOM('treatLoc'),
             isCritical: getRadio('isCritical'),
             startTriage: getRadio('startTriage'),
             transportMode: transportFull,
             caseType: caseType,
             problems: probDetail ? combinedProblems + " (補充: " + probDetail + ")" : combinedProblems,
-            injuryParts: getValById('injuryPartsDetail') ? getVals('.i-check') + " (補充: " + getValById('injuryPartsDetail') + ")" : getVals('.i-check'),
-            avpu: document.getElementById('avpu').value,
-            gcs: `E${document.getElementById('gcsE').value}V${document.getElementById('gcsV').value}M${document.getElementById('gcsM').value}`,
-            bt: document.getElementById('bt').value,
-            skin: document.getElementById('skin').value,
-            pupil: `L:${document.getElementById('pupilL').value}mm, R:${document.getElementById('pupilR').value}mm`,
-            vitals: `BP:${document.getElementById('bp').value}, PR:${document.getElementById('pr').value}, RR:${document.getElementById('rr').value}, SpO2:${document.getElementById('spo2').value}, Glu:${document.getElementById('glu').value}, BT:${document.getElementById('bt').value}, Pupil:L${document.getElementById('pupilL').value}/R${document.getElementById('pupilR').value}, Skin:${document.getElementById('skin').value}`,
-            treatments: getValById('treatmentsDetail') ? getVals('.treat-check') + " (補充: " + getValById('treatmentsDetail') + ")" : getVals('.treat-check'),
-            history: getValById('historyDetail') ? getVals('.h-check') + " (補充: " + getValById('historyDetail') + ")" : getVals('.h-check'),
-            allergy: getValById('allergyDetail') ? getVals('.a-check') + " (補充: " + getValById('allergyDetail') + ")" : getVals('.a-check'),
-            memo: document.getElementById('memo').value,
-            obs1: getValById('obs1'),
-            obs2: getValById('obs2'),
-            obs3: getValById('obs3'),
-            photo1: photoData[1], // 從獨立槽位抓取照片
+            injuryParts: getValByDOM('injuryPartsDetail') ? getVals('.i-check') + " (補充: " + getValByDOM('injuryPartsDetail') + ")" : getVals('.i-check'),
+            avpu: getValByDOM('avpu'),
+            gcs: `E${getValByDOM('gcsE')}V${getValByDOM('gcsV')}M${getValByDOM('gcsM')}`,
+            bt: getValByDOM('bt'),
+            skin: getValByDOM('skin'),
+            pupil: `L:${getValByDOM('pupilL')}mm, R:${getValByDOM('pupilR')}mm`,
+            vitals: `BP:${getValByDOM('bp')}, PR:${getValByDOM('pr')}, RR:${getValByDOM('rr')}, SpO2:${getValByDOM('spo2')}, Glu:${getValByDOM('glu')}, BT:${getValByDOM('bt')}, Pupil:L${getValByDOM('pupilL')}/R${getValByDOM('pupilR')}, Skin:${getValByDOM('skin')}`,
+            treatments: getValByDOM('treatmentsDetail') ? getVals('.treat-check') + " (補充: " + getValByDOM('treatmentsDetail') + ")" : getVals('.treat-check'),
+            history: getValByDOM('historyDetail') ? getVals('.h-check') + " (補充: " + getValByDOM('historyDetail') + ")" : getVals('.h-check'),
+            allergy: getValByDOM('allergyDetail') ? getVals('.a-check') + " (補充: " + getValByDOM('allergyDetail') + ")" : getVals('.a-check'),
+            memo: getValByDOM('memo'),
+            
+            // 【修正重點】精確抓取留觀欄位，若沒填則為空字串
+            obs1: getValByDOM('obs1'),
+            obs2: getValByDOM('obs2'),
+            obs3: getValByDOM('obs3'),
+            
+            photo1: photoData[1],
             photo2: photoData[2],
             photo3: photoData[3]
         };
@@ -663,11 +667,67 @@
                 body: JSON.stringify(payload) 
             });
             
-            const triageInfo = payload.startTriage ? `\n檢傷: ${payload.startTriage}` : '';
-            const critInfo = payload.isCritical === '是' ? '🔥危急個案' : (payload.isCritical === 'OHCA' ? '💔 無呼吸心跳(OHCA)' : '');
             const locUri = payload.accidentLoc.startsWith('http') ? payload.accidentLoc : `https://maps.google.com/?q=${encodeURIComponent(payload.accidentLoc)}`;
             
+            // 整理留觀紀錄以便顯示在 LINE 訊息中
+            let obsLogs = [payload.obs1, payload.obs2, payload.obs3].filter(v => v !== "");
+            
             if (liff.isInClient()) {
+                // 構建 Flex Message 內容陣列
+                const flexContents = [
+                    {
+                        "type": "box",
+                        "layout": "horizontal",
+                        "contents": [
+                            { "type": "text", "text": "狀態", "size": "xs", "color": "#aaaaaa", "flex": 1 },
+                            { 
+                                "type": "text", 
+                                "text": payload.isCritical === 'OHCA' ? '💔 OHCA' : (payload.isCritical === '是' ? '🚨 危急' : '🛡️ 穩定'), 
+                                "size": "xs", 
+                                "color": payload.isCritical === 'OHCA' ? '#000000' : (payload.isCritical === '是' ? '#ff0000' : '#28a745'), 
+                                "flex": 3, 
+                                "weight": "bold", 
+                                "align": "end" 
+                            }
+                        ]
+                    },
+                    { "type": "separator" },
+                    {
+                        "type": "box",
+                        "layout": "vertical",
+                        "spacing": "xs",
+                        "contents": [
+                            { "type": "text", "text": `患者：${payload.name || '未知'} (${payload.gender}/${payload.age || '?'}歲)`, "size": "sm", "weight": "bold" },
+                            { "type": "box", "layout": "horizontal", "contents": [
+                                { "type": "text", "text": "地點", "size": "sm", "color": "#aaaaaa", "flex": 1 },
+                                { "type": "text", "text": "📍 點我導航", "size": "sm", "color": "#0000ff", "flex": 3, "align": "end", "action": { "type": "uri", "label": "導航", "uri": locUri } }
+                            ]},
+                            { "type": "text", "text": `檢傷：${payload.startTriage || '未填'}`, "size": "sm" },
+                            { "type": "text", "text": `後送：${payload.transportMode}`, "size": "sm", "wrap": true }
+                        ]
+                    }
+                ];
+
+                // 【修正重點】如果留觀紀錄有填寫，自動加入 Flex Message 中
+                if(obsLogs.length > 0) {
+                    flexContents.push({ "type": "separator", "margin": "md" });
+                    flexContents.push({ "type": "text", "text": "📋 留觀紀錄:", "size": "xs", "color": "#aaaaaa", "margin": "sm" });
+                    flexContents.push({ "type": "text", "text": obsLogs.join("\n"), "size": "sm", "wrap": true });
+                }
+
+                // 加入生命徵象
+                flexContents.push({
+                    "type": "box",
+                    "layout": "vertical",
+                    "backgroundColor": "#f0f0f0",
+                    "paddingAll": "8px",
+                    "margin": "md",
+                    "contents": [
+                        { "type": "text", "text": `BP: ${payload.bp || '--'} | PR: ${payload.pr || '--'} | RR: ${payload.rr || '--'}`, "size": "xs", "margin": "xs" },
+                        { "type": "text", "text": `SpO2: ${payload.spo2 || '--'}% | GCS: ${payload.gcs}`, "size": "xs" }
+                    ]
+                });
+
                 await liff.sendMessages([{
                     "type": "flex",
                     "altText": "🚑 救護紀錄摘要-" + payload.name,
@@ -683,49 +743,7 @@
                             "type": "box",
                             "layout": "vertical",
                             "spacing": "md",
-                            "contents": [
-                                {
-                                    "type": "box",
-                                    "layout": "horizontal",
-                                    "contents": [
-                                        { "type": "text", "text": "狀態", "size": "xs", "color": "#aaaaaa", "flex": 1 },
-                                        { 
-                                            "type": "text", 
-                                            "text": payload.isCritical === 'OHCA' ? '💔 OHCA' : (payload.isCritical === '是' ? '🚨 危急' : '🛡️ 穩定'), 
-                                            "size": "xs", 
-                                            "color": payload.isCritical === 'OHCA' ? '#000000' : (payload.isCritical === '是' ? '#ff0000' : '#28a745'), 
-                                            "flex": 3, 
-                                            "weight": "bold", 
-                                            "align": "end" 
-                                        }
-                                    ]
-                                },
-                                { "type": "separator" },
-                                {
-                                    "type": "box",
-                                    "layout": "vertical",
-                                    "spacing": "xs",
-                                    "contents": [
-                                        { "type": "text", "text": `患者：${payload.name || '未知'} (${payload.gender}/${payload.age || '?'}歲)`, "size": "sm", "weight": "bold" },
-                                        { "type": "box", "layout": "horizontal", "contents": [
-                                            { "type": "text", "text": "地點", "size": "sm", "color": "#aaaaaa", "flex": 1 },
-                                            { "type": "text", "text": "📍 點我導航", "size": "sm", "color": "#0000ff", "flex": 3, "align": "end", "action": { "type": "uri", "label": "導航", "uri": locUri } }
-                                        ]},
-                                        { "type": "text", "text": `檢傷：${payload.startTriage || '未填'}`, "size": "sm" },
-                                        { "type": "text", "text": `後送：${payload.transportMode}`, "size": "sm", "wrap": true }
-                                    ]
-                                },
-                                {
-                                    "type": "box",
-                                    "layout": "vertical",
-                                    "backgroundColor": "#f0f0f0",
-                                    "paddingAll": "8px",
-                                    "contents": [
-                                        { "type": "text", "text": `BP: ${payload.bp || '--'} | PR: ${payload.pr || '--'} | RR: ${payload.rr || '--'}`, "size": "xs", "margin": "xs" },
-                                        { "type": "text", "text": `SpO2: ${payload.spo2 || '--'}% | GCS: ${payload.gcs}`, "size": "xs" }
-                                    ]
-                                }
-                            ]
+                            "contents": flexContents // 注入上面整理好的陣列
                         },
                         "footer": {
                             "type": "box",
