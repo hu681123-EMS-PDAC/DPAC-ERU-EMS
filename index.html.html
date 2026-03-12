@@ -382,12 +382,12 @@
             <span id="photoCountText" class="badge bg-secondary">目前: 0/3 張</span>
         </div>
         <small class="text-muted d-block mb-2" style="font-size: 0.75rem;">
-            💡 提示：點擊下方可直接使用手機相機拍照。可分次拍攝，最多 3 張。
+            💡 提示：點擊下方可直接開啟相機拍照，或從相簿選擇。可分次點擊，最多 3 張。
         </small>
         
-        <input type="file" id="photo" class="form-control mb-2" accept="image/*" capture="environment" multiple onchange="cmp(event)">
+        <input type="file" id="photo" class="form-control mb-2" accept="image/*" multiple onchange="cmp(event)">
         
-        <button type="button" class="btn btn-sm btn-outline-danger w-100 mb-3" onclick="clearPhotos()">🗑️ 清除重拍</button>
+        <button type="button" class="btn btn-sm btn-outline-danger w-100 mb-3" onclick="clearPhotos()">🗑️ 清除重拍/重選</button>
         <div id="previewContainer"></div>
 
         <button type="button" id="submitBtn" class="btn btn-submit" onclick="send()">✅ 確認上傳紀錄</button>
@@ -508,7 +508,7 @@
 
         let availableSlots = 3 - imgB64Array.length;
         if (availableSlots <= 0) {
-            alert("⚠️ 最多只能上傳 3 張照片！若要更改請點擊「清除重拍」。");
+            alert("⚠️ 最多只能上傳 3 張照片！若要更改請點擊「清除重拍/重選」。");
             e.target.value = ''; 
             return;
         }
@@ -531,8 +531,8 @@
                 countText.className = imgB64Array.length === 3 ? 'badge bg-success' : 'badge bg-warning text-dark';
             }
         }
-        // 每次拍完/選完照片後清空 input 的 value
-        // 這樣可以讓使用者再次點擊時，能繼續啟動相機拍攝第2張、第3張
+        // 每次選完/拍完照片後清空 input 的 value
+        // 這樣可以讓使用者再次點擊時，能繼續啟動相機或選相簿
         e.target.value = ''; 
     }
 
@@ -716,6 +716,4 @@
 </script>
 </body>
 </html>
-
-
-
+}
