@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI CPR 教官（醫院版）</title>
+<title>AI CPR 教官版</title>
 
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose"></script>
@@ -12,14 +12,14 @@
 body{margin:0;background:#000;color:#fff;font-family:sans-serif;}
 canvas{position:absolute;width:100vw;height:100vh;}
 #ui{position:absolute;top:10px;left:10px;background:#000a;padding:10px;border-radius:10px;}
-button{width:100%;margin:5px 0;padding:10px;}
+button,input{width:100%;margin:5px 0;padding:10px;}
 </style>
 </head>
 
 <body>
 
 <div id="ui">
-<input id="uName" placeholder="姓名"><br>
+<input id="uName" placeholder="姓名">
 <button onclick="start()">開始</button>
 <button onclick="toggleBeat()">🎵節拍器</button>
 <button onclick="toggleSound()">🔊聲音</button>
@@ -31,8 +31,8 @@ button{width:100%;margin:5px 0;padding:10px;}
 <canvas id="canvas"></canvas>
 
 <script>
-const GAS_URL="https://script.google.com/macros/s/AKfycbznnkhwnqQ8vTYYuHgi43VDFTefkFkNa8UEuScvd2S21orsoEk6c5fyRwc7uRk5Sphj/exec";
-const LIFF_ID="2009629564-vRV4e2UeD";
+const GAS_URL="https://script.google.com/macros/s/AKfycbzDKhEyT9YwdfapVL1FOUL5gCg5DPzh6eHm5dWoFAiuW66nnNF1nHX6wB8SGoNN2AnT/exec";
+const LIFF_ID="2009629564-vRV4e2Ue";
 
 let soundOn=true,beatTimer,lastPress=0,errorImage="";
 let stats={sPos:25,sDepth:25,sRate:25,sRecoil:25,sPosture:25};
@@ -41,15 +41,20 @@ const v=document.getElementById("video");
 const c=document.getElementById("canvas");
 const ctx=c.getContext("2d");
 
+// LIFF
 liff.init({liffId:LIFF_ID});
 
-// 🎵節拍器
+// 🎵節拍器（110 BPM）
 function toggleBeat(){
-  if(beatTimer){clearInterval(beatTimer);beatTimer=null;}
-  else{
+  if(beatTimer){
+    clearInterval(beatTimer);
+    beatTimer=null;
+  }else{
     beatTimer=setInterval(()=>{
-      if(soundOn)new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg").play();
-    },600);
+      if(soundOn){
+        new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg").play();
+      }
+    },60000/110);
   }
 }
 function toggleSound(){soundOn=!soundOn;}
@@ -59,61 +64,66 @@ function capture(){
   errorImage=c.toDataURL("image/png").split(",")[1];
 }
 
-// 📈頻率
+// 📈頻率判定
 function detectRate(){
   const now=Date.now();
   if(lastPress){
     const bpm=60000/(now-lastPress);
     if(bpm<100||bpm>120){
-      stats.sRate-=0.2;
-      msg("⚠️頻率錯");
+      stats.sRate=Math.max(10,stats.sRate-0.2);
+      msg("⚠️頻率錯誤");
     }
   }
   lastPress=now;
 }
 
-// 🎯主分析
+// 🎯分析（主副手 + 胸口 + 深度）
 function analyze(lm){
 
-  const L={s:lm[11],e:lm[13],w:lm[15]};
-  const R={s:lm[12],e:lm[14],w:lm[16]};
+  const L={w:lm[15]};
+  const R={w:lm[16]};
 
   const moveL=Math.abs(L.w.y-(window.pL||L.w.y));
   const moveR=Math.abs(R.w.y-(window.pR||R.w.y));
-  window.pL=L.w.y; window.pR=R.w.y;
+  window.pL=L.w.y;
+  window.pR=R.w.y;
 
   const main=moveL>moveR?L:R;
 
-  // 胸口
+  // 胸口中心
   const cx=(lm[11].x+lm[12].x)/2;
   const cy=(lm[11].y+lm[12].y)/2;
   const dist=Math.hypot(main.w.x-cx,main.w.y-cy);
 
   if(dist>0.08){
-    stats.sPos-=0.2;
-    msg("⚠️位置錯");
+    stats.sPos=Math.max(10,stats.sPos-0.2);
+    msg("⚠️位置錯誤");
     capture();
   }
 
   // 深度
   const depth=Math.abs(main.w.y-(window.lastY||main.w.y))*100;
   if(depth<5){
-    stats.sDepth-=0.2;
-    msg("⚠️壓深");
+    stats.sDepth=Math.max(10,stats.sDepth-0.2);
+    msg("⚠️壓太淺");
   }
 
   if(depth>1) detectRate();
+
   window.lastY=main.w.y;
 }
 
-// 顯示訊息
+// UI訊息
 function msg(t){
   document.getElementById("msg").innerText=t;
 }
 
 // 啟動
 async function start(){
-  const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}});
+  const stream=await navigator.mediaDevices.getUserMedia({
+    video:{facingMode:"environment"}
+  });
+
   v.srcObject=stream;
 
   v.onloadedmetadata=()=>{
@@ -123,7 +133,7 @@ async function start(){
   }
 }
 
-// 影像循環
+// MediaPipe
 const pose=new Pose({locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/pose/${f}`});
 pose.onResults(res=>{
   ctx.drawImage(res.image,0,0,c.width,c.height);
@@ -135,18 +145,22 @@ async function loop(){
   requestAnimationFrame(loop);
 }
 
-// 結束
+// 結束送出
 async function finish(){
   const payload={
-    userName:document.getElementById("uName").value,
+    userName:document.getElementById("uName").value || "未填",
     ...stats,
     advice:"完成",
     image:errorImage,
     userId:liff.getContext()?.userId
   };
 
-  await fetch(GAS_URL,{method:"POST",body:JSON.stringify(payload)});
-  alert("完成");
+  await fetch(GAS_URL,{
+    method:"POST",
+    body:JSON.stringify(payload)
+  });
+
+  alert("✅ 完成上傳");
 }
 </script>
 
