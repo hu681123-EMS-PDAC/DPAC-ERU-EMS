@@ -1,30 +1,67 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI CPR 教官版</title>
-
-<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose"></script>
-
-<style>
-body{margin:0;background:#000;color:#fff;font-family:sans-serif;}
-canvas{position:absolute;width:100vw;height:100vh;}
-#ui{position:absolute;top:10px;left:10px;background:#000a;padding:10px;border-radius:10px;}
-button,input{width:100%;margin:5px 0;padding:10px;}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AI CPR 教官實戰版</title>
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose"></script>
+    <style>
+        body{margin:0;background:#000;color:#fff;font-family:sans-serif;overflow:hidden;}
+        canvas{position:absolute;width:100vw;height:100vh;object-fit:cover;z-index:1;}
+        #ui{position:absolute;top:10px;left:10px;background:rgba(0,0,0,0.8);padding:15px;border-radius:10px;z-index:10;width:200px;}
+        button,input{width:100%;margin:8px 0;padding:12px;font-size:16px;border-radius:5px;border:none;}
+        button{background:#28a745;color:white;font-weight:bold;}
+        #msg{background:#ff4444;padding:5px;border-radius:3px;text-align:center;font-weight:bold;display:none;}
+    </style>
 </head>
-
 <body>
 
 <div id="ui">
-<input id="uName" placeholder="姓名">
-<button onclick="start()">開始</button>
-<button onclick="toggleBeat()">🎵節拍器</button>
-<button onclick="toggleSound()">🔊聲音</button>
-<button onclick="finish()">結束</button>
-<div id="msg">等待開始</div>
+    <div id="msg">等待開始</div>
+    <input id="uName" placeholder="受測學員姓名">
+    <button onclick="startCamera()" id="startBtn">1. 啟動鏡頭</button>
+    <button onclick="toggleBeat()" style="background:#17a2b8;">🎵 110BPM 節拍器</button>
+    <button onclick="finish()" style="background:#dc3545;">🛑 結束並上傳</button>
+    <div style="font-size:12px;margin-top:10px;color:#aaa;">
+        即時評分：<span id="liveScore">125</span><br>
+        狀態：<span id="status">準備中</span>
+    </div>
+</div>
+
+<video id="video" autoplay playsinline style="display:none"></video>
+<canvas id="canvas"></canvas>
+
+<script>
+const GAS_URL="<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AI CPR 教官實戰版</title>
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose"></script>
+    <style>
+        body{margin:0;background:#000;color:#fff;font-family:sans-serif;overflow:hidden;}
+        canvas{position:absolute;width:100vw;height:100vh;object-fit:cover;z-index:1;}
+        #ui{position:absolute;top:10px;left:10px;background:rgba(0,0,0,0.8);padding:15px;border-radius:10px;z-index:10;width:200px;}
+        button,input{width:100%;margin:8px 0;padding:12px;font-size:16px;border-radius:5px;border:none;}
+        button{background:#28a745;color:white;font-weight:bold;}
+        #msg{background:#ff4444;padding:5px;border-radius:3px;text-align:center;font-weight:bold;display:none;}
+    </style>
+</head>
+<body>
+
+<div id="ui">
+    <div id="msg">等待開始</div>
+    <input id="uName" placeholder="受測學員姓名">
+    <button onclick="startCamera()" id="startBtn">1. 啟動鏡頭</button>
+    <button onclick="toggleBeat()" style="background:#17a2b8;">🎵 110BPM 節拍器</button>
+    <button onclick="finish()" style="background:#dc3545;">🛑 結束並上傳</button>
+    <div style="font-size:12px;margin-top:10px;color:#aaa;">
+        即時評分：<span id="liveScore">125</span><br>
+        狀態：<span id="status">準備中</span>
+    </div>
 </div>
 
 <video id="video" autoplay playsinline style="display:none"></video>
@@ -34,135 +71,239 @@ button,input{width:100%;margin:5px 0;padding:10px;}
 const GAS_URL="https://script.google.com/macros/s/AKfycbzDKhEyT9YwdfapVL1FOUL5gCg5DPzh6eHm5dWoFAiuW66nnNF1nHX6wB8SGoNN2AnT/exec";
 const LIFF_ID="2009629564-vRV4e2Ue";
 
-let soundOn=true,beatTimer,lastPress=0,errorImage="";
+let beatTimer, lastPress=0, errorImage="", isRunning=false;
 let stats={sPos:25,sDepth:25,sRate:25,sRecoil:25,sPosture:25};
 
 const v=document.getElementById("video");
 const c=document.getElementById("canvas");
 const ctx=c.getContext("2d");
 
-// LIFF
-liff.init({liffId:LIFF_ID});
+// 初始化 LIFF
+liff.init({liffId:LIFF_ID}).then(()=>{ console.log("LIFF Ready"); });
 
-// 🎵節拍器（110 BPM）
 function toggleBeat(){
-  if(beatTimer){
-    clearInterval(beatTimer);
-    beatTimer=null;
-  }else{
-    beatTimer=setInterval(()=>{
-      if(soundOn){
-        new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg").play();
-      }
-    },60000/110);
-  }
-}
-function toggleSound(){soundOn=!soundOn;}
-
-// 📸截圖
-function capture(){
-  errorImage=c.toDataURL("image/png").split(",")[1];
-}
-
-// 📈頻率判定
-function detectRate(){
-  const now=Date.now();
-  if(lastPress){
-    const bpm=60000/(now-lastPress);
-    if(bpm<100||bpm>120){
-      stats.sRate=Math.max(10,stats.sRate-0.2);
-      msg("⚠️頻率錯誤");
+    if(beatTimer){ clearInterval(beatTimer); beatTimer=null; }
+    else {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        beatTimer=setInterval(()=>{
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.frequency.value = 880; gain.gain.value = 0.1;
+            osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+        }, 60000/110);
     }
-  }
-  lastPress=now;
 }
 
-// 🎯分析（主副手 + 胸口 + 深度）
+function capture(){
+    // 縮小圖片尺寸以利上傳
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = 320; tempCanvas.height = 180;
+    tempCanvas.getContext('2d').drawImage(c, 0, 0, 320, 180);
+    errorImage = tempCanvas.toDataURL("image/png").split(",")[1];
+}
+
 function analyze(lm){
+    const R_wrist=lm[16], L_shoulder=lm[11], R_shoulder=lm[12];
+    const chest_x = (L_shoulder.x + R_shoulder.x)/2;
+    const chest_y = (L_shoulder.y + R_shoulder.y)/2;
+    
+    // 1. 位置判定 (sPos)
+    const dist = Math.hypot(R_wrist.x - chest_x, R_wrist.y - chest_y);
+    if(dist > 0.12) { 
+        stats.sPos = Math.max(10, stats.sPos - 0.05); 
+        showNotice("⚠️ 位置偏離");
+        if(!errorImage) capture(); 
+    }
 
-  const L={w:lm[15]};
-  const R={w:lm[16]};
+    // 2. 深度模擬 (sDepth)
+    const currentY = R_wrist.y;
+    const travel = Math.abs(currentY - (window.pY || currentY)) * 100;
+    if(travel > 1.5) { // 偵測到明顯下壓
+        const now = Date.now();
+        const bpm = 60000 / (now - lastPress);
+        if(lastPress && (bpm < 100 || bpm > 120)) {
+            stats.sRate = Math.max(10, stats.sRate - 0.5);
+            showNotice("⚠️ 頻率不穩");
+        }
+        lastPress = now;
+    }
+    window.pY = currentY;
 
-  const moveL=Math.abs(L.w.y-(window.pL||L.w.y));
-  const moveR=Math.abs(R.w.y-(window.pR||R.w.y));
-  window.pL=L.w.y;
-  window.pR=R.w.y;
-
-  const main=moveL>moveR?L:R;
-
-  // 胸口中心
-  const cx=(lm[11].x+lm[12].x)/2;
-  const cy=(lm[11].y+lm[12].y)/2;
-  const dist=Math.hypot(main.w.x-cx,main.w.y-cy);
-
-  if(dist>0.08){
-    stats.sPos=Math.max(10,stats.sPos-0.2);
-    msg("⚠️位置錯誤");
-    capture();
-  }
-
-  // 深度
-  const depth=Math.abs(main.w.y-(window.lastY||main.w.y))*100;
-  if(depth<5){
-    stats.sDepth=Math.max(10,stats.sDepth-0.2);
-    msg("⚠️壓太淺");
-  }
-
-  if(depth>1) detectRate();
-
-  window.lastY=main.w.y;
+    const total = Math.round(stats.sPos+stats.sDepth+stats.sRate+stats.sRecoil+stats.sPosture);
+    document.getElementById("liveScore").innerText = total;
 }
 
-// UI訊息
-function msg(t){
-  document.getElementById("msg").innerText=t;
+function showNotice(t){
+    const m = document.getElementById("msg");
+    m.innerText = t; m.style.display = "block";
+    setTimeout(()=>{ m.style.display = "none"; }, 1500);
 }
 
-// 啟動
-async function start(){
-  const stream=await navigator.mediaDevices.getUserMedia({
-    video:{facingMode:"environment"}
-  });
-
-  v.srcObject=stream;
-
-  v.onloadedmetadata=()=>{
-    c.width=v.videoWidth;
-    c.height=v.videoHeight;
-    loop();
-  }
+async function startCamera(){
+    const stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}});
+    v.srcObject = stream;
+    v.onloadedmetadata = () => {
+        c.width = v.videoWidth; c.height = v.videoHeight;
+        document.getElementById("startBtn").style.background = "#666";
+        document.getElementById("status").innerText = "監測中";
+        loop();
+    };
 }
 
-// MediaPipe
 const pose=new Pose({locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/pose/${f}`});
+pose.setOptions({modelComplexity: 1});
 pose.onResults(res=>{
-  ctx.drawImage(res.image,0,0,c.width,c.height);
-  if(res.poseLandmarks) analyze(res.poseLandmarks);
+    ctx.drawImage(res.image, 0, 0, c.width, c.height);
+    if(res.poseLandmarks) analyze(res.poseLandmarks);
 });
 
 async function loop(){
-  await pose.send({image:v});
-  requestAnimationFrame(loop);
+    await pose.send({image:v});
+    requestAnimationFrame(loop);
 }
 
-// 結束送出
 async function finish(){
-  const payload={
-    userName:document.getElementById("uName").value || "未填",
-    ...stats,
-    advice:"完成",
-    image:errorImage,
-    userId:liff.getContext()?.userId
-  };
+    const name = document.getElementById("uName").value;
+    if(!name) return alert("請輸入學員姓名");
+    
+    document.getElementById("status").innerText = "上傳中...";
+    const payload = {
+        userName: name,
+        ...stats,
+        advice: stats.sRate < 20 ? "按壓頻率需更穩定" : "表現良好",
+        image: errorImage,
+        userId: liff.getContext()?.userId || "Unknown"
+    };
 
-  await fetch(GAS_URL,{
-    method:"POST",
-    body:JSON.stringify(payload)
-  });
-
-  alert("✅ 完成上傳");
+    fetch(GAS_URL,{
+        method:"POST",
+        mode: "no-cors",
+        body:JSON.stringify(payload)
+    }).then(()=>{
+        alert("✅ 考評結束，成績已上傳試算表！");
+        liff.closeWindow();
+    });
 }
 </script>
+</body>
+</html>";
+const LIFF_ID="2009629564-vRV4e2Ue";
 
+let beatTimer, lastPress=0, errorImage="", isRunning=false;
+let stats={sPos:25,sDepth:25,sRate:25,sRecoil:25,sPosture:25};
+
+const v=document.getElementById("video");
+const c=document.getElementById("canvas");
+const ctx=c.getContext("2d");
+
+// 初始化 LIFF
+liff.init({liffId:LIFF_ID}).then(()=>{ console.log("LIFF Ready"); });
+
+function toggleBeat(){
+    if(beatTimer){ clearInterval(beatTimer); beatTimer=null; }
+    else {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        beatTimer=setInterval(()=>{
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.frequency.value = 880; gain.gain.value = 0.1;
+            osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+        }, 60000/110);
+    }
+}
+
+function capture(){
+    // 縮小圖片尺寸以利上傳
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = 320; tempCanvas.height = 180;
+    tempCanvas.getContext('2d').drawImage(c, 0, 0, 320, 180);
+    errorImage = tempCanvas.toDataURL("image/png").split(",")[1];
+}
+
+function analyze(lm){
+    const R_wrist=lm[16], L_shoulder=lm[11], R_shoulder=lm[12];
+    const chest_x = (L_shoulder.x + R_shoulder.x)/2;
+    const chest_y = (L_shoulder.y + R_shoulder.y)/2;
+    
+    // 1. 位置判定 (sPos)
+    const dist = Math.hypot(R_wrist.x - chest_x, R_wrist.y - chest_y);
+    if(dist > 0.12) { 
+        stats.sPos = Math.max(10, stats.sPos - 0.05); 
+        showNotice("⚠️ 位置偏離");
+        if(!errorImage) capture(); 
+    }
+
+    // 2. 深度模擬 (sDepth)
+    const currentY = R_wrist.y;
+    const travel = Math.abs(currentY - (window.pY || currentY)) * 100;
+    if(travel > 1.5) { // 偵測到明顯下壓
+        const now = Date.now();
+        const bpm = 60000 / (now - lastPress);
+        if(lastPress && (bpm < 100 || bpm > 120)) {
+            stats.sRate = Math.max(10, stats.sRate - 0.5);
+            showNotice("⚠️ 頻率不穩");
+        }
+        lastPress = now;
+    }
+    window.pY = currentY;
+
+    const total = Math.round(stats.sPos+stats.sDepth+stats.sRate+stats.sRecoil+stats.sPosture);
+    document.getElementById("liveScore").innerText = total;
+}
+
+function showNotice(t){
+    const m = document.getElementById("msg");
+    m.innerText = t; m.style.display = "block";
+    setTimeout(()=>{ m.style.display = "none"; }, 1500);
+}
+
+async function startCamera(){
+    const stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}});
+    v.srcObject = stream;
+    v.onloadedmetadata = () => {
+        c.width = v.videoWidth; c.height = v.videoHeight;
+        document.getElementById("startBtn").style.background = "#666";
+        document.getElementById("status").innerText = "監測中";
+        loop();
+    };
+}
+
+const pose=new Pose({locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/pose/${f}`});
+pose.setOptions({modelComplexity: 1});
+pose.onResults(res=>{
+    ctx.drawImage(res.image, 0, 0, c.width, c.height);
+    if(res.poseLandmarks) analyze(res.poseLandmarks);
+});
+
+async function loop(){
+    await pose.send({image:v});
+    requestAnimationFrame(loop);
+}
+
+async function finish(){
+    const name = document.getElementById("uName").value;
+    if(!name) return alert("請輸入學員姓名");
+    
+    document.getElementById("status").innerText = "上傳中...";
+    const payload = {
+        userName: name,
+        ...stats,
+        advice: stats.sRate < 20 ? "按壓頻率需更穩定" : "表現良好",
+        image: errorImage,
+        userId: liff.getContext()?.userId || "Unknown"
+    };
+
+    fetch(GAS_URL,{
+        method:"POST",
+        mode: "no-cors",
+        body:JSON.stringify(payload)
+    }).then(()=>{
+        alert("✅ 考評結束，成績已上傳試算表！");
+        liff.closeWindow();
+    });
+}
+</script>
 </body>
 </html>
