@@ -1,286 +1,154 @@
-
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI CPR 教練 - 後鏡頭變焦實戰版</title>
-    <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose"></script>
-    <style>
-        body { margin: 0; overflow: hidden; background: #000; font-family: sans-serif; }
-        canvas { width: 100vw; height: 100vh; object-fit: cover; position: absolute; top: 0; left: 0; z-index: 1; transform: scaleX(1); /* 後鏡頭不需要鏡像反轉 */ }
-        
-        /* 頂部資訊看板 */
-        #ui-layer { position: absolute; top: 10px; left: 10px; z-index: 10; background: rgba(0,0,0,0.7); padding: 15px; border-radius: 10px; color: white; width: 85%; max-width: 350px; }
-        .input-box { width: 100%; margin-bottom: 10px; padding: 10px; box-sizing: border-box; font-size: 16px; border-radius: 5px; border: none; }
-        .btn { width: 100%; padding: 15px; border: none; border-radius: 5px; font-size: 18px; font-weight: bold; cursor: pointer; color: white; margin-bottom: 5px; }
-        .btn-green { background: #28a745; }
-        .btn-red { background: #dc3545; }
-        
-        /* 教練現場控制台 (右側) */
-        #coach-tools { position: absolute; bottom: 20px; right: 10px; z-index: 10; background: rgba(0,0,0,0.8); padding: 15px; border-radius: 10px; color: white; font-size: 14px; width: 160px; }
-        .slider-container { margin-bottom: 15px; }
-        input[type=range] { width: 100%; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI CPR 教官（醫院版）</title>
+
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose"></script>
+
+<style>
+body{margin:0;background:#000;color:#fff;font-family:sans-serif;}
+canvas{position:absolute;width:100vw;height:100vh;}
+#ui{position:absolute;top:10px;left:10px;background:#000a;padding:10px;border-radius:10px;}
+button{width:100%;margin:5px 0;padding:10px;}
+</style>
 </head>
+
 <body>
 
-    <div id="ui-layer">
-        <div id="setup-screen">
-            <h3 style="margin-top:0; color: #00FF00;">📋 125分制考評登錄</h3>
-            <input type="text" id="cName" class="input-box" placeholder="班別 (如: EMT-1初訓)">
-            <input type="text" id="sId" class="input-box" placeholder="學號">
-            <input type="text" id="uName" class="input-box" placeholder="受測者姓名">
-            <button class="btn btn-green" onclick="calibrateAndStart()">🎯 雙手貼緊胸口後點此校準</button>
-        </div>
+<div id="ui">
+<input id="uName" placeholder="姓名"><br>
+<button onclick="start()">開始</button>
+<button onclick="toggleBeat()">🎵節拍器</button>
+<button onclick="toggleSound()">🔊聲音</button>
+<button onclick="finish()">結束</button>
+<div id="msg">等待開始</div>
+</div>
 
-        <div id="training-screen" style="display: none;">
-            <div style="font-size: 18px; margin-bottom: 5px;">⏱ 測驗計時: <span id="timeDisplay">0</span> 秒</div>
-            <div style="font-size: 24px; font-weight: bold; color: #FFD700; margin-bottom: 10px;">總分預估: <span id="totalScoreText">125</span> / 125</div>
-            <div id="adviceText" style="color: #ff4444; font-weight: bold; margin-bottom: 15px; font-size: 20px;">等待按壓...</div>
-            <button class="btn btn-red" id="finishBtn" onclick="finishAndSubmit()">🛑 結束考評並上傳成績</button>
-        </div>
-    </div>
+<video id="video" autoplay playsinline style="display:none"></video>
+<canvas id="canvas"></canvas>
 
-    <div id="coach-tools">
-        <div style="color:#FFD700; font-weight:bold; margin-bottom:10px;">🔧 教練控制台</div>
-        
-        <div class="slider-container" id="zoomControl" style="display:none;">
-            🔍 畫面拉近 (<span id="zoomValue">1.0</span>x)<br>
-            <input type="range" id="zoomSlider" min="1" max="3" step="0.1" value="1">
-        </div>
-
-        <div class="slider-container">
-            📏 深度校準 K值 (<span id="kValue">45</span>)<br>
-            <input type="range" id="kSlider" min="20" max="80" value="45" oninput="updateK(this.value)">
-        </div>
-        
-        <div id="liveDepthInfo" style="color: #00FF00; font-weight:bold; font-size: 16px;">即時深度: 0.0 cm</div>
-    </div>
-
-    <canvas id="out_canvas"></canvas>
-    <video id="in_video" style="display:none;" playsinline autoplay muted></video>
-
-    <script>
-        // ==========================================
-        // 🔴 部署前必填：請將您的網址與 ID 貼在引號內
-        // ==========================================
-        const GAS_URL = "https://script.google.com/macros/s/AKfycbx0jBPdjkbWSvC7__hyDaT_FmbvLt8DZDiRfx3d6XU-18_JCIxePo6dmxlCyowgMakG/exec";
-        const LIFF_ID = "2009629564-vRV4e2Ue";
-
-        // 全域變數
-        let k_factor = 45; 
-        let initialY = 0;  
-        let isTraining = false;
-        let trainingTimer;
-        let seconds = 0;
-        let currentStats = { sPos: 25, sDepth: 25, sRate: 25, sRecoil: 25, sPosture: 25 };
-        let latestWristY = 0; 
-        let videoTrack = null; // 儲存相機軌道供變焦使用
-
-        const videoElement = document.getElementById('in_video');
-        const canvasElement = document.getElementById('out_canvas');
-        const canvasCtx = canvasElement.getContext('2d');
-
-        // 1. 初始化 LIFF
-        liff.init({ liffId: LIFF_ID }).catch(err => console.error("LIFF 載入失敗", err));
-
-        // 2. 教練工具設定
-        function updateK(val) {
-            k_factor = val;
-            document.getElementById('kValue').innerText = val;
-        }
-
-        // 3. 啟動後鏡頭與變焦功能
-        async function startCamera() {
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({
-                    video: { 
-                        facingMode: "environment", // 強制使用後鏡頭
-                        width: { ideal: 1280 },
-                        height: { ideal: 720 }
-                    }
-                });
-                videoElement.srcObject = stream;
-                videoTrack = stream.getVideoTracks()[0];
-
-                // 檢查手機是否支援硬體變焦 (Zoom)
-                const capabilities = videoTrack.getCapabilities();
-                if (capabilities.zoom) {
-                    const zoomSlider = document.getElementById('zoomSlider');
-                    const zoomControl = document.getElementById('zoomControl');
-                    zoomControl.style.display = 'block'; // 顯示變焦滑桿
-                    
-                    zoomSlider.min = capabilities.zoom.min;
-                    zoomSlider.max = Math.min(capabilities.zoom.max, 4); // 限制最大 4 倍避免過度模糊
-                    zoomSlider.step = capabilities.zoom.step || 0.1;
-                    zoomSlider.value = videoTrack.getSettings().zoom || 1;
-                    document.getElementById('zoomValue').innerText = zoomSlider.value;
-
-                    // 綁定滑桿事件即時變焦
-                    zoomSlider.oninput = async (e) => {
-                        document.getElementById('zoomValue').innerText = e.target.value;
-                        await videoTrack.applyConstraints({ advanced: [{ zoom: parseFloat(e.target.value) }] });
-                    };
-                }
-
-                // 影片載入後啟動 MediaPipe 辨識循環
-                videoElement.onloadedmetadata = () => {
-                    videoElement.play();
-                    canvasElement.width = videoElement.videoWidth;
-                    canvasElement.height = videoElement.videoHeight;
-                    processVideo(); 
-                };
-            } catch (err) {
-                alert("無法存取後鏡頭，請確認瀏覽器權限！");
-            }
-        }
-
-        // 4. 不斷傳送影像給 MediaPipe
-        async function processVideo() {
-            await pose.send({ image: videoElement });
-            requestAnimationFrame(processVideo);
-        }
-
-        // 5. 初始化 MediaPipe Pose 模型
-        const pose = new Pose({locateFile: (f) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${f}`});
-        pose.setOptions({ modelComplexity: 1, smoothLandmarks: true, minDetectionConfidence: 0.5 });
-        
-        pose.onResults((res) => {
-            canvasCtx.save();
-            canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
-            canvasCtx.drawImage(res.image, 0, 0, canvasElement.width, canvasElement.height);
-
-            if (res.poseLandmarks) {
-                const lm = res.poseLandmarks;
-                const shoulder = lm[12], elbow = lm[14], wrist = lm[16]; // 使用右半邊關節
-                
-                latestWristY = wrist.y * canvasElement.height; 
-
-                // 計算手肘夾角
-                const v1 = { x: shoulder.x - elbow.x, y: shoulder.y - elbow.y };
-                const v2 = { x: wrist.x - elbow.x, y: wrist.y - elbow.y };
-                const angle = Math.acos((v1.x*v2.x + v1.y*v2.y) / (Math.sqrt(v1.x**2+v1.y**2) * Math.sqrt(v2.x**2+v2.y**2))) * (180/Math.PI);
-                const isStraight = angle >= 165;
-                
-                // 畫出骨架連線
-                canvasCtx.strokeStyle = isStraight ? "#00FF00" : "#FF0000";
-                canvasCtx.lineWidth = 8;
-                canvasCtx.beginPath();
-                canvasCtx.moveTo(shoulder.x * canvasElement.width, shoulder.y * canvasElement.height);
-                canvasCtx.lineTo(elbow.x * canvasElement.width, elbow.y * canvasElement.height);
-                canvasCtx.lineTo(wrist.x * canvasElement.width, wrist.y * canvasElement.height);
-                canvasCtx.stroke();
-
-                // 計算深度並顯示於右下角教練面板
-                const depthCm = isTraining ? Math.abs(latestWristY - initialY) / k_factor : 0;
-                document.getElementById('liveDepthInfo').innerText = `即時深度: ${depthCm.toFixed(1)} cm`;
-
-                // 測驗中的即時扣分與提示邏輯
-                if (isTraining) {
-                    let advice = "✅ 動作標準";
-                    document.getElementById('adviceText').style.color = "#00FF00";
-
-                    if (!isStraight) {
-                        advice = "⚠️ 請將手肘打直！";
-                        document.getElementById('adviceText').style.color = "#FF0000";
-                        currentStats.sPosture = Math.max(15, currentStats.sPosture - 0.1); 
-                    } else if (depthCm > 0 && depthCm < 5) {
-                        advice = "⚠️ 壓深一點！(目標5-6cm)";
-                        document.getElementById('adviceText').style.color = "#FF0000";
-                        currentStats.sDepth = Math.max(15, currentStats.sDepth - 0.1);
-                    }
-
-                    document.getElementById('adviceText').innerText = advice;
-                    
-                    let estTotal = Math.round(currentStats.sPos + currentStats.sDepth + currentStats.sRate + currentStats.sRecoil + currentStats.sPosture);
-                    document.getElementById('totalScoreText').innerText = estTotal;
-                }
-            }
-            canvasCtx.restore();
-        });
-
-        // 6. 點擊校準並開始測驗
-        function calibrateAndStart() {
-            if (!document.getElementById('uName').value) return alert("請輸入受測者姓名！");
-            
-            initialY = latestWristY; // 抓取當下 Y 軸為 0cm 基準線
-            isTraining = true;
-            
-            document.getElementById('setup-screen').style.display = 'none';
-            document.getElementById('training-screen').style.display = 'block';
-
-            trainingTimer = setInterval(() => {
-                seconds++;
-                document.getElementById('timeDisplay').innerText = seconds;
-            }, 1000);
-        }
-
-        // 7. 結束測驗並發送 JSON 資料至 GAS
-        async function finishAndSubmit() {
-            clearInterval(trainingTimer);
-            isTraining = false;
-            document.getElementById('finishBtn').innerText = "🔄 資料上傳中...";
-            document.getElementById('finishBtn').disabled = true;
-
-            const payload = {
-                className: document.getElementById('cName').value || "一般班別",
-                stuId: document.getElementById('sId').value || "無學號",
-                userName: document.getElementById('uName').value,
-                sPos: Math.round(currentStats.sPos),
-                sDepth: Math.round(currentStats.sDepth),
-                sRate: Math.round(currentStats.sRate),
-                sRecoil: Math.round(currentStats.sRecoil),
-                sPosture: Math.round(currentStats.sPosture),
-                userId: liff.getContext()?.userId || "Unknown"
-            };
-
-            try {
-                await fetch(GAS_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                alert("🎉 成績上傳成功！請查收 LINE 推播成績單。");
-                liff.closeWindow(); // 自動關閉 LIFF 視窗回到聊天室
-            } catch (err) {
-                alert("上傳失敗，請檢查網路連線。");
-                document.getElementById('finishBtn').innerText = "🛑 重新上傳";
-                document.getElementById('finishBtn').disabled = false;
-            }
-        }
-
-        // 程式載入完畢後自動啟動相機
-        window.onload = startCamera;
-    </script>
-</body>
-
-</html>
 <script>
-const GAS_URL = "👉貼你的WebApp網址";
+const GAS_URL="https://script.google.com/macros/s/AKfycbznnkhwnqQ8vTYYuHgi43VDFTefkFkNa8UEuScvd2S21orsoEk6c5fyRwc7uRk5Sphj/exec";
+const LIFF_ID="2009629564-vRV4e2UeD";
 
-async function send(){
-  const payload = {
-    userName:"測試員",
-    sPos:25,
-    sDepth:22,
-    sRate:21,
-    sRecoil:23,
-    sPosture:24,
-    advice:"AI判定正常",
-    userId:"👉LINE userId",
-    image:"" // 可空
+let soundOn=true,beatTimer,lastPress=0,errorImage="";
+let stats={sPos:25,sDepth:25,sRate:25,sRecoil:25,sPosture:25};
+
+const v=document.getElementById("video");
+const c=document.getElementById("canvas");
+const ctx=c.getContext("2d");
+
+liff.init({liffId:LIFF_ID});
+
+// 🎵節拍器
+function toggleBeat(){
+  if(beatTimer){clearInterval(beatTimer);beatTimer=null;}
+  else{
+    beatTimer=setInterval(()=>{
+      if(soundOn)new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg").play();
+    },600);
+  }
+}
+function toggleSound(){soundOn=!soundOn;}
+
+// 📸截圖
+function capture(){
+  errorImage=c.toDataURL("image/png").split(",")[1];
+}
+
+// 📈頻率
+function detectRate(){
+  const now=Date.now();
+  if(lastPress){
+    const bpm=60000/(now-lastPress);
+    if(bpm<100||bpm>120){
+      stats.sRate-=0.2;
+      msg("⚠️頻率錯");
+    }
+  }
+  lastPress=now;
+}
+
+// 🎯主分析
+function analyze(lm){
+
+  const L={s:lm[11],e:lm[13],w:lm[15]};
+  const R={s:lm[12],e:lm[14],w:lm[16]};
+
+  const moveL=Math.abs(L.w.y-(window.pL||L.w.y));
+  const moveR=Math.abs(R.w.y-(window.pR||R.w.y));
+  window.pL=L.w.y; window.pR=R.w.y;
+
+  const main=moveL>moveR?L:R;
+
+  // 胸口
+  const cx=(lm[11].x+lm[12].x)/2;
+  const cy=(lm[11].y+lm[12].y)/2;
+  const dist=Math.hypot(main.w.x-cx,main.w.y-cy);
+
+  if(dist>0.08){
+    stats.sPos-=0.2;
+    msg("⚠️位置錯");
+    capture();
+  }
+
+  // 深度
+  const depth=Math.abs(main.w.y-(window.lastY||main.w.y))*100;
+  if(depth<5){
+    stats.sDepth-=0.2;
+    msg("⚠️壓深");
+  }
+
+  if(depth>1) detectRate();
+  window.lastY=main.w.y;
+}
+
+// 顯示訊息
+function msg(t){
+  document.getElementById("msg").innerText=t;
+}
+
+// 啟動
+async function start(){
+  const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}});
+  v.srcObject=stream;
+
+  v.onloadedmetadata=()=>{
+    c.width=v.videoWidth;
+    c.height=v.videoHeight;
+    loop();
+  }
+}
+
+// 影像循環
+const pose=new Pose({locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/pose/${f}`});
+pose.onResults(res=>{
+  ctx.drawImage(res.image,0,0,c.width,c.height);
+  if(res.poseLandmarks) analyze(res.poseLandmarks);
+});
+
+async function loop(){
+  await pose.send({image:v});
+  requestAnimationFrame(loop);
+}
+
+// 結束
+async function finish(){
+  const payload={
+    userName:document.getElementById("uName").value,
+    ...stats,
+    advice:"完成",
+    image:errorImage,
+    userId:liff.getContext()?.userId
   };
 
-  await fetch(GAS_URL,{
-    method:"POST",
-    body: JSON.stringify(payload)
-  });
-
-  alert("送出成功");
+  await fetch(GAS_URL,{method:"POST",body:JSON.stringify(payload)});
+  alert("完成");
 }
 </script>
 
-<button onclick="send()">測試送出</button>
+</body>
+</html>
