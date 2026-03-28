@@ -3,70 +3,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI CPR 教練 - 專業實戰版</title>
+    <title>AI CPR 教練 - 田中實戰修復版</title>
     <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js"></script>
     <style>
         body { margin: 0; overflow: hidden; background: #000; font-family: sans-serif; color: white; }
-        /* 影像層：確保在最底層 */
-        #media-container { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; }
+        #media-wrap { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; }
         video, canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
 
-        /* UI 層：確保在最頂層 (z-index: 9999) */
-        #ui-layer { position: absolute; top: 15px; left: 15px; z-index: 9999; width: 85%; max-width: 300px; background: rgba(0,0,0,0.85); padding: 15px; border-radius: 12px; border: 1px solid #444; pointer-events: auto; }
+        /* UI 層 */
+        #ui-layer { position: absolute; top: 15px; left: 15px; z-index: 9999; width: 85%; max-width: 300px; background: rgba(0,0,0,0.85); padding: 15px; border-radius: 12px; border: 1px solid #444; }
         .input-box { width: 100%; padding: 12px; margin-bottom: 8px; box-sizing: border-box; border-radius: 6px; border: 1px solid #555; background: #111; color: #fff; font-size: 16px; }
         .btn { width: 100%; padding: 15px; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; color: white; margin-bottom: 10px; }
         .btn-blue { background: #007bff; }
         .btn-green { background: #28a745; }
         .btn-red { background: #dc3545; }
+        .btn:disabled { background: #555; cursor: not-allowed; }
         
-        /* 教練控制面板：右下角 */
-        #coach-panel { position: absolute; bottom: 25px; right: 15px; z-index: 9999; background: rgba(0,0,0,0.9); padding: 12px; border-radius: 10px; width: 160px; border: 1px solid #555; pointer-events: auto; }
+        /* 控制面板 */
+        #coach-panel { position: absolute; bottom: 25px; right: 15px; z-index: 9999; background: rgba(0,0,0,0.9); padding: 12px; border-radius: 10px; width: 170px; border: 1px solid #555; }
         .ctrl-title { font-size: 12px; color: #00FF00; font-weight: bold; margin-bottom: 8px; text-align: center; }
-        .slider-label { font-size: 11px; color: #ccc; display: block; margin-top: 5px; }
-        input[type=range] { width: 100%; height: 35px; cursor: pointer; }
+        input[type=range] { width: 100%; height: 30px; cursor: pointer; }
+        .reset-zoom { background: #444; color: #fff; border: none; padding: 5px; font-size: 11px; border-radius: 4px; width: 100%; margin-top: 5px; }
 
-        #debug-info { color: #ffeb3b; font-size: 12px; margin-top: 5px; }
-        #depth-display { font-size: 20px; color: #00FF00; text-align: center; font-weight: bold; margin-top: 5px; }
+        #debug-info { color: #ffeb3b; font-size: 12px; margin-top: 5px; min-height: 1.5em; }
+        #depth-display { font-size: 24px; color: #00FF00; text-align: center; font-weight: bold; margin-top: 5px; }
     </style>
 </head>
 <body>
 
-    <div id="media-container">
+    <div id="media-wrap">
         <video id="webcam" playsinline autoplay muted></video>
         <canvas id="output_canvas"></canvas>
     </div>
 
     <div id="ui-layer">
-        <h3 style="margin:0 0 10px 0; text-align:center; color: #00FF00;">🚑 CPR 考評系統</h3>
+        <h3 style="margin:0 0 10px 0; text-align:center; color: #00FF00;">🚑 CPR 考評系統 (修復版)</h3>
         
         <div id="setup-screen">
-            <input type="text" id="class_name" class="input-box" placeholder="班別 (如：EMT1-田中)">
+            <input type="text" id="class_name" class="input-box" placeholder="班別">
             <input type="text" id="student_id" class="input-box" placeholder="學號">
-            <input type="text" id="user_name" class="input-box" placeholder="受測者姓名">
+            <input type="text" id="user_name" class="input-box" placeholder="受測姓名">
             <button class="btn btn-blue" id="cam-btn" onclick="startCameraProcess()">🎥 1. 開啟相機</button>
-            <button class="btn btn-green" id="start-btn" onclick="doCalibrate()" style="display:none;">🎯 2. 校準並開始</button>
-            <div id="debug-info">等待指令...</div>
+            <button class="btn btn-green" id="start-btn" onclick="doCalibrate()" style="display:none;" disabled>🎯 2. 校準 (請先入鏡)</button>
+            <div id="debug-info">準備就緒</div>
         </div>
 
         <div id="active-screen" style="display: none;">
-            <div style="font-size: 14px; color: #aaa;">受測學員：<span id="show-name" style="color:#fff;"></span></div>
+            <div style="font-size: 14px; color: #aaa;">受測：<span id="show-name" style="color:#fff;"></span></div>
             <div style="font-size: 32px; font-weight: bold; color: #FFD700; text-align:center; margin: 10px 0;">得分: <span id="score-val">125</span></div>
-            <div id="hint-msg" style="color: #00FF00; font-weight:bold; text-align:center; font-size: 18px;">請就位按壓...</div>
-            <button class="btn btn-red" onclick="finishTest()">🛑 結束考評並上傳</button>
+            <div id="hint-msg" style="color: #00FF00; font-weight:bold; text-align:center; font-size: 18px;">請開始按壓...</div>
+            <button class="btn btn-red" onclick="finishTest()">🛑 結束上傳</button>
         </div>
     </div>
 
     <div id="coach-panel">
         <div class="ctrl-title">🔧 教練控制台</div>
         
-        <div id="zoom-ctrl" style="display:none;">
-            <span class="slider-label">🔍 遠近調整: <span id="z-val">1.0</span>x</span>
+        <div id="zoom-ctrl">
+            <span style="font-size:11px;color:#ccc;">🔍 畫面遠近: <span id="z-val">1.0</span>x</span>
             <input type="range" id="zoom-slider" min="1" max="5" step="0.1" value="1">
+            <button class="reset-zoom" onclick="resetZoom()">🔄 強制歸位 (1.0x)</button>
         </div>
 
-        <div class="ctrl-group">
-            <span class="slider-label">📏 K值微調: <span id="k-val">45</span></span>
+        <div style="margin-top:10px;">
+            <span style="font-size:11px;color:#ccc;">📏 K值微調: <span id="k-val">45</span></span>
             <input type="range" id="k-slider" min="20" max="80" value="45" oninput="updateK(this.value)">
         </div>
         
@@ -86,71 +87,73 @@
         const canvasCtx = canvasElement.getContext('2d');
         const debugBox = document.getElementById('debug-info');
 
-        // 初始化 LIFF
-        liff.init({ liffId: LIFF_ID }).catch(e => debugBox.innerText = "LIFF 未連接");
+        liff.init({ liffId: LIFF_ID }).catch(e => debugBox.innerText = "LIFF 未連動");
 
         function updateK(v) { k_factor = v; document.getElementById('k-val').innerText = v; }
 
-        // 核心修正：強制開啟後鏡頭
         async function startCameraProcess() {
-            debugBox.innerText = "請求相機權限中...";
+            debugBox.innerText = "正在取得權限並鎖定 1.0x 視角...";
             document.getElementById('cam-btn').innerText = "啟動中...";
 
-            const constraints = {
-                video: {
-                    facingMode: { ideal: "environment" },
-                    width: { ideal: 1280 },
-                    height: { ideal: 720 }
-                }
-            };
-
             try {
-                const stream = await navigator.mediaDevices.getUserMedia(constraints);
+                // 強制請求後鏡頭且解析度固定
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: { ideal: "environment" }, width: 1280, height: 720 }
+                });
                 videoElement.srcObject = stream;
                 video_track = stream.getVideoTracks()[0];
 
-                // 處理變焦：解除縮放限制
-                setTimeout(() => {
+                // 強制修正縮放滑桿與重置相機
+                setTimeout(async () => {
                     try {
                         const caps = video_track.getCapabilities();
-                        if (caps.zoom) {
-                            const zs = document.getElementById('zoom-slider');
-                            document.getElementById('zoom-ctrl').style.display = 'block';
-                            // 重要：動態設定滑桿的最小值與最大值
-                            zs.min = caps.zoom.min || 1;
-                            zs.max = caps.zoom.max || 5;
-                            zs.step = caps.zoom.step || 0.1;
-                            zs.value = video_track.getSettings().zoom || 1;
-                            document.getElementById('z-val').innerText = zs.value;
+                        const zs = document.getElementById('zoom-slider');
+                        
+                        // 這裡強制過濾掉怪異數值 (例如負數)
+                        zs.min = (caps.zoom && caps.zoom.min > 0) ? caps.zoom.min : 1;
+                        zs.max = (caps.zoom && caps.zoom.max > zs.min) ? Math.min(caps.zoom.max, 8) : 5;
+                        zs.step = caps.zoom.step || 0.1;
+                        
+                        // 強制回到 1.0 倍
+                        resetZoom();
 
-                            zs.oninput = async (e) => {
-                                const val = parseFloat(e.target.value);
-                                document.getElementById('z-val').innerText = val.toFixed(1);
-                                await video_track.applyConstraints({ advanced: [{ zoom: val }] });
-                            };
-                        }
-                    } catch (err) { console.log("變焦功能不支援"); }
-                }, 2000);
+                        zs.oninput = async (e) => {
+                            const val = parseFloat(e.target.value);
+                            document.getElementById('z-val').innerText = val.toFixed(1);
+                            await video_track.applyConstraints({ advanced: [{ zoom: val }] });
+                        };
+                    } catch (err) { console.log("變焦限制失敗，使用模擬模式"); }
+                }, 1500);
 
                 videoElement.onloadedmetadata = () => {
                     canvasElement.width = videoElement.videoWidth;
                     canvasElement.height = videoElement.videoHeight;
                     document.getElementById('cam-btn').style.display = 'none';
                     document.getElementById('start-btn').style.display = 'block';
-                    debugBox.innerText = "✅ 相機已就緒";
                     initPose();
                 };
             } catch (err) {
-                debugBox.innerText = "❌ 無法開啟相機，請改點擊右上角「在瀏覽器開啟」";
-                alert("相機開啟失敗！原因：" + err.message);
+                alert("相機開啟失敗，請點右上角選單選擇「在瀏覽器開啟」");
+                debugBox.innerText = "❌ 權限錯誤: " + err.message;
+            }
+        }
+
+        async function resetZoom() {
+            if (video_track) {
+                try {
+                    await video_track.applyConstraints({ advanced: [{ zoom: 1.0 }] });
+                    document.getElementById('zoom-slider').value = 1.0;
+                    document.getElementById('z-val').innerText = "1.0";
+                    debugBox.innerText = "✅ 視角已歸位 1.0x";
+                } catch(e) { debugBox.innerText = "無法重置視角"; }
             }
         }
 
         function initPose() {
             pose = new Pose({locateFile: (f) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${f}`});
-            pose.setOptions({ modelComplexity: 1, smoothLandmarks: true, minDetectionConfidence: 0.6 });
+            pose.setOptions({ modelComplexity: 1, smoothLandmarks: true, minDetectionConfidence: 0.5 });
             pose.onResults(onResults);
-
+            
             function loop() {
                 if (pose) pose.send({ image: videoElement });
                 requestAnimationFrame(loop);
@@ -166,7 +169,19 @@
             if (results.poseLandmarks) {
                 last_results = results.poseLandmarks;
                 
-                // 畫出偵測點
+                // 檢查是否抓到雙手
+                const hasHands = last_results[15].visibility > 0.5 || last_results[16].visibility > 0.5;
+                if (!is_running) {
+                    if (hasHands) {
+                        document.getElementById('start-btn').disabled = false;
+                        document.getElementById('start-btn').innerText = "🎯 2. 校準並開始";
+                        debugBox.innerText = "✅ 已偵測到人體，可以開始";
+                    } else {
+                        document.getElementById('start-btn').disabled = true;
+                        document.getElementById('start-btn').innerText = "❌ 偵測不到人體";
+                    }
+                }
+
                 drawDot(last_results[15], "#00aaff"); // 左
                 drawDot(last_results[16], "#ff4400"); // 右
 
@@ -177,11 +192,10 @@
                     
                     document.getElementById('depth-display').innerText = `${depth.toFixed(1)} cm`;
                     
-                    // 深度判定
                     if(depth > 6.5 || (depth > 0.5 && depth < 4.5)) {
                         stats.sDepth = Math.max(12, stats.sDepth - 0.05);
                         document.getElementById('hint-msg').style.color = "#ff4444";
-                        document.getElementById('hint-msg').innerText = depth > 6.5 ? "⚠️ 壓太深！" : "⚠️ 再深一點！";
+                        document.getElementById('hint-msg').innerText = depth > 6.5 ? "⚠️ 太深！" : "⚠️ 再深一點！";
                     } else {
                         document.getElementById('hint-msg').style.color = "#00ff00";
                         document.getElementById('hint-msg').innerText = "✅ 良好";
@@ -190,6 +204,9 @@
                     const total = Math.round(stats.sPos + stats.sDepth + stats.sRate + stats.sRecoil + stats.sPosture);
                     document.getElementById('score-val').innerText = total;
                 }
+            } else if (!is_running) {
+                document.getElementById('start-btn').disabled = true;
+                debugBox.innerText = "❌ 畫面上沒看到人";
             }
             canvasCtx.restore();
         }
@@ -201,10 +218,9 @@
 
         function doCalibrate() {
             const name = document.getElementById('user_name').value;
-            if (!name) return alert("請填寫學員姓名");
-            if (!last_results) return alert("偵測不到人體，請站入鏡頭畫面。");
-
-            // 自動判定主副手：選畫面較下方（y 較大）的那隻手
+            if (!name) return alert("請填姓名");
+            
+            // 選取 Y 座標較大的（在畫面上較下方）的手腕作為基準
             target_hand = (last_results[15].y > last_results[16].y) ? 15 : 16;
             base_y = last_results[target_hand].y * canvasElement.height;
             
@@ -221,7 +237,7 @@
                 sId: document.getElementById('student_id').value || "未填",
                 uName: document.getElementById('user_name').value,
                 ...stats,
-                advice: stats.sDepth < 20 ? "按壓深度需加強" : "操作精準",
+                advice: stats.sDepth < 20 ? "深度不足" : "操作精準",
                 userId: liff.getContext()?.userId || "Unknown"
             };
 
