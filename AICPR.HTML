@@ -87,7 +87,7 @@
         const ctx = canvas.getContext('2d');
         const status = document.getElementById('status-msg');
 
-        liff.init({ liffId: LIFF_ID }).catch(e => status.innerText = "LIFF 未連動");
+        liff.init({ liffId: LIFF_ID }).catch(e => status.innerText = "LIFF 未連動或未在 LINE 中開啟");
 
         function updateK(v) { k_factor = v; document.getElementById('k-text').innerText = v; }
 
@@ -123,7 +123,7 @@
                     canvas.height = video.videoHeight;
                     document.getElementById('cam-btn').style.display = 'none';
                     document.getElementById('start-btn').style.display = 'block';
-                    status.innerText = "✅ 相機已就緒，請等待 AI 加載...";
+                    status.innerText = "⏳ AI 模型載入中，請保持連線...";
                     initAI();
                 };
             } catch (err) {
@@ -141,15 +141,25 @@
 
         function initAI() {
             pose_ai = new Pose({locateFile: (f) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${f}`});
-            pose_ai.setOptions({ modelComplexity: 1, smoothLandmarks: true, minDetectionConfidence: 0.5 });
+            
+            // 【修復核心1】：調低模型複雜度以求順暢，並降低偵測門檻讓較遠的學員也能被抓到
+            pose_ai.setOptions({ 
+                modelComplexity: 0, 
+                smoothLandmarks: true, 
+                minDetectionConfidence: 0.3, 
+                minTrackingConfidence: 0.3
+            });
             pose_ai.onResults(onResults);
             
-            function render() {
-                if (pose_ai) pose_ai.send({ image: video });
+            // 【修復核心2】：加入 async/await 防止推流阻塞，並確認影片已經就緒
+            async function render() {
+                if (pose_ai && video.readyState >= 2) {
+                    await pose_ai.send({ image: video });
+                }
                 requestAnimationFrame(render);
             }
             render();
-            status.innerText = "✅ 系統已就緒，請學員入鏡";
+            status.innerText = "✅ 系統載入完畢，請學員入鏡";
         }
 
         function onResults(res) {
@@ -159,10 +169,26 @@
 
             if (res.poseLandmarks) {
                 last_pose = res.poseLandmarks;
+
+                // 【修復核心3】：動態文字回饋，確認 AI 已追蹤到學員
+                if(!is_testing) {
+                    status.innerText = "✅ 已偵測到學員，可以點擊「校準」";
+                    status.style.color = "#00ff00";
+                }
                 
                 // 畫出手腕偵測點
-                drawDot(last_pose[15], "#00aaff"); // 左
-                drawDot(last_pose[16], "#ff4400"); // 右
+                drawDot(last_pose[15], "#00aaff"); // 左手腕
+                drawDot(last_pose[16], "#ff4400"); // 右手腕
+
+                // 畫出肩膀連線 (方便教練確認 AI 是否有抓到上半身輪廓)
+                if (last_pose[11].visibility > 0.3 && last_pose[12].visibility > 0.3) {
+                    ctx.strokeStyle = "#00FF00";
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(last_pose[11].x * canvas.width, last_pose[11].y * canvas.height);
+                    ctx.lineTo(last_pose[12].x * canvas.width, last_pose[12].y * canvas.height);
+                    ctx.stroke();
+                }
 
                 if (is_testing) {
                     const curY = last_pose[main_hand].y * canvas.height;
@@ -182,12 +208,18 @@
                     const total = Math.round(score_obj.sPos + score_obj.sDepth + score_obj.sRate + score_obj.sRecoil + score_obj.sPosture);
                     document.getElementById('score-text').innerText = total;
                 }
+            } else {
+                if(!is_testing) {
+                    status.innerText = "❌ 未發現人體，請退後並露出上半身";
+                    status.style.color = "#ffeb3b";
+                }
             }
             ctx.restore();
         }
 
         function drawDot(p, color) {
-            if (p.visibility < 0.5) return;
+            // 放寬點位的顯示門檻
+            if (p.visibility < 0.2) return;
             ctx.fillStyle = color; ctx.beginPath();
             ctx.arc(p.x * canvas.width, p.y * canvas.height, 12, 0, 2 * Math.PI); ctx.fill();
         }
@@ -205,7 +237,7 @@
 
             // 2. 檢查 AI 是否有偵測到人
             if (!last_pose) {
-                alert("❌ AI 尚未偵測到人體，請確認畫面上是否有出現紅藍點。");
+                alert("❌ AI 尚未偵測到人體，請確認畫面上是否有出現綠色的肩膀線與手腕點。");
                 return;
             }
 
