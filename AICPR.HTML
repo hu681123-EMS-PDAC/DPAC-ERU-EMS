@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI CPR 教練 - 田中實戰修復版</title>
+    <title>AI CPR 專業考評系統</title>
     <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js"></script>
     <style>
@@ -12,22 +12,22 @@
         video, canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
 
         /* UI 層 */
-        #ui-layer { position: absolute; top: 15px; left: 15px; z-index: 9999; width: 85%; max-width: 300px; background: rgba(0,0,0,0.85); padding: 15px; border-radius: 12px; border: 1px solid #444; }
-        .input-box { width: 100%; padding: 12px; margin-bottom: 8px; box-sizing: border-box; border-radius: 6px; border: 1px solid #555; background: #111; color: #fff; font-size: 16px; }
+        #ui-layer { position: absolute; top: 15px; left: 15px; z-index: 9999; width: 85%; max-width: 320px; background: rgba(0,0,0,0.85); padding: 18px; border-radius: 12px; border: 1px solid #444; }
+        .input-box { width: 100%; padding: 12px; margin-bottom: 10px; box-sizing: border-box; border-radius: 6px; border: 1px solid #555; background: #111; color: #fff; font-size: 16px; }
         .btn { width: 100%; padding: 15px; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; color: white; margin-bottom: 10px; }
-        .btn-blue { background: #007bff; }
-        .btn-green { background: #28a745; }
-        .btn-red { background: #dc3545; }
-        .btn:disabled { background: #555; cursor: not-allowed; }
+        .btn-blue { background: #007bff; box-shadow: 0 4px #0056b3; }
+        .btn-green { background: #28a745; box-shadow: 0 4px #1e7e34; }
+        .btn-red { background: #dc3545; box-shadow: 0 4px #bd2130; }
+        .btn:active { transform: translateY(2px); box-shadow: none; }
         
-        /* 控制面板 */
-        #coach-panel { position: absolute; bottom: 25px; right: 15px; z-index: 9999; background: rgba(0,0,0,0.9); padding: 12px; border-radius: 10px; width: 170px; border: 1px solid #555; }
+        /* 教練控制台 */
+        #coach-panel { position: absolute; bottom: 20px; right: 15px; z-index: 9999; background: rgba(0,0,0,0.9); padding: 12px; border-radius: 10px; width: 170px; border: 1px solid #555; }
         .ctrl-title { font-size: 12px; color: #00FF00; font-weight: bold; margin-bottom: 8px; text-align: center; }
-        input[type=range] { width: 100%; height: 30px; cursor: pointer; }
-        .reset-zoom { background: #444; color: #fff; border: none; padding: 5px; font-size: 11px; border-radius: 4px; width: 100%; margin-top: 5px; }
+        input[type=range] { width: 100%; height: 35px; cursor: pointer; }
+        .reset-btn { background: #444; color: #fff; border: none; padding: 6px; font-size: 11px; border-radius: 4px; width: 100%; cursor: pointer; }
 
-        #debug-info { color: #ffeb3b; font-size: 12px; margin-top: 5px; min-height: 1.5em; }
-        #depth-display { font-size: 24px; color: #00FF00; text-align: center; font-weight: bold; margin-top: 5px; }
+        #status-msg { color: #ffeb3b; font-size: 13px; margin-top: 5px; text-align: center; font-weight: bold; }
+        #depth-val { font-size: 26px; color: #00FF00; text-align: center; font-weight: bold; margin-top: 5px; }
     </style>
 </head>
 <body>
@@ -38,214 +38,203 @@
     </div>
 
     <div id="ui-layer">
-        <h3 style="margin:0 0 10px 0; text-align:center; color: #00FF00;">🚑 CPR 考評系統 (修復版)</h3>
+        <h3 style="margin:0 0 15px 0; text-align:center; color: #00FF00;">🚑 CPR 考評系統</h3>
         
         <div id="setup-screen">
-            <input type="text" id="class_name" class="input-box" placeholder="班別">
+            <input type="text" id="class_name" class="input-box" placeholder="班別 (如：EMT-1 田中)">
             <input type="text" id="student_id" class="input-box" placeholder="學號">
             <input type="text" id="user_name" class="input-box" placeholder="受測姓名">
-            <button class="btn btn-blue" id="cam-btn" onclick="startCameraProcess()">🎥 1. 開啟相機</button>
-            <button class="btn btn-green" id="start-btn" onclick="doCalibrate()" style="display:none;" disabled>🎯 2. 校準 (請先入鏡)</button>
-            <div id="debug-info">準備就緒</div>
+            <button class="btn btn-blue" id="cam-btn" onclick="startCamera()">🎥 1. 開啟相機</button>
+            <button class="btn btn-green" id="start-btn" onclick="doCalibrate()" style="display:none;">🎯 2. 校準並開始</button>
+            <div id="status-msg">系統就緒，請開啟相機</div>
         </div>
 
-        <div id="active-screen" style="display: none;">
-            <div style="font-size: 14px; color: #aaa;">受測：<span id="show-name" style="color:#fff;"></span></div>
-            <div style="font-size: 32px; font-weight: bold; color: #FFD700; text-align:center; margin: 10px 0;">得分: <span id="score-val">125</span></div>
-            <div id="hint-msg" style="color: #00FF00; font-weight:bold; text-align:center; font-size: 18px;">請開始按壓...</div>
-            <button class="btn btn-red" onclick="finishTest()">🛑 結束上傳</button>
+        <div id="test-screen" style="display: none;">
+            <div style="font-size: 14px; color: #ccc;">學員：<span id="show-name" style="color:#fff;"></span></div>
+            <div style="font-size: 36px; font-weight: bold; color: #FFD700; text-align:center; margin: 15px 0;">得分: <span id="score-text">125</span></div>
+            <div id="hint-msg" style="color: #00FF00; font-weight:bold; text-align:center; font-size: 20px;">請開始按壓...</div>
+            <button class="btn btn-red" onclick="finishAndUpload()">🛑 結束並上傳成績</button>
         </div>
     </div>
 
     <div id="coach-panel">
         <div class="ctrl-title">🔧 教練控制台</div>
         
-        <div id="zoom-ctrl">
-            <span style="font-size:11px;color:#ccc;">🔍 畫面遠近: <span id="z-val">1.0</span>x</span>
-            <input type="range" id="zoom-slider" min="1" max="5" step="0.1" value="1">
-            <button class="reset-zoom" onclick="resetZoom()">🔄 強制歸位 (1.0x)</button>
+        <div id="zoom-box">
+            <span style="font-size:11px;color:#ccc;">🔍 遠近調整: <span id="z-text">1.0</span>x</span>
+            <input type="range" id="zoom-slider" min="1" max="8" step="0.1" value="1">
+            <button class="reset-btn" onclick="resetZoom()">🔄 恢復 1.0x</button>
         </div>
 
-        <div style="margin-top:10px;">
-            <span style="font-size:11px;color:#ccc;">📏 K值微調: <span id="k-val">45</span></span>
+        <div style="margin-top:15px;">
+            <span style="font-size:11px;color:#ccc;">📏 深度微調 (K): <span id="k-text">45</span></span>
             <input type="range" id="k-slider" min="20" max="80" value="45" oninput="updateK(this.value)">
         </div>
         
-        <div id="depth-display">0.0 cm</div>
+        <div id="depth-val">0.0 cm</div>
     </div>
 
     <script>
         const GAS_URL = "https://script.google.com/macros/s/AKfycbzDKhEyT9YwdfapVL1FOUL5gCg5DPzh6eHm5dWoFAiuW66nnNF1nHX6wB8SGoNN2AnT/exec";
         const LIFF_ID = "2009629564-vRV4e2Ue";
 
-        let k_factor = 45, is_running = false, target_hand = 16, base_y = 0;
-        let stats = { sPos: 25, sDepth: 25, sRate: 25, sRecoil: 25, sPosture: 25 };
-        let pose, last_results = null, video_track = null;
+        let k_factor = 45, is_testing = false, main_hand = 16, start_y = 0;
+        let score_obj = { sPos: 25, sDepth: 25, sRate: 25, sRecoil: 25, sPosture: 25 };
+        let pose_ai, last_pose = null, v_track = null;
 
-        const videoElement = document.getElementById('webcam');
-        const canvasElement = document.getElementById('output_canvas');
-        const canvasCtx = canvasElement.getContext('2d');
-        const debugBox = document.getElementById('debug-info');
+        const video = document.getElementById('webcam');
+        const canvas = document.getElementById('output_canvas');
+        const ctx = canvas.getContext('2d');
+        const status = document.getElementById('status-msg');
 
-        liff.init({ liffId: LIFF_ID }).catch(e => debugBox.innerText = "LIFF 未連動");
+        liff.init({ liffId: LIFF_ID }).catch(e => status.innerText = "LIFF 未連動");
 
-        function updateK(v) { k_factor = v; document.getElementById('k-val').innerText = v; }
+        function updateK(v) { k_factor = v; document.getElementById('k-text').innerText = v; }
 
-        async function startCameraProcess() {
-            debugBox.innerText = "正在取得權限並鎖定 1.0x 視角...";
-            document.getElementById('cam-btn').innerText = "啟動中...";
-
+        async function startCamera() {
+            status.innerText = "正在取得鏡頭權限...";
             try {
-                // 強制請求後鏡頭且解析度固定
                 const stream = await navigator.mediaDevices.getUserMedia({
                     video: { facingMode: { ideal: "environment" }, width: 1280, height: 720 }
                 });
-                videoElement.srcObject = stream;
-                video_track = stream.getVideoTracks()[0];
+                video.srcObject = stream;
+                v_track = stream.getVideoTracks()[0];
 
-                // 強制修正縮放滑桿與重置相機
-                setTimeout(async () => {
+                // 變焦控制邏輯
+                setTimeout(() => {
                     try {
-                        const caps = video_track.getCapabilities();
+                        const caps = v_track.getCapabilities();
                         const zs = document.getElementById('zoom-slider');
-                        
-                        // 這裡強制過濾掉怪異數值 (例如負數)
-                        zs.min = (caps.zoom && caps.zoom.min > 0) ? caps.zoom.min : 1;
-                        zs.max = (caps.zoom && caps.zoom.max > zs.min) ? Math.min(caps.zoom.max, 8) : 5;
-                        zs.step = caps.zoom.step || 0.1;
-                        
-                        // 強制回到 1.0 倍
-                        resetZoom();
+                        if (caps.zoom) {
+                            zs.min = caps.zoom.min || 1;
+                            zs.max = caps.zoom.max || 8;
+                            zs.value = 1;
+                            zs.oninput = async (e) => {
+                                const val = parseFloat(e.target.value);
+                                document.getElementById('z-text').innerText = val.toFixed(1);
+                                await v_track.applyConstraints({ advanced: [{ zoom: val }] });
+                            };
+                        }
+                    } catch (e) { console.log("Zoom not supported"); }
+                }, 2000);
 
-                        zs.oninput = async (e) => {
-                            const val = parseFloat(e.target.value);
-                            document.getElementById('z-val').innerText = val.toFixed(1);
-                            await video_track.applyConstraints({ advanced: [{ zoom: val }] });
-                        };
-                    } catch (err) { console.log("變焦限制失敗，使用模擬模式"); }
-                }, 1500);
-
-                videoElement.onloadedmetadata = () => {
-                    canvasElement.width = videoElement.videoWidth;
-                    canvasElement.height = videoElement.videoHeight;
+                video.onloadedmetadata = () => {
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
                     document.getElementById('cam-btn').style.display = 'none';
                     document.getElementById('start-btn').style.display = 'block';
-                    initPose();
+                    status.innerText = "✅ 相機已就緒，請等待 AI 加載...";
+                    initAI();
                 };
             } catch (err) {
-                alert("相機開啟失敗，請點右上角選單選擇「在瀏覽器開啟」");
-                debugBox.innerText = "❌ 權限錯誤: " + err.message;
+                status.innerText = "❌ 相機失敗，請點右上角選單「在瀏覽器開啟」";
             }
         }
 
         async function resetZoom() {
-            if (video_track) {
-                try {
-                    await video_track.applyConstraints({ advanced: [{ zoom: 1.0 }] });
-                    document.getElementById('zoom-slider').value = 1.0;
-                    document.getElementById('z-val').innerText = "1.0";
-                    debugBox.innerText = "✅ 視角已歸位 1.0x";
-                } catch(e) { debugBox.innerText = "無法重置視角"; }
+            if (v_track) {
+                await v_track.applyConstraints({ advanced: [{ zoom: 1.0 }] });
+                document.getElementById('zoom-slider').value = 1.0;
+                document.getElementById('z-text').innerText = "1.0";
             }
         }
 
-        function initPose() {
-            pose = new Pose({locateFile: (f) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${f}`});
-            pose.setOptions({ modelComplexity: 1, smoothLandmarks: true, minDetectionConfidence: 0.5 });
-            pose.onResults(onResults);
+        function initAI() {
+            pose_ai = new Pose({locateFile: (f) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${f}`});
+            pose_ai.setOptions({ modelComplexity: 1, smoothLandmarks: true, minDetectionConfidence: 0.5 });
+            pose_ai.onResults(onResults);
             
-            function loop() {
-                if (pose) pose.send({ image: videoElement });
-                requestAnimationFrame(loop);
+            function render() {
+                if (pose_ai) pose_ai.send({ image: video });
+                requestAnimationFrame(render);
             }
-            loop();
+            render();
+            status.innerText = "✅ 系統已就緒，請學員入鏡";
         }
 
-        function onResults(results) {
-            canvasCtx.save();
-            canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
-            canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
+        function onResults(res) {
+            ctx.save();
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(res.image, 0, 0, canvas.width, canvas.height);
 
-            if (results.poseLandmarks) {
-                last_results = results.poseLandmarks;
+            if (res.poseLandmarks) {
+                last_pose = res.poseLandmarks;
                 
-                // 檢查是否抓到雙手
-                const hasHands = last_results[15].visibility > 0.5 || last_results[16].visibility > 0.5;
-                if (!is_running) {
-                    if (hasHands) {
-                        document.getElementById('start-btn').disabled = false;
-                        document.getElementById('start-btn').innerText = "🎯 2. 校準並開始";
-                        debugBox.innerText = "✅ 已偵測到人體，可以開始";
-                    } else {
-                        document.getElementById('start-btn').disabled = true;
-                        document.getElementById('start-btn').innerText = "❌ 偵測不到人體";
-                    }
-                }
+                // 畫出手腕偵測點
+                drawDot(last_pose[15], "#00aaff"); // 左
+                drawDot(last_pose[16], "#ff4400"); // 右
 
-                drawDot(last_results[15], "#00aaff"); // 左
-                drawDot(last_results[16], "#ff4400"); // 右
-
-                if (is_running) {
-                    const currentY = last_results[target_hand].y * canvasElement.height;
-                    let depth = (currentY - base_y) / k_factor;
-                    if (depth < 0) depth = 0;
+                if (is_testing) {
+                    const curY = last_pose[main_hand].y * canvas.height;
+                    let d = (curY - start_y) / k_factor;
+                    if (d < 0) d = 0;
+                    document.getElementById('depth-val').innerText = `${d.toFixed(1)} cm`;
                     
-                    document.getElementById('depth-display').innerText = `${depth.toFixed(1)} cm`;
-                    
-                    if(depth > 6.5 || (depth > 0.5 && depth < 4.5)) {
-                        stats.sDepth = Math.max(12, stats.sDepth - 0.05);
+                    // 深度判定與評分
+                    if(d > 6.5 || (d > 0.5 && d < 4.5)) {
+                        score_obj.sDepth = Math.max(10, score_obj.sDepth - 0.05);
                         document.getElementById('hint-msg').style.color = "#ff4444";
-                        document.getElementById('hint-msg').innerText = depth > 6.5 ? "⚠️ 太深！" : "⚠️ 再深一點！";
+                        document.getElementById('hint-msg').innerText = d > 6.5 ? "⚠️ 壓太深" : "⚠️ 深度不足";
                     } else {
                         document.getElementById('hint-msg').style.color = "#00ff00";
-                        document.getElementById('hint-msg').innerText = "✅ 良好";
+                        document.getElementById('hint-msg').innerText = "✅ 深度良好";
                     }
-
-                    const total = Math.round(stats.sPos + stats.sDepth + stats.sRate + stats.sRecoil + stats.sPosture);
-                    document.getElementById('score-val').innerText = total;
+                    const total = Math.round(score_obj.sPos + score_obj.sDepth + score_obj.sRate + score_obj.sRecoil + score_obj.sPosture);
+                    document.getElementById('score-text').innerText = total;
                 }
-            } else if (!is_running) {
-                document.getElementById('start-btn').disabled = true;
-                debugBox.innerText = "❌ 畫面上沒看到人";
             }
-            canvasCtx.restore();
+            ctx.restore();
         }
 
-        function drawDot(lm, color) {
-            canvasCtx.fillStyle = color; canvasCtx.beginPath();
-            canvasCtx.arc(lm.x * canvasElement.width, lm.y * canvasElement.height, 10, 0, 2 * Math.PI); canvasCtx.fill();
+        function drawDot(p, color) {
+            if (p.visibility < 0.5) return;
+            ctx.fillStyle = color; ctx.beginPath();
+            ctx.arc(p.x * canvas.width, p.y * canvas.height, 12, 0, 2 * Math.PI); ctx.fill();
         }
 
         function doCalibrate() {
             const name = document.getElementById('user_name').value;
-            if (!name) return alert("請填姓名");
+            const c_name = document.getElementById('class_name').value;
+            const s_id = document.getElementById('student_id').value;
+
+            // 1. 檢查輸入欄位
+            if (!name || !c_name || !s_id) {
+                alert("❌ 請完整填寫：班別、學號、姓名");
+                return;
+            }
+
+            // 2. 檢查 AI 是否有偵測到人
+            if (!last_pose) {
+                alert("❌ AI 尚未偵測到人體，請確認畫面上是否有出現紅藍點。");
+                return;
+            }
+
+            // 3. 開始校準
+            main_hand = (last_pose[15].y > last_pose[16].y) ? 15 : 16;
+            start_y = last_pose[main_hand].y * canvas.height;
             
-            // 選取 Y 座標較大的（在畫面上較下方）的手腕作為基準
-            target_hand = (last_results[15].y > last_results[16].y) ? 15 : 16;
-            base_y = last_results[target_hand].y * canvasElement.height;
-            
-            is_running = true;
+            is_testing = true;
             document.getElementById('show-name').innerText = name;
             document.getElementById('setup-screen').style.display = 'none';
-            document.getElementById('active-screen').style.display = 'block';
+            document.getElementById('test-screen').style.display = 'block';
         }
 
-        function finishTest() {
-            is_running = false;
+        function finishAndUpload() {
+            is_testing = false;
             const payload = {
-                cName: document.getElementById('class_name').value || "未填",
-                sId: document.getElementById('student_id').value || "未填",
+                cName: document.getElementById('class_name').value,
+                sId: document.getElementById('student_id').value,
                 uName: document.getElementById('user_name').value,
-                ...stats,
-                advice: stats.sDepth < 20 ? "深度不足" : "操作精準",
+                ...score_obj,
+                advice: score_obj.sDepth < 20 ? "按壓深度需加強" : "操作優異",
                 userId: liff.getContext()?.userId || "Unknown"
             };
 
             fetch(GAS_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) })
             .then(() => {
-                alert("🎉 成績上傳完成！");
+                alert("🎉 成績已上傳 Google 試算表！");
                 liff.closeWindow();
-            });
+            }).catch(e => alert("上傳失敗: " + e));
         }
     </script>
 </body>
