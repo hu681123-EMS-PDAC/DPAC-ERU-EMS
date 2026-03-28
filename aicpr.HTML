@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI CPR 教練 - 125分實戰版</title>
+    <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils"></script>
+    <style>
+        body { margin: 0; overflow: hidden; background: #000; font-family: sans-serif; }
+        canvas { width: 100vw; height: 100vh; object-fit: cover; position: absolute; top: 0; left: 0; z-index: 1; }
+        #ui-layer { position: absolute; top: 10px; left: 10px; z-index: 10; background: rgba(0,0,0,0.7); padding: 15px; border-radius: 10px; color: white; width: 90%; max-width: 350px; }
+        .input-box { width: 100%; margin-bottom: 10px; padding: 8px; box-sizing: border-box; }
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 5px; font-size: 16px; font-weight: bold; cursor: pointer; color: white; margin-bottom: 5px; }
+        .btn-green { background: #28a745; }
+        .btn-red { background: #dc3545; }
+        #debug-tools { position: absolute; bottom: 20px; left: 10px; z-index: 10; background: rgba(0,0,0,0.8); padding: 10px; border-radius: 5px; color: white; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+    <div id="ui-layer">
+        <div id="setup-screen">
+            <h3 style="margin-top:0;">📋 測驗資料登錄</h3>
+            <input type="text" id="cName" class="input-box" placeholder="班別 (如: EMT-1)">
+            <input type="text" id="sId" class="input-box" placeholder="學號">
+            <input type="text" id="uName" class="input-box" placeholder="姓名">
+            <button class="btn btn-green" onclick="calibrateAndStart()">🎯 雙手放好後，點此校準並開始</button>
+            <div style="font-size: 12px; color: #aaa; margin-top: 5px;">請將雙手輕放於安妮胸部中心，系統將自動抓取 0cm 基準線。</div>
+        </div>
+
+        <div id="training-screen" style="display: none;">
+            <div style="font-size: 18px; margin-bottom: 5px;">⏱ 訓練計時: <span id="timeDisplay">0</span> 秒</div>
+            <div style="font-size: 24px; font-weight: bold; color: #FFD700; margin-bottom: 10px;">總分預估: <span id="totalScoreText">125</span> / 125</div>
+            <div id="adviceText" style="color: #ff4444; font-weight: bold; margin-bottom: 15px; font-size: 20px;">等待按壓...</div>
+            <button class="btn btn-red" id="finishBtn" onclick="finishAndSubmit()">🛑 結束並上傳成績</button>
+        </div>
+    </div>
+
+    <div id="debug-tools">
+        📏 現場 K 值 (px/cm): <span id="kValue">45</span><br>
+        <input type="range" id="kSlider" min="20" max="80" value="45" oninput="updateK(this.value)">
+        <div id="liveDepthInfo" style="color: #00FF00;">即時深度: 0.0 cm</div>
+    </div>
+
+    <canvas id="out_canvas"></canvas>
+    <video id="in_video" style="display:none;" playsinline></video>
+
+    <script>
+        // ==========================================
+        // 🔴 請在這裡貼上您的 GAS URL 與 LIFF ID
+        // ==========================================
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbyH4aR7aHCCkE9VmTkO5GJlQrRGpOflb7K4wQmm6dJTkLps1dZuwtxfupNitSNP2ZRu/exec";
+        const LIFF_ID = "請貼上你的_LIFF_ID";
+
+        let k_factor = 45; // 現場像素轉換係數
+        let initialY = 0;  // Y軸歸零基準點
+        let isTraining = false;
+        let trainingTimer;
+        let seconds = 0;
+        
+        // 125 分制預設滿分，過程中隨時扣分
+        let currentStats = { sPos: 25, sDepth: 25, sRate: 25, sRecoil: 25, sPosture: 25 };
+        let latestWristY = 0; // 暫存最新的手腕位置
+
+        const canvasCtx = document.getElementById('out_canvas').getContext('2d');
+        const videoElement = document.getElementById('in_video');
+
+        // 初始化 LIFF
+        liff.init({ liffId: LIFF_ID }).catch(err => console.error(err));
+
+        // 更新 K 值滑桿
+        function updateK(val) {
+            k_factor = val;
+            document.getElementById('kValue').innerText = val;
+        }
+
+        // 開始校準並啟動測驗
+        function calibrateAndStart() {
+            if (!document.getElementById('uName').value) return alert("請輸入姓名！");
+            
+            initialY = latestWristY; // 將當下高度設為 0cm
+            isTraining = true;
+            
+            document.getElementById('setup-screen').style.display = 'none';
+            document.getElementById('training-screen').style.display = 'block';
+
+            // 啟動計時器
+            trainingTimer = setInterval(() => {
+                seconds++;
+                document.getElementById('timeDisplay').innerText = seconds;
+            }, 1000);
+        }
+
+        // 手臂夾角計算公式
+        function calculateElbowAngle(S, E, W) {
+            const v1 = { x: S.x - E.x, y: S.y - E.y };
+            const v2 = { x: W.x - E.x, y: W.y - E.y };
+            const dot = v1.x * v2.x + v1.y * v2.y;
+            const mag1 = Math.sqrt(v1.x**2 + v1.y**2);
+            const mag2 = Math.sqrt(v2.x**2 + v2.y**2);
+            return Math.acos(dot / (mag1 * mag2)) * (180 / Math.PI);
+        }
+
+        // MediaPipe 影像處理核心
+        const pose = new Pose({locateFile: (f) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${f}`});
+        pose.setOptions({ modelComplexity: 1, smoothLandmarks: true, minDetectionConfidence: 0.5 });
+        
+        pose.onResults((res) => {
+            canvasCtx.save();
+            canvasCtx.clearRect(0, 0, 1280, 720);
+            canvasCtx.drawImage(res.image, 0, 0, 1280, 720);
+
+            if (res.poseLandmarks) {
+                const lm = res.poseLandmarks;
+                const shoulder = lm[12], elbow = lm[14], wrist = lm[16];
+                
+                // 儲存實際像素高度供校準與計算使用
+                latestWristY = wrist.y * 720; 
+
+                // 1. 計算夾角與繪製骨架線
+                const angle = calculateElbowAngle(shoulder, elbow, wrist);
+                const isStraight = angle >= 165;
+                
+                canvasCtx.strokeStyle = isStraight ? "#00FF00" : "#FF0000";
+                canvasCtx.lineWidth = 10;
+                canvasCtx.beginPath();
+                canvasCtx.moveTo(shoulder.x * 1280, shoulder.y * 720);
+                canvasCtx.lineTo(elbow.x * 1280, elbow.y * 720);
+                canvasCtx.lineTo(wrist.x * 1280, wrist.y * 720);
+                canvasCtx.stroke();
+
+                // 2. 顯示即時深度
+                const depthCm = isTraining ? Math.abs(latestWristY - initialY) / k_factor : 0;
+                document.getElementById('liveDepthInfo').innerText = `即時深度: ${depthCm.toFixed(1)} cm`;
+
+                // 3. 測驗中邏輯：給予視覺警告並計算分數
+                if (isTraining) {
+                    let advice = "✅ 動作標準";
+                    document.getElementById('adviceText').style.color = "#00FF00";
+
+                    if (!isStraight) {
+                        advice = "⚠️ 請將手肘打直！";
+                        document.getElementById('adviceText').style.color = "#FF0000";
+                        currentStats.sPosture = Math.max(15, currentStats.sPosture - 0.1); // 扣分機制
+                    } else if (depthCm > 0 && depthCm < 5) {
+                        advice = "⚠️ 壓深一點！(目標5-6cm)";
+                        document.getElementById('adviceText').style.color = "#FF0000";
+                        currentStats.sDepth = Math.max(15, currentStats.sDepth - 0.1);
+                    }
+
+                    document.getElementById('adviceText').innerText = advice;
+                    
+                    // 更新總分預估
+                    let estTotal = Math.round(currentStats.sPos + currentStats.sDepth + currentStats.sRate + currentStats.sRecoil + currentStats.sPosture);
+                    document.getElementById('totalScoreText').innerText = estTotal;
+                }
+            }
+            canvasCtx.restore();
+        });
+
+        // 結束測驗並發送至 GAS
+        async function finishAndSubmit() {
+            clearInterval(trainingTimer);
+            isTraining = false;
+            document.getElementById('finishBtn').innerText = "🔄 資料上傳中...";
+            document.getElementById('finishBtn').disabled = true;
+
+            const payload = {
+                className: document.getElementById('cName').value,
+                stuId: document.getElementById('sId').value,
+                userName: document.getElementById('uName').value,
+                sPos: Math.round(currentStats.sPos),
+                sDepth: Math.round(currentStats.sDepth),
+                sRate: Math.round(currentStats.sRate),
+                sRecoil: Math.round(currentStats.sRecoil),
+                sPosture: Math.round(currentStats.sPosture),
+                userId: liff.getContext()?.userId || "Unknown"
+            };
+
+            try {
+                await fetch(GAS_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                alert("🎉 成績上傳成功！已寫入資料庫。");
+                liff.closeWindow();
+            } catch (err) {
+                alert("上傳失敗，請檢查網路連線。");
+            }
+        }
+
+        // 啟動相機
+        const camera = new Camera(videoElement, {
+            onFrame: async () => { await pose.send({image: videoElement}); },
+            width: 1280, height: 720
+        });
+        camera.start();
+    </script>
+</body>
+</html>
