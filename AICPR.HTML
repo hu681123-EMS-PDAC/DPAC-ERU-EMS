@@ -258,3 +258,29 @@
 </body>
 
 </html>
+<script>
+const GAS_URL = "👉貼你的WebApp網址";
+
+async function send(){
+  const payload = {
+    userName:"測試員",
+    sPos:25,
+    sDepth:22,
+    sRate:21,
+    sRecoil:23,
+    sPosture:24,
+    advice:"AI判定正常",
+    userId:"👉LINE userId",
+    image:"" // 可空
+  };
+
+  await fetch(GAS_URL,{
+    method:"POST",
+    body: JSON.stringify(payload)
+  });
+
+  alert("送出成功");
+}
+</script>
+
+<button onclick="send()">測試送出</button>
