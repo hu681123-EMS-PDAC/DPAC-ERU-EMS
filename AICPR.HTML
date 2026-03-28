@@ -270,4 +270,61 @@
             const c_name = document.getElementById('class_name').value;
             const s_id = document.getElementById('student_id').value;
 
-            if (!name || !
+            if (!name || !c_name || !s_id) {
+                alert("❌ 請完整填寫：班別、學號、姓名");
+                return;
+            }
+
+            if (!last_pose) {
+                alert("❌ AI 尚未偵測到人體，請確認畫面上是否有出現綠色的肩膀線與手腕點。");
+                return;
+            }
+
+            // 初始化 AudioContext (必須在使用者點擊行為中觸發)
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+            main_hand = (last_pose[15].y > last_pose[16].y) ? 15 : 16;
+            start_y = last_pose[main_hand].y * canvas.height;
+            
+            is_testing = true;
+            document.getElementById('show-name').innerText = name;
+            document.getElementById('setup-screen').style.display = 'none';
+            document.getElementById('test-screen').style.display = 'block';
+
+            // 啟動計時器
+            testStartTime = Date.now();
+            timerInterval = setInterval(() => {
+                const diff = Math.floor((Date.now() - testStartTime) / 1000);
+                const m = String(Math.floor(diff / 60)).padStart(2, '0');
+                const s = String(diff % 60).padStart(2, '0');
+                document.getElementById('timer-display').innerText = `${m}:${s}`;
+            }, 1000);
+        }
+
+        function finishAndUpload() {
+            is_testing = false;
+            
+            // 停止計時與節拍器
+            if (timerInterval) clearInterval(timerInterval);
+            document.getElementById('metro-toggle').checked = false;
+            toggleMetronome(false);
+
+            const payload = {
+                cName: document.getElementById('class_name').value,
+                sId: document.getElementById('student_id').value,
+                uName: document.getElementById('user_name').value,
+                ...score_obj,
+                advice: score_obj.sDepth < 20 ? "按壓深度需加強" : "操作優異",
+                timeUsed: document.getElementById('timer-display').innerText, // 傳送經過時間
+                userId: liff.getContext()?.userId || "Unknown"
+            };
+
+            fetch(GAS_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) })
+            .then(() => {
+                alert(`🎉 測驗結束！\n經過時間：${payload.timeUsed}\n成績已上傳。`);
+                liff.closeWindow();
+            }).catch(e => alert("上傳失敗: " + e));
+        }
+    </script>
+</body>
+</html>
