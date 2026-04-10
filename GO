@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>🚑 指揮官控制台</title>
+
+<style>
+body{
+  margin:0;
+  font-family:sans-serif;
+  background:#0d1117;
+  color:#fff;
+}
+
+h1{
+  text-align:center;
+  font-size:40px;
+  margin:20px;
+}
+
+.wrap{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+}
+
+.card{
+  width:220px;
+  margin:15px;
+  padding:20px;
+  border-radius:20px;
+  text-align:center;
+}
+
+.blue{background:#2962ff;}
+.green{background:#00c853;}
+.red{background:#d50000;}
+.orange{background:#ff6d00;}
+
+.num{font-size:50px;}
+
+.btn{
+  margin:10px;
+  padding:15px 25px;
+  font-size:18px;
+  border:none;
+  border-radius:10px;
+  cursor:pointer;
+}
+
+button:hover{opacity:0.8;}
+
+.list{
+  max-height:300px;
+  overflow:auto;
+  padding:10px;
+  text-align:left;
+}
+</style>
+</head>
+
+<body>
+
+<h1>🚑 指揮官控制面板</h1>
+
+<div class="wrap">
+  <div class="card blue">
+    <div>總人數</div>
+    <div class="num" id="total">0</div>
+  </div>
+
+  <div class="card green">
+    <div>已報到</div>
+    <div class="num" id="checked">0</div>
+  </div>
+
+  <div class="card red">
+    <div>未報到</div>
+    <div class="num" id="notyet">0</div>
+  </div>
+
+  <div class="card orange">
+    <div>完成率</div>
+    <div class="num" id="percent">0%</div>
+  </div>
+</div>
+
+<div style="text-align:center;">
+  <button class="btn" onclick="remind()">🔔 提醒全部</button>
+  <button class="btn" onclick="loadList()">📋 未報到清單</button>
+</div>
+
+<div style="text-align:center;">
+  <input id="station" placeholder="輸入站別">
+  <button class="btn" onclick="remindStation()">提醒該站</button>
+  <button class="btn" onclick="loadListStation()">查該站</button>
+</div>
+
+<div class="list" id="list"></div>
+
+<script>
+const API = "你的GAS網址"; // ←填這
+
+function loadStats(){
+  fetch(API+"?action=stats")
+  .then(r=>r.json())
+  .then(d=>{
+    total.innerText = d.total;
+    checked.innerText = d.checked;
+    notyet.innerText = d.notyet;
+    percent.innerText = d.percent + "%";
+  });
+}
+
+function loadList(){
+  fetch(API+"?action=list")
+  .then(r=>r.json())
+  .then(showList);
+}
+
+function loadListStation(){
+  let s = document.getElementById("station").value;
+  fetch(API+"?action=list&station="+s)
+  .then(r=>r.json())
+  .then(showList);
+}
+
+function showList(data){
+  let html="";
+  data.forEach(x=>{
+    html += "❌ "+x.name+"（"+x.station+"）<br>";
+  });
+  list.innerHTML = html || "🎉 全員完成";
+}
+
+function remind(){
+  fetch(API+"?action=remind");
+  alert("已提醒全部");
+}
+
+function remindStation(){
+  let s = document.getElementById("station").value;
+  fetch(API+"?action=remind&station="+s);
+  alert("已提醒："+s);
+}
+
+setInterval(loadStats,3000);
+loadStats();
+</script>
+
+</body>
+</html>
