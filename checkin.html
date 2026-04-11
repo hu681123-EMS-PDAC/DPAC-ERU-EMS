@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🚑 DPAC 指揮部實時面板 v6.5 (終極穩定版)</title>
+<title>🚑 DPAC 指揮部實時面板</title>
 
 <style>
   :root {
@@ -98,7 +98,7 @@
 
 <div id="status-bar"></div>
 
-<h1>🚑 DPAC 指揮中心 v6.5</h1>
+<h1>🚑 DPAC 指揮中心</h1>
 <div class="subtitle" id="sync-msg">試算表同步中...</div>
 
 <div class="kpi-grid">
@@ -132,17 +132,35 @@
         <option value="步行隊">步行隊</option>
         <option value="西螺橋北端站">西螺橋北端站</option>
       </select>
-      <label>姓名 (唯讀)</label>
-      <input type="text" id="edit-name" readonly>
-      <label>聯絡電話</label>
-      <input type="tel" id="edit-phone">
+      <div style="display:flex; gap:15px;">
+        <div style="flex:1;">
+          <label>姓名</label>
+          <input type="text" id="edit-name" readonly>
+        </div>
+        <div style="flex:1;">
+          <label>聯絡電話</label>
+          <input type="tel" id="edit-phone">
+        </div>
+      </div>
+
+      <div style="display:flex; gap:15px;">
+        <div style="flex:1;">
+          <label style="color:var(--yellow); font-size:22px;">到站時間</label>
+          <input type="text" id="edit-intime" readonly placeholder="無紀錄">
+        </div>
+        <div style="flex:1;">
+          <label style="color:var(--green); font-size:22px;">報退時間</label>
+          <input type="text" id="edit-outtime" readonly placeholder="無紀錄">
+        </div>
+      </div>
+
       <label>目前狀態</label>
       <select id="edit-status">
         <option value="未報到">❌ 未報到</option>
         <option value="已報到">✔️ 已報到</option>
         <option value="已報退">🏠 已報退</option>
       </select>
-      <label>備註/時間資訊</label>
+      <label>備註紀錄</label>
       <textarea id="edit-note" rows="2"></textarea>
       
       <button class="btn btn-purple" id="btn-save" onclick="saveMemberEdit()">💾 儲存並修正資料庫</button>
@@ -188,15 +206,15 @@
   </div>
 
   <div class="card">
-    <h3 style="margin:0; color:var(--yellow); font-size: 40px;">⏱ 最新動態</h3>
+    <h3 style="margin:0; color:var(--yellow); font-size: 40px;">⏱ 最新動態 (報到與報退)</h3>
     <div id="rank-list" class="list-container" style="margin-top:20px;"></div>
   </div>
 
 </div>
 
 <script>
-// 👇 使用你提供的網址，已原封不動放置
-const API = "https://script.google.com/macros/s/AKfycbwE0RRnK3X1X8IAbQ_Fxl2G0yz62m_dsGDUMv-b4ajHqu-Q70qT_rQd2Ue0m3tm0i5R/exec"; 
+// 👇 你的網址
+const API = "https://script.google.com/macros/s/AKfycbwsOFnU2sMhR8FXYXHUskUkuABR7RlhH2jsUVV8sQrsMkoR8Hvs6xG1YmT5hklMJiHp/exec"; 
 
 let allMembersData = []; 
 let isOperating = false;
@@ -209,7 +227,6 @@ function showMsg(msg, color) {
   setTimeout(() => bar.style.display = "none", 4000);
 }
 
-// 監測是否正在輸入，避免刷新洗掉資料
 document.querySelectorAll('input, select, textarea').forEach(el => {
   el.addEventListener('focus', () => { isOperating = true; });
   el.addEventListener('blur', () => { setTimeout(() => isOperating = false, 3000); });
@@ -234,15 +251,23 @@ async function loadData() {
 
     // 渲染未報到名單
     const nyList = document.getElementById("notyet-list");
-    nyList.innerHTML = dNotyet.length === 0 ? `<div style="padding:100px; text-align:center; color:var(--green); font-size:40px;">全員到齊</div>` :
+    nyList.innerHTML = dNotyet.length === 0 ? `<div style="padding:100px; text-align:center; color:var(--green); font-size:40px;">全員已報到或報退</div>` :
       dNotyet.map(x => `<div class="list-item"><span>${x.station} - ${x.name}</span><a href="tel:${x.phone}" style="color:var(--green); text-decoration:none;">📞</a></div>`).join("");
 
-    // 渲染最新動態 (修正排版讓長文字更順)
-    document.getElementById("rank-list").innerHTML = dRank.map(x => `
+    // 渲染最新動態 (雙時間顯示防呆)
+    document.getElementById("rank-list").innerHTML = dRank.map(x => {
+      let timeStr = "";
+      if (x.status === "已報退") {
+        timeStr = `<span style="color:#aaa;">到:${x.inTime||'--'}</span> | <span style="color:var(--green);">退:${x.outTime||'--'}</span>`;
+      } else {
+        timeStr = `<span style="color:var(--yellow);">到:${x.inTime||'--'}</span>`;
+      }
+      return `
       <div class="list-item">
-        <span>👤 ${x.name} <span style="font-size:20px; color:#8b949e;">(${x.status})</span></span>
-        <span style="color:var(--yellow); font-family:monospace;">${x.time}</span>
-      </div>`).join("");
+        <span>👤 ${x.name} <span style="font-size:22px; color:#8b949e;">(${x.status})</span></span>
+        <span style="font-family:monospace; font-size:26px;">${timeStr}</span>
+      </div>`;
+    }).join("");
 
     allMembersData = dMembers;
     
@@ -275,6 +300,10 @@ function loadMemberToEdit() {
     document.getElementById("edit-phone").value = m.phone || "";
     document.getElementById("edit-status").value = m.status || "未報到";
     document.getElementById("edit-note").value = m.note || "";
+    
+    // 填入雙軌時間
+    document.getElementById("edit-intime").value = m.inTime || "";
+    document.getElementById("edit-outtime").value = m.outTime || "";
   }
 }
 
@@ -295,7 +324,7 @@ async function saveMemberEdit() {
     const res = await fetch(url).then(r => r.json());
     if (res.ok) { 
       showMsg("✅ 資料庫已同步更新", "#1b8a00"); 
-      isOperating = false; // 解除暫停以便立即刷新
+      isOperating = false;
       await loadData(); 
     }
   } catch (e) { showMsg("❌ 網路異常，更新失敗", "#da3633"); }
