@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🚑 DPAC 4/19 大甲媽祖 中心面板 v5.1 (優化版)</title>
+<title>🚑 DPAC 4/19 大甲媽祖 中心面板 v5.2 (穩定修復版)</title>
 
 <style>
   :root {
-    --bg: #050505;
+    --bg: #000000;
     --card-bg: #111b2d;
     --red: #ff3131;
     --green: #39ff14;
@@ -25,7 +25,7 @@
     color: var(--text);
     font-family: 'Segoe UI', Roboto, "Microsoft JhengHei", sans-serif;
     padding: 20px;
-    letter-spacing: 1.2px; /* 稍微增加字距提升易讀性 */
+    letter-spacing: 1.2px;
   }
 
   h1 { text-align: center; font-size: 48px; font-weight: 900; color: var(--blue); text-shadow: 0 0 20px rgba(0, 210, 255, 0.8); margin: 10px 0; }
@@ -42,7 +42,7 @@
   }
   
   .kpi-card { text-align: center; transition: transform 0.2s; }
-  .kpi-card:hover { transform: translateY(-5px); } /* 增加微互動感 */
+  .kpi-card:hover { transform: translateY(-5px); }
   .kpi-title { font-size: 28px; color: #f8fafc; font-weight: bold; margin-bottom: 10px; }
   .kpi-num { font-size: 100px; font-weight: 900; margin: 0; font-family: 'Arial Black', sans-serif; line-height: 1; text-shadow: 2px 2px 10px rgba(0,0,0,0.8); }
 
@@ -62,16 +62,16 @@
   
   .list-item { 
     padding: 18px 24px; border-bottom: 1px solid var(--border); 
-    display: flex; justify-content: space-between; align-items: center; font-size: 22px; /* 字體加大 */
+    display: flex; justify-content: space-between; align-items: center; font-size: 24px; font-weight: bold;
   }
 
-  /* 表單控制項 */
-  label { display: block; margin-top: 15px; font-weight: bold; color: var(--blue); font-size: 20px; } /* 標籤加大 */
+  /* 表單控制項 - 高對比大字體 */
+  label { display: block; margin-top: 15px; font-weight: bold; color: var(--blue); font-size: 22px; }
   input, select, textarea {
-    width: 100%; padding: 18px; margin: 10px 0;
+    width: 100%; padding: 20px; margin: 10px 0;
     background: var(--input-bg); color: #ffffff;
     border: 2px solid var(--border); border-radius: 12px;
-    box-sizing: border-box; font-size: 22px; font-weight: bold; /* 輸入框字體加大 */
+    box-sizing: border-box; font-size: 24px; font-weight: bold;
     transition: all 0.3s ease;
   }
   input::placeholder, textarea::placeholder { color: #64748b; }
@@ -81,13 +81,16 @@
     border-color: var(--blue); 
     outline: none; 
     background: #000000; 
-    box-shadow: 0 0 15px rgba(0, 210, 255, 0.4); 
+    box-shadow: 0 0 15px rgba(0, 210, 255, 0.5); 
   }
+
+  /* 鎖定框樣式 */
+  input[readonly] { background: #1a1a1a; color: #888; border-color: #333; cursor: not-allowed; }
 
   /* 按鈕樣式 */
   .btn {
-    width: 100%; padding: 22px; margin-top: 12px;
-    font-size: 24px; font-weight: 900; color: white;
+    width: 100%; padding: 22px; margin-top: 15px;
+    font-size: 26px; font-weight: 900; color: white;
     border: none; border-radius: 12px; cursor: pointer;
     transition: 0.2s; text-shadow: 1px 1px 4px rgba(0,0,0,0.8);
     box-shadow: 0 4px 15px rgba(0,0,0,0.5);
@@ -130,7 +133,7 @@
 <div class="panel-grid">
   
   <div class="card" style="grid-row: span 2;">
-    <h3 style="margin-top:0; color:var(--purple); font-size: 28px;">🔍 人員查詢與快速修改</h3>
+    <h3 style="margin-top:0; color:var(--purple); font-size: 32px;">🔍 人員查詢與快速修改</h3>
     <label>選擇人員</label>
     <select id="info-member-select" onchange="loadMemberToEdit()">
       <option value="">⏳ 載入名單中...</option>
@@ -140,7 +143,7 @@
       <label>站別 / 單位</label>
       <input type="text" id="edit-station">
       <label>姓名 (不可修改)</label>
-      <input type="text" id="edit-name" readonly style="background: #1a1a1a; color: #888; border-color: #333;">
+      <input type="text" id="edit-name" readonly>
       <label>電話號碼</label>
       <input type="tel" id="edit-phone">
       <label>目前狀態</label>
@@ -151,12 +154,12 @@
       <label>備註紀錄</label>
       <textarea id="edit-note" rows="3"></textarea>
       
-      <button class="btn btn-purple" onclick="saveMemberEdit()">💾 儲存修改資料</button>
+      <button class="btn btn-purple" id="btn-save" onclick="saveMemberEdit()">💾 儲存修改資料</button>
     </div>
   </div>
 
   <div class="card">
-    <h3 style="margin-top:0; color:var(--blue); font-size: 28px;">⚡ 安全官快速報到</h3>
+    <h3 style="margin-top:0; color:var(--blue); font-size: 32px;">⚡ 站長快速報到</h3>
     <label>選擇未報到人員</label>
     <select id="manual-member-select">
       <option value="">⏳ 載入名單中...</option>
@@ -165,11 +168,11 @@
   </div>
 
   <div class="card">
-    <h3 style="margin-top:0; color:var(--green); font-size: 28px;">➕ 新增人員</h3>
+    <h3 style="margin-top:0; color:var(--green); font-size: 32px;">➕ 緊急新增人員</h3>
     <div style="display:flex; gap:15px;">
       <div style="flex:1;">
         <label>站別</label>
-        <input type="text" id="add-station" placeholder="例:徒步隊">
+        <input type="text" id="add-station" placeholder="例:第一站">
       </div>
       <div style="flex:1;">
         <label>姓名</label>
@@ -183,14 +186,15 @@
 
   <div class="card">
     <div style="display:flex; justify-content:space-between; align-items:center;">
-      <h3 style="margin:0; color:var(--red); font-size: 28px;">🚨 未報到清單</h3>
-</div>
+      <h3 style="margin:0; color:var(--red); font-size: 32px;">🚨 未報到清單</h3>
+      <button class="btn btn-red" style="width:auto; padding:12px 30px; margin:0; font-size:22px;" onclick="alertAll()">🔔 催報</button>
+    </div>
     <hr style="border-color:var(--border); margin:20px 0;">
     <div id="notyet-list" class="list-container">載入中...</div>
   </div>
 
   <div class="card">
-    <h3 style="margin-top:0; color:var(--yellow); font-size: 28px;">⏱ 最新報到動態 (TOP 10)</h3>
+    <h3 style="margin-top:0; color:var(--yellow); font-size: 32px;">⏱ 最新報到動態 (TOP 10)</h3>
     <hr style="border-color:var(--border); margin:20px 0;">
     <div id="rank-list" class="list-container">載入中...</div>
   </div>
@@ -213,70 +217,73 @@ function showMsg(msg, color) {
   setTimeout(() => bar.style.display = "none", 4000);
 }
 
-// 🚀 優化：使用 Promise.all 並行載入資料，速度提升 3~4 倍
-function loadData() {
-  const pStats = fetch(API + "?action=stats").then(r => r.json());
-  const pNotyet = fetch(API + "?action=notyet").then(r => r.json());
-  const pRank = fetch(API + "?action=rank").then(r => r.json());
-  const pMembers = fetch(API + "?action=members").then(r => r.json());
+// 🚀 循序穩定載入：避免 Google 阻擋，同時加入 &_t 避開快取
+async function loadData() {
+  try {
+    const ts = new Date().getTime(); // 強制每次請求都不一樣，打破快取
+    
+    const dStats = await fetch(`${API}?action=stats&_t=${ts}`).then(r => r.json());
+    const dNotyet = await fetch(`${API}?action=notyet&_t=${ts}`).then(r => r.json());
+    const dRank = await fetch(`${API}?action=rank&_t=${ts}`).then(r => r.json());
+    const dMembers = await fetch(`${API}?action=members&_t=${ts}`).then(r => r.json());
 
-  Promise.all([pStats, pNotyet, pRank, pMembers])
-    .then(([dStats, dNotyet, dRank, dMembers]) => {
-      
-      // 1. 統計數據
-      document.getElementById("total").innerText = dStats.total;
-      document.getElementById("checked").innerText = dStats.checked;
-      document.getElementById("notyet").innerText = dStats.notyet;
-      document.getElementById("percent-display").innerText = "目前報到完成率：" + dStats.percent + "%";
+    // 1. 統計數據
+    document.getElementById("total").innerText = dStats.total;
+    document.getElementById("checked").innerText = dStats.checked;
+    document.getElementById("notyet").innerText = dStats.notyet;
+    document.getElementById("percent-display").innerText = "目前報到完成率：" + dStats.percent + "%";
 
-      // 2. 未報到清單
-      const list = document.getElementById("notyet-list");
-      if(dNotyet.length === 0) { 
-        list.innerHTML = "<div style='text-align:center; color:var(--green); padding:50px 20px; font-size:26px; font-weight:bold;'>🎉 全員已完成報到！</div>"; 
-      } else {
-        list.innerHTML = dNotyet.map(x => 
-          `<div class="list-item">
-            <span><b>${x.station}</b> - ${x.name}</span>
-            <a href="tel:${x.phone}" style="color:var(--green); font-weight:900; text-decoration:none; border:2px solid var(--green); padding:10px 20px; border-radius:10px; transition:0.2s;">📞 撥打</a>
-          </div>`
-        ).join("");
-      }
-
-      // 3. 最新動態
-      document.getElementById("rank-list").innerHTML = dRank.map(x => 
+    // 2. 未報到清單
+    const list = document.getElementById("notyet-list");
+    if(dNotyet.length === 0) { 
+      list.innerHTML = "<div style='text-align:center; color:var(--green); padding:50px 20px; font-size:26px; font-weight:bold;'>🎉 全員已完成報到！</div>"; 
+    } else {
+      list.innerHTML = dNotyet.map(x => 
         `<div class="list-item">
-          <span>👤 ${x.name}</span>
-          <span style="color:var(--yellow); font-family:monospace; font-weight:bold;">⏰ ${x.time}</span>
+          <span><b>${x.station}</b> - ${x.name}</span>
+          <a href="tel:${x.phone}" style="color:var(--green); font-weight:900; text-decoration:none; border:2px solid var(--green); padding:10px 20px; border-radius:10px; transition:0.2s;">📞 撥打</a>
         </div>`
       ).join("");
+    }
 
-      // 4. 下拉選單更新
-      allMembersData = dMembers; 
-      let checkinOptions = `<option value="">-- 手動選擇人員 --</option>`;
-      let infoOptions = `<option value="">-- 搜尋/修改人員資訊 --</option>`;
+    // 3. 最新動態
+    document.getElementById("rank-list").innerHTML = dRank.map(x => 
+      `<div class="list-item">
+        <span>👤 ${x.name}</span>
+        <span style="color:var(--yellow); font-family:monospace; font-weight:bold;">⏰ ${x.time}</span>
+      </div>`
+    ).join("");
 
-      dMembers.forEach(x => {
-        let label = `${x.station} - ${x.name}`;
-        let statusTag = x.status === "已報到" ? "✔️" : "❌";
-        infoOptions += `<option value="${x.name}">${statusTag} ${label}</option>`;
-        if(x.status !== "已報到") {
-          checkinOptions += `<option value="${x.name}">${label}</option>`;
-        }
-      });
+    // 4. 下拉選單更新
+    allMembersData = dMembers; 
+    let checkinOptions = `<option value="">-- 手動選擇人員 --</option>`;
+    let infoOptions = `<option value="">-- 搜尋/修改人員資訊 --</option>`;
 
-      document.getElementById("manual-member-select").innerHTML = checkinOptions;
-      
-      // 避免覆蓋正在編輯的選單
-      const infoSelect = document.getElementById("info-member-select");
+    dMembers.forEach(x => {
+      let label = `${x.station} - ${x.name}`;
+      let statusTag = x.status === "已報到" ? "✔️" : "❌";
+      infoOptions += `<option value="${x.name}">${statusTag} ${label}</option>`;
+      if(x.status !== "已報到") {
+        checkinOptions += `<option value="${x.name}">${label}</option>`;
+      }
+    });
+
+    // 防干擾機制：如果使用者「正在操作選單」，就先不要更新它，以免選單閃退
+    const manualSelect = document.getElementById("manual-member-select");
+    if (document.activeElement !== manualSelect) {
+      manualSelect.innerHTML = checkinOptions;
+    }
+
+    const infoSelect = document.getElementById("info-member-select");
+    if (document.activeElement !== infoSelect) {
       const currentSelected = infoSelect.value;
       infoSelect.innerHTML = infoOptions;
       if(currentSelected) infoSelect.value = currentSelected;
+    }
 
-    })
-    .catch(error => {
-      console.error("資料讀取發生錯誤:", error);
-      // 可選：當完全讀不到資料時的處理
-    });
+  } catch (error) {
+    console.error("資料讀取發生錯誤:", error);
+  }
 }
 
 // 編輯功能載入
@@ -292,86 +299,119 @@ function loadMemberToEdit() {
   }
   const member = allMembersData.find(m => m.name === name);
   if(member) {
-    document.getElementById("edit-station").value = member.station;
-    document.getElementById("edit-name").value = member.name;
-    document.getElementById("edit-phone").value = member.phone;
+    document.getElementById("edit-station").value = member.station || "";
+    document.getElementById("edit-name").value = member.name || "";
+    document.getElementById("edit-phone").value = member.phone || "";
     document.getElementById("edit-status").value = (member.status === "已報到") ? "已報到" : "未報到";
     document.getElementById("edit-note").value = member.note || "";
   }
 }
 
-// 儲存編輯
-function saveMemberEdit() {
+// 💾 儲存編輯 (已加強防呆與強制更新)
+async function saveMemberEdit() {
   const name = document.getElementById("edit-name").value;
-  if(!name) return alert("請選擇人員！");
+  if(!name) return alert("請先從上方選擇要修改的人員！");
 
   const s = document.getElementById("edit-station").value;
   const p = document.getElementById("edit-phone").value;
   const st = document.getElementById("edit-status").value;
   const n = document.getElementById("edit-note").value;
   
-  // 🐛 修復：原本程式碼寫 var(--blue) 會引發 JS 錯誤，現改為色碼字串
+  const btn = document.getElementById("btn-save");
+  btn.innerText = "⏳ 儲存中...";
+  btn.disabled = true;
+
   showMsg("⏳ 正在更新資料庫...", "#00d2ff");
 
-  const url = `${API}?action=update&name=${encodeURIComponent(name)}&s=${encodeURIComponent(s)}&p=${encodeURIComponent(p)}&st=${encodeURIComponent(st)}&note=${encodeURIComponent(n)}`;
+  // 加上時間戳記強制更新
+  const url = `${API}?action=update&name=${encodeURIComponent(name)}&s=${encodeURIComponent(s)}&p=${encodeURIComponent(p)}&st=${encodeURIComponent(st)}&note=${encodeURIComponent(n)}&_t=${new Date().getTime()}`;
   
-  fetch(url).then(r=>r.json()).then(res => {
+  try {
+    const r = await fetch(url);
+    const res = await r.json();
+    
     if(res.ok) {
       showMsg("✅ 資料更新成功！", "#166534");
-      loadData();
+      await loadData(); // 更新完馬上強制刷新畫面
     } else {
       showMsg("❌ 更新失敗，請檢查後端", "#991b1b");
     }
-  }).catch(() => showMsg("❌ 網路錯誤，請稍後再試", "#991b1b"));
+  } catch (error) {
+    showMsg("❌ 網路錯誤，請稍後再試", "#991b1b");
+  } finally {
+    btn.innerText = "💾 儲存修改資料";
+    btn.disabled = false;
+  }
 }
 
-// 快速報到
-function manualCheckin() {
+// ⚡ 快速報到
+async function manualCheckin() {
   const name = document.getElementById("manual-member-select").value;
   if(!name) return alert("請選擇報到人員！");
+  
   const btn = document.getElementById("btn-checkin");
-  btn.innerText = "⏳ 處理中..."; btn.disabled = true;
+  btn.innerText = "⏳ 處理中..."; 
+  btn.disabled = true;
 
-  fetch(API + "?action=checkin&name=" + encodeURIComponent(name))
-    .then(r=>r.json()).then(res => {
-      if(res.ok) showMsg(`✅ ${res.name} 報到成功！`, "#166534");
-      else showMsg(`❌ ${res.msg}`, "#991b1b");
-      btn.innerText = "✔️ 確認報到"; btn.disabled = false;
-      loadData(); 
-    }).catch(() => {
-      showMsg("❌ 連線錯誤", "#991b1b");
-      btn.innerText = "✔️ 確認報到"; btn.disabled = false;
-    });
+  try {
+    const url = `${API}?action=checkin&name=${encodeURIComponent(name)}&_t=${new Date().getTime()}`;
+    const r = await fetch(url);
+    const res = await r.json();
+    
+    if(res.ok) showMsg(`✅ ${res.name} 報到成功！`, "#166534");
+    else showMsg(`❌ ${res.msg}`, "#991b1b");
+    
+    await loadData(); 
+  } catch (error) {
+    showMsg("❌ 連線錯誤", "#991b1b");
+  } finally {
+    btn.innerText = "✔️ 確認報到"; 
+    btn.disabled = false;
+  }
 }
 
-// 新增人員
-function addNewMember() {
+// ➕ 新增人員
+async function addNewMember() {
   const s = document.getElementById("add-station").value;
   const n = document.getElementById("add-name").value;
   const p = document.getElementById("add-phone").value;
   if(!s || !n) return alert("站別與姓名為必填！");
 
   const btn = document.getElementById("btn-add");
-  btn.innerText = "⏳ 寫入中..."; btn.disabled = true;
+  btn.innerText = "⏳ 寫入中..."; 
+  btn.disabled = true;
 
-  fetch(`${API}?action=add&s=${encodeURIComponent(s)}&n=${encodeURIComponent(n)}&p=${encodeURIComponent(p)}`)
-    .then(r=>r.json()).then(res => {
-      if(res.ok) {
-        showMsg(`✅ 成功新增人員：${n}`, "#166534");
-        document.getElementById("add-station").value = "";
-        document.getElementById("add-name").value = "";
-        document.getElementById("add-phone").value = "";
-      }
-      btn.innerText = "➕ 確認新增"; btn.disabled = false;
-      loadData();
-    }).catch(() => {
-      showMsg("❌ 連線錯誤", "#991b1b");
-      btn.innerText = "➕ 確認新增"; btn.disabled = false;
-    });
+  try {
+    const url = `${API}?action=add&s=${encodeURIComponent(s)}&n=${encodeURIComponent(n)}&p=${encodeURIComponent(p)}&_t=${new Date().getTime()}`;
+    const r = await fetch(url);
+    const res = await r.json();
+    
+    if(res.ok) {
+      showMsg(`✅ 成功新增人員：${n}`, "#166534");
+      document.getElementById("add-station").value = "";
+      document.getElementById("add-name").value = "";
+      document.getElementById("add-phone").value = "";
+      await loadData();
+    }
+  } catch (error) {
+    showMsg("❌ 連線錯誤", "#991b1b");
+  } finally {
+    btn.innerText = "➕ 確認新增"; 
+    btn.disabled = false;
+  }
 }
 
+// 🚨 催促通知
+function alertAll() {
+  if(!confirm("確定發送 LINE 提醒？")) return;
+  const ts = new Date().getTime();
+  fetch(`${API}?action=alert&_t=${ts}`)
+    .then(r=>r.json())
+    .then(res => showMsg("🔔 催促通知已發送至 LINE", "#b45309"))
+    .catch(() => showMsg("❌ 發送失敗", "#991b1b"));
+}
 
-// 初始化與循環更新
+// 啟動初始化與循環更新
 loadData();
 setInterval(loadData, 10000); 
 
