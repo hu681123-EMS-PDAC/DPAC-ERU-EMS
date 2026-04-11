@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>🚑 119戰情中心</title>
+
+<style>
+body{margin:0;background:#000;color:#fff;font-family:sans-serif;}
+.grid{display:grid;grid-template-columns:1fr 1fr 1fr;}
+.box{padding:30px;text-align:center;}
+.num{font-size:90px;}
+.red{background:#b71c1c;}
+.green{background:#1b5e20;}
+.yellow{background:#f57f17;}
+.list{height:300px;overflow:auto;}
+</style>
+</head>
+
+<body>
+
+<h1 style="text-align:center;">🚑 119指揮中心</h1>
+
+<div class="grid">
+  <div class="box red">
+    總人數<div id="t" class="num">0</div>
+  </div>
+  <div class="box yellow">
+    已報到<div id="c" class="num">0</div>
+  </div>
+  <div class="box green">
+    未報到<div id="n" class="num">0</div>
+  </div>
+</div>
+
+<h2 style="text-align:center;" id="p"></h2>
+
+<div class="grid">
+  <div class="box">
+    <h3>🚨 未報到</h3>
+    <div id="notyet" class="list"></div>
+  </div>
+
+  <div class="box">
+    <h3>⏱ 遲到排名</h3>
+    <div id="rank" class="list"></div>
+  </div>
+
+  <div class="box">
+    <h3>⚡ 操作</h3>
+    <button onclick="alertAll()">🔔 全體提醒</button>
+  </div>
+</div>
+
+<script>
+const API="你的GAS網址";
+
+function load(){
+fetch(API+"?action=stats").then(r=>r.json()).then(d=>{
+t.innerText=d.total;
+c.innerText=d.checked;
+n.innerText=d.notyet;
+p.innerText="完成率 "+d.percent+"%";
+
+document.body.style.background =
+d.percent<50?"#3e0000":
+d.percent<80?"#3e2f00":"#003300";
+});
+
+fetch(API+"?action=notyet").then(r=>r.json()).then(d=>{
+notyet.innerHTML=d.map(x=>
+`❌ ${x.name} 📞<a href="tel:${x.phone}" style="color:#0f0">${x.phone}</a>`
+).join("<br>");
+});
+
+fetch(API+"?action=rank").then(r=>r.json()).then(d=>{
+rank.innerHTML=d.map(x=>
+`${x.name} ⏰ ${x.time}`
+).join("<br>");
+});
+}
+
+function alertAll(){
+fetch(API+"?action=alert");
+alert("已通知");
+}
+
+setInterval(load,3000);
+load();
+</script>
+
+</body>
+</html>
