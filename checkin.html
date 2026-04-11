@@ -3,20 +3,20 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🚑 DPAC 4/19 中心指揮系統 v5.5</title>
+<title>🚑 DPAC 4/19 指揮系統 v5.6 穩定版</title>
 
 <style>
   :root {
     --bg: #000000;
-    --card-bg: #0a0a0a;
+    --card-bg: #0d1117;
     --red: #ff3131;
     --green: #39ff14;
     --yellow: #faff00;
     --blue: #00d2ff;
     --purple: #bc13fe;
     --text: #ffffff;
-    --border: #333333;
-    --input-bg: #111111;
+    --border: #30363d;
+    --input-bg: #161b22;
   }
   
   body {
@@ -25,71 +25,70 @@
     color: var(--text);
     font-family: 'Segoe UI', "Microsoft JhengHei", sans-serif;
     padding: 15px;
-    letter-spacing: 1px;
-    line-height: 1.4;
+    letter-spacing: 1.5px;
   }
 
-  h1 { text-align: center; font-size: 52px; font-weight: 900; color: var(--blue); text-shadow: 0 0 20px rgba(0, 210, 255, 0.8); margin: 15px 0; }
-  .subtitle { text-align: center; color: #aaaaaa; margin-bottom: 30px; font-size: 30px; font-weight: bold; }
+  h1 { text-align: center; font-size: 50px; font-weight: 900; color: var(--blue); text-shadow: 0 0 20px rgba(0, 210, 255, 0.7); margin: 10px 0; }
+  .subtitle { text-align: center; color: #8b949e; margin-bottom: 25px; font-size: 28px; font-weight: bold; }
 
-  /* KPI 區塊 */
-  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; margin-bottom: 30px; }
+  /* KPI 數據區塊 */
+  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 25px; }
   .card {
     background: var(--card-bg);
-    border-radius: 25px;
-    padding: 35px;
-    box-shadow: 0 10px 40px rgba(0,0,0,1);
-    border: 4px solid var(--border);
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.8);
+    border: 3px solid var(--border);
   }
   
   .kpi-card { text-align: center; }
-  .kpi-title { font-size: 34px; color: #ffffff; font-weight: bold; margin-bottom: 10px; }
-  .kpi-num { font-size: 110px; font-weight: 900; margin: 0; font-family: 'Arial Black', sans-serif; }
+  .kpi-title { font-size: 32px; color: #f0f6fc; font-weight: bold; margin-bottom: 10px; }
+  .kpi-num { font-size: 110px; font-weight: 900; margin: 0; font-family: 'Arial Black', sans-serif; line-height: 1; }
 
-  .border-red { border-color: var(--red); }
-  .border-yellow { border-color: var(--yellow); }
-  .border-green { border-color: var(--green); }
+  .border-red { border-top: 12px solid var(--red); }
+  .border-yellow { border-top: 12px solid var(--yellow); }
+  .border-green { border-top: 12px solid var(--green); }
 
   /* 網格系統 */
-  .panel-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 30px; }
+  .panel-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(440px, 1fr)); gap: 25px; }
 
-  /* 列表滾動容器 */
-  .list-container { height: 420px; overflow-y: auto; background: #050505; border-radius: 15px; border: 2px solid var(--border); }
+  /* 列表滾動 */
+  .list-container { height: 400px; overflow-y: auto; background: rgba(0,0,0,0.5); border-radius: 12px; border: 2px solid var(--border); }
   .list-item { 
-    padding: 25px; border-bottom: 2px solid #222; 
+    padding: 22px 25px; border-bottom: 1px solid var(--border); 
     display: flex; justify-content: space-between; align-items: center; font-size: 28px; font-weight: bold;
   }
 
-  /* 表單控制 - 極致大字體 */
-  label { display: block; margin-top: 25px; font-weight: 900; color: var(--blue); font-size: 28px; }
+  /* 輸入框與選單 - 極大化與高對比 */
+  label { display: block; margin-top: 20px; font-weight: 900; color: var(--blue); font-size: 26px; }
   input, select, textarea {
-    width: 100%; padding: 25px; margin: 15px 0;
+    width: 100%; padding: 25px; margin: 12px 0;
     background: var(--input-bg); color: #ffffff;
-    border: 3px solid var(--border); border-radius: 15px;
-    box-sizing: border-box; font-size: 30px; font-weight: bold;
+    border: 3px solid var(--border); border-radius: 12px;
+    box-sizing: border-box; font-size: 28px; font-weight: bold;
     outline: none;
   }
   
   input:focus, select:focus { border-color: var(--yellow); box-shadow: 0 0 15px rgba(250, 255, 0, 0.5); }
-  input[readonly] { background: #1a1a1a; color: #777; border-color: #222; }
+  input[readonly] { background: #000; color: #666; border-color: #222; }
 
   /* 按鈕樣式 */
   .btn {
-    width: 100%; padding: 28px; margin-top: 20px;
-    font-size: 32px; font-weight: 900; color: white;
-    border: none; border-radius: 18px; cursor: pointer;
-    transition: 0.1s; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+    width: 100%; padding: 25px; margin-top: 20px;
+    font-size: 30px; font-weight: 900; color: white;
+    border: none; border-radius: 15px; cursor: pointer;
+    transition: 0.2s;
   }
-  .btn:active { transform: scale(0.97); filter: brightness(1.3); }
-  .btn:disabled { background: #333 !important; color: #666; cursor: not-allowed; box-shadow: none; }
+  .btn:active { transform: translateY(3px); filter: brightness(1.2); }
+  .btn:disabled { background: #333 !important; color: #777; cursor: not-allowed; }
   
-  .btn-blue { background: linear-gradient(180deg, #00d2ff, #007bb5); }
-  .btn-green { background: linear-gradient(180deg, #39ff14, #1b8a00); color: #000; text-shadow: none; }
-  .btn-red { background: linear-gradient(180deg, #ff3131, #b30000); }
-  .btn-purple { background: linear-gradient(180deg, #bc13fe, #7a00ba); }
+  .btn-blue { background: #0070f3; box-shadow: 0 0 20px rgba(0, 112, 243, 0.4); }
+  .btn-green { background: #238636; box-shadow: 0 0 20px rgba(35, 134, 54, 0.4); }
+  .btn-red { background: #da3633; box-shadow: 0 0 20px rgba(218, 54, 51, 0.4); }
+  .btn-purple { background: #8957e5; box-shadow: 0 0 20px rgba(137, 87, 229, 0.4); }
 
-  /* 全螢幕狀態通知 */
-  #status-bar { text-align: center; padding: 25px; position: fixed; top: 0; left: 0; right: 0; z-index: 10000; font-weight: 900; font-size: 32px; display: none; color: white; box-shadow: 0 5px 30px rgba(0,0,0,0.8); }
+  /* 狀態列 */
+  #status-bar { text-align: center; padding: 25px; position: fixed; top: 0; left: 0; right: 0; z-index: 10000; font-weight: 900; font-size: 30px; display: none; color: white; }
 </style>
 </head>
 
@@ -97,12 +96,12 @@
 
 <div id="status-bar"></div>
 
-<h1>🚑 DPAC 指揮系統 (4/19 專用)</h1>
-<div class="subtitle" id="percent-display">系統連線初始化...</div>
+<h1>🚑 DPAC 指揮部實時面板</h1>
+<div class="subtitle" id="sync-msg">試算表同步中...</div>
 
 <div class="kpi-grid">
   <div class="card kpi-card border-red">
-    <div class="kpi-title">總動員</div>
+    <div class="kpi-title">總人數</div>
     <div id="total" class="kpi-num">0</div>
   </div>
   <div class="card kpi-card border-yellow">
@@ -118,61 +117,61 @@
 <div class="panel-grid">
   
   <div class="card" style="grid-row: span 2;">
-    <h3 style="margin:0; color:var(--purple); font-size: 42px; border-bottom: 5px solid var(--purple); padding-bottom: 10px;">🔍 人員查詢/快速修改</h3>
-    <label>請選擇人員 (含站別)</label>
+    <h3 style="margin:0; color:var(--purple); font-size: 38px; border-left: 10px solid var(--purple); padding-left: 15px;">🔍 人員查詢/修正</h3>
+    <label>請選擇人員</label>
     <select id="info-member-select" onchange="loadMemberToEdit()">
-      <option value="">載入試算表名單中...</option>
+      <option value="">⏳ 正在連線至試算表...</option>
     </select>
     
     <div id="edit-area">
-      <label>站別 / 單位</label>
-      <input type="text" id="edit-station" placeholder="例如: 溪洲后天宮站">
+      <label>站別 (例如: 溪洲后天宮站)</label>
+      <input type="text" id="edit-station" placeholder="輸入站別單位">
       <label>姓名</label>
       <input type="text" id="edit-name" readonly>
       <label>聯絡電話</label>
       <input type="tel" id="edit-phone">
-      <label>報到狀態</label>
+      <label>目前狀態</label>
       <select id="edit-status">
-        <option value="未報到">❌ 標記為未報到</option>
-        <option value="已報到">✔️ 標記為已報到</option>
+        <option value="未報到">❌ 未報到 (將重設時間)</option>
+        <option value="已報到">✔️ 已報到</option>
       </select>
-      <label>備註事項</label>
-      <textarea id="edit-note" rows="2" placeholder="備註內容..."></textarea>
+      <label>備註內容</label>
+      <textarea id="edit-note" rows="2" placeholder="備註資訊..."></textarea>
       
-      <button class="btn btn-purple" id="btn-save" onclick="saveMemberEdit()">💾 儲存並修正資料庫</button>
+      <button class="btn btn-purple" id="btn-save" onclick="saveMemberEdit()">💾 確認修改並儲存雲端</button>
     </div>
   </div>
 
   <div class="card">
-    <h3 style="margin:0; color:var(--blue); font-size: 42px; border-bottom: 5px solid var(--blue); padding-bottom: 10px;">⚡ 站長快速報到</h3>
-    <label>選擇未報到者</label>
+    <h3 style="margin:0; color:var(--blue); font-size: 38px; border-left: 10px solid var(--blue); padding-left: 15px;">⚡ 快速報到區</h3>
+    <label>選擇未報到人員</label>
     <select id="manual-member-select">
-      <option value="">等待資料載入...</option>
+      <option value="">載入中...</option>
     </select>
-    <button class="btn btn-blue" onclick="manualCheckin()" id="btn-checkin">✔️ 確認報到</button>
+    <button class="btn btn-blue" onclick="manualCheckin()" id="btn-checkin">✔️ 確認完成報到</button>
   </div>
 
   <div class="card">
-    <h3 style="margin:0; color:var(--green); font-size: 42px; border-bottom: 5px solid var(--green); padding-bottom: 10px;">➕ 手動新增人員</h3>
+    <h3 style="margin:0; color:var(--green); font-size: 38px; border-left: 10px solid var(--green); padding-left: 15px;">➕ 緊急新增人員</h3>
     <div style="display:flex; gap:15px;">
-      <div style="flex:1;"><label>站別</label><input type="text" id="add-station" placeholder="例: 步行隊"></div>
+      <div style="flex:1;"><label>站別</label><input type="text" id="add-station" placeholder="單位站別"></div>
       <div style="flex:1;"><label>姓名</label><input type="text" id="add-name" placeholder="姓名"></div>
     </div>
     <label>電話</label>
     <input type="tel" id="add-phone" placeholder="電話號碼">
-    <button class="btn btn-green" onclick="addNewMember()" id="btn-add">➕ 寫入雲端試算表</button>
+    <button class="btn btn-green" onclick="addNewMember()" id="btn-add">➕ 寫入試算表</button>
   </div>
 
   <div class="card">
     <div style="display:flex; justify-content:space-between; align-items:center;">
-      <h3 style="margin:0; color:var(--red); font-size: 42px;">🚨 尚未報到</h3>
-      <button class="btn btn-red" style="width:auto; padding:15px 30px; margin:0; font-size:26px;" onclick="alertAll()">🔔 催報</button>
+      <h3 style="margin:0; color:var(--red); font-size: 38px;">🚨 尚未報到清單</h3>
+      <button class="btn btn-red" style="width:auto; padding:12px 30px; margin:0; font-size:24px;" onclick="alertAll()">🔔 催報</button>
     </div>
     <div id="notyet-list" class="list-container" style="margin-top:20px;"></div>
   </div>
 
   <div class="card">
-    <h3 style="margin:0; color:var(--yellow); font-size: 42px;">⏱ 最新報到記錄</h3>
+    <h3 style="margin:0; color:var(--yellow); font-size: 38px;">⏱ 最新動態</h3>
     <div id="rank-list" class="list-container" style="margin-top:20px;"></div>
   </div>
 
@@ -182,7 +181,7 @@
 const API = "https://script.google.com/macros/s/AKfycbzIlP_GgPlA0U0BA9drw1Fd-RIY5GNSy6dBbhzCpSN12ZR3uto_grADXE_7UMMlm1br/exec"; 
 
 let allMembersData = []; 
-let isUserTyping = false; // 避免輸入時被刷新覆蓋
+let isUserFocus = false; // 偵測使用者是否正在操作選單，避免被刷新中斷
 
 function showMsg(msg, color) {
   const bar = document.getElementById("status-bar");
@@ -192,18 +191,18 @@ function showMsg(msg, color) {
   setTimeout(() => bar.style.display = "none", 4000);
 }
 
-// 監聽所有輸入元件，確保輸入時不刷新 UI
+// 監測輸入焦點
 document.querySelectorAll('input, select, textarea').forEach(el => {
-  el.addEventListener('focus', () => { isUserTyping = true; });
-  el.addEventListener('blur', () => { setTimeout(() => { isUserTyping = false; }, 3000); });
+  el.addEventListener('focus', () => { isUserFocus = true; });
+  el.addEventListener('blur', () => { setTimeout(() => isUserFocus = false, 3000); });
 });
 
 async function loadData() {
-  if (isUserTyping) return; 
+  if (isUserFocus) return; 
 
   try {
     const ts = Date.now();
-    // 🚀 並行載入所有資料，確保速度提升
+    // 🚀 採用並行請求，並強制繞過快取
     const [dStats, dNotyet, dRank, dMembers] = await Promise.all([
       fetch(`${API}?action=stats&_t=${ts}`).then(r => r.json()),
       fetch(`${API}?action=notyet&_t=${ts}`).then(r => r.json()),
@@ -214,17 +213,17 @@ async function loadData() {
     document.getElementById("total").innerText = dStats.total;
     document.getElementById("checked").innerText = dStats.checked;
     document.getElementById("notyet").innerText = dStats.notyet;
-    document.getElementById("percent-display").innerText = `大數據連線中：報到率 ${dStats.percent}%`;
+    document.getElementById("sync-msg").innerText = `最後更新：${new Date().toLocaleTimeString()} (報到率 ${dStats.percent}%)`;
 
-    // 渲染未報到名單 (處理通話連結)
+    // 渲染未報到清單
     const nyList = document.getElementById("notyet-list");
     if(dNotyet.length === 0) {
-      nyList.innerHTML = `<div style="padding:100px 20px; text-align:center; color:var(--green); font-size:36px;">✅ 全員已報到完成</div>`;
+      nyList.innerHTML = `<div style="padding:100px; text-align:center; color:var(--green); font-size:36px;">全員到齊</div>`;
     } else {
       nyList.innerHTML = dNotyet.map(x => `
         <div class="list-item">
           <span>${x.station} - ${x.name}</span>
-          <a href="tel:${x.phone}" style="color:var(--green); text-decoration:none; border:2px solid var(--green); padding:5px 15px; border-radius:10px;">📞 撥打</a>
+          <a href="tel:${x.phone}" style="color:var(--green); text-decoration:none; border:2px solid var(--green); padding:5px 15px; border-radius:10px;">📞 通話</a>
         </div>`).join("");
     }
 
@@ -237,34 +236,34 @@ async function loadData() {
 
     allMembersData = dMembers;
     
-    // 更新選單內容 (只有在使用者沒在操作時才刷新)
-    let infoOpt = '<option value="">-- 點擊搜尋人員 --</option>';
-    let manualOpt = '<option value="">-- 選擇報到者 --</option>';
+    // 更新選單內容
+    let infoHtml = '<option value="">-- 搜尋人員 --</option>';
+    let manualHtml = '<option value="">-- 選擇報到人員 --</option>';
 
     dMembers.forEach(m => {
       const tag = m.status === "已報到" ? "✔️" : "❌";
-      const label = `${tag} ${m.station}-${m.name}`;
-      infoOpt += `<option value="${m.name}">${label}</option>`;
+      infoHtml += `<option value="${m.name}">${tag} ${m.station}-${m.name}</option>`;
       if (m.status !== "已報到") {
-        manualOpt += `<option value="${m.name}">${m.station}-${m.name}</option>`;
+        manualHtml += `<option value="${m.name}">${m.station}-${m.name}</option>`;
       }
     });
 
     const infoSel = document.getElementById("info-member-select");
     const manualSel = document.getElementById("manual-member-select");
 
+    // 只有在非聚焦時更新
     if (document.activeElement !== infoSel) {
-      const prev = infoSel.value;
-      infoSel.innerHTML = infoOpt;
-      if (prev) infoSel.value = prev;
+      const cur = infoSel.value;
+      infoSel.innerHTML = infoHtml;
+      if (cur) infoSel.value = cur;
     }
     if (document.activeElement !== manualSel) {
-      manualSel.innerHTML = manualOpt;
+      manualSel.innerHTML = manualHtml;
     }
 
   } catch (e) { 
-    console.error("Fetch error", e);
-    document.getElementById("percent-display").innerText = "⚠️ 試算表載入失敗，請檢查網路！";
+    console.error("Sync Error", e);
+    document.getElementById("sync-msg").innerText = "⚠️ 試算表載入失敗，請檢查 API！";
   }
 }
 
@@ -283,11 +282,11 @@ function loadMemberToEdit() {
 
 async function saveMemberEdit() {
   const name = document.getElementById("edit-name").value;
-  if (!name) return alert("請先選取人員！");
+  if (!name) return alert("請先選擇人員");
 
   const btn = document.getElementById("btn-save");
   btn.disabled = true;
-  btn.innerText = "⏳ 正在更新試算表...";
+  btn.innerText = "⏳ 正在修正資料庫...";
   showMsg("⏳ 系統處理中，請稍候...", "#00d2ff");
 
   const s = document.getElementById("edit-station").value;
@@ -295,22 +294,22 @@ async function saveMemberEdit() {
   const st = document.getElementById("edit-status").value;
   const n = document.getElementById("edit-note").value;
 
-  // 使用 encodeURIComponent 確保特殊字元（如 ＆）能正確傳輸
+  // 使用 encodeURIComponent 確保站別特殊字元正確傳輸
   const url = `${API}?action=update&name=${encodeURIComponent(name)}&s=${encodeURIComponent(s)}&p=${encodeURIComponent(p)}&st=${encodeURIComponent(st)}&note=${encodeURIComponent(n)}&_t=${Date.now()}`;
 
   try {
     const res = await fetch(url).then(r => r.json());
     if (res.ok) {
-      showMsg("✅ 資料已同步至資料庫", "#1b8a00");
-      isUserTyping = false;
+      showMsg("✅ 資料已更新成功", "#1b8a00");
+      isUserFocus = false;
       await loadData();
     } else {
-      showMsg("❌ 伺服器回傳錯誤", "#b30000");
+      showMsg("❌ 修改失敗，請再試一次", "#da3633");
     }
-  } catch (e) { showMsg("❌ 連線超時，請重試", "#b30000"); }
+  } catch (e) { showMsg("❌ 連線異常", "#da3633"); }
   finally {
     btn.disabled = false;
-    btn.innerText = "💾 儲存並修正資料庫";
+    btn.innerText = "💾 確認修改並儲存雲端";
   }
 }
 
@@ -318,16 +317,15 @@ async function manualCheckin() {
   const name = document.getElementById("manual-member-select").value;
   if (!name) return alert("請選擇人員");
   const btn = document.getElementById("btn-checkin");
-  btn.disabled = true; btn.innerText = "報到中...";
+  btn.disabled = true; btn.innerText = "處理中...";
 
   try {
-    const url = `${API}?action=checkin&name=${encodeURIComponent(name)}&_t=${Date.now()}`;
-    const res = await fetch(url).then(r => r.json());
-    if (res.ok) showMsg(`✅ ${name} 已報到成功！`, "#1b8a00");
+    const res = await fetch(`${API}?action=checkin&name=${encodeURIComponent(name)}&_t=${Date.now()}`).then(r => r.json());
+    if (res.ok) showMsg(`✅ ${name} 報到成功！`, "#1b8a00");
     await loadData();
-  } catch (e) { showMsg("❌ 報到連線失敗", "#b30000"); }
+  } catch (e) { showMsg("連線超時", "#da3633"); }
   finally {
-    btn.disabled = false; btn.innerText = "✔️ 確認報到";
+    btn.disabled = false; btn.innerText = "✔️ 確認完成報到";
   }
 }
 
@@ -335,34 +333,33 @@ async function addNewMember() {
   const s = document.getElementById("add-station").value;
   const n = document.getElementById("add-name").value;
   const p = document.getElementById("add-phone").value;
-  if (!s || !n) return alert("站別與姓名為必填項目");
+  if (!s || !n) return alert("站別與姓名為必填");
   const btn = document.getElementById("btn-add");
   btn.disabled = true; btn.innerText = "寫入中...";
 
   try {
-    const url = `${API}?action=add&s=${encodeURIComponent(s)}&n=${encodeURIComponent(n)}&p=${encodeURIComponent(p)}&_t=${Date.now()}`;
-    const res = await fetch(url).then(r => r.json());
+    const res = await fetch(`${API}?action=add&s=${encodeURIComponent(s)}&n=${encodeURIComponent(n)}&p=${encodeURIComponent(p)}&_t=${Date.now()}`).then(r => r.json());
     if (res.ok) {
-      showMsg(`✅ 已新增：${n}`, "#1b8a00");
+      showMsg(`✅ 已成功新增人員：${n}`, "#1b8a00");
       document.getElementById("add-name").value = "";
       document.getElementById("add-phone").value = "";
       await loadData();
     }
-  } catch (e) { showMsg("❌ 新增連線失敗", "#b30000"); }
+  } catch (e) { showMsg("連線失敗", "#da3633"); }
   finally {
-    btn.disabled = false; btn.innerText = "➕ 寫入雲端試算表";
+    btn.disabled = false; btn.innerText = "➕ 寫入試算表";
   }
 }
 
 function alertAll() {
-  if (!confirm("確定要向所有未報到人員發送 LINE 催報？")) return;
+  if (!confirm("確定發送催報通知？")) return;
   fetch(`${API}?action=alert&_t=${Date.now()}`)
     .then(r => r.json())
-    .then(() => showMsg("🔔 催報指令已下達", "#b45309"))
-    .catch(() => showMsg("❌ 發送失敗", "#b30000"));
+    .then(() => showMsg("🔔 催報訊息已送出", "#d29922"))
+    .catch(() => showMsg("發送失敗", "#da3633"));
 }
 
-// 啟動與循環刷新 (每 10 秒)
+// 啟動
 loadData();
 setInterval(loadData, 10000); 
 
