@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title> DPAC4/19 大甲媽祖 中心面板</title>
+
+<style>
+  :root {
+    --bg: #0b0f19;
+    --card-bg: #111827;
+    --red: #ef4444;
+    --green: #22c55e;
+    --yellow: #f59e0b;
+    --blue: #3b82f6;
+    --purple: #c084fc;
+    --text: #f8fafc;
+  }
+  
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    padding: 20px;
+  }
+
+  h1 { text-align: center; font-size: 36px; text-shadow: 0 0 10px rgba(255,255,255,0.3); margin-bottom: 5px; }
+  .subtitle { text-align: center; color: #94a3b8; margin-bottom: 30px; font-size: 20px; }
+
+  /* 網格系統 */
+  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px; }
+  .panel-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px; }
+
+  /* 卡片設計 */
+  .card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.5);
+    border: 1px solid #1e293b;
+  }
+  
+  .kpi-card { text-align: center; position: relative; overflow: hidden; }
+  .kpi-title { font-size: 18px; color: #cbd5e1; }
+  .kpi-num { font-size: 70px; font-weight: bold; margin: 10px 0; }
+
+  /* 顏色標籤 */
+  .border-red { border-bottom: 5px solid var(--red); }
+  .border-yellow { border-bottom: 5px solid var(--yellow); }
+  .border-green { border-bottom: 5px solid var(--green); }
+
+  /* 滾動列表 */
+  .list-container { height: 250px; overflow-y: auto; padding-right: 10px; }
+  .list-container::-webkit-scrollbar { width: 8px; }
+  .list-container::-webkit-scrollbar-track { background: #1e293b; border-radius: 4px; }
+  .list-container::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+  
+  .list-item { 
+    padding: 10px; border-bottom: 1px solid #1e293b; 
+    display: flex; justify-content: space-between; align-items: center;
+  }
+
+  /* 表單與按鈕 */
+  input, select {
+    width: 100%; padding: 12px; margin: 8px 0;
+    background: #1e293b; color: white;
+    border: 1px solid #334155; border-radius: 6px;
+    box-sizing: border-box; font-size: 16px;
+  }
+  
+  .btn {
+    width: 100%; padding: 14px; margin-top: 10px;
+    font-size: 18px; font-weight: bold; color: white;
+    border: none; border-radius: 6px; cursor: pointer;
+    transition: 0.2s;
+  }
+  .btn:hover { opacity: 0.8; transform: translateY(-2px); }
+  .btn-blue { background: var(--blue); }
+  .btn-green { background: var(--green); }
+  .btn-red { background: var(--red); }
+
+  /* 資訊卡片 */
+  .info-box {
+    margin-top: 15px; padding: 15px;
+    background: #0f172a; border: 1px solid #334155;
+    border-radius: 8px; display: none; line-height: 1.6;
+  }
+  .info-box span { color: #94a3b8; width: 80px; display: inline-block; }
+
+  /* 狀態列 */
+  #status-bar { text-align: center; padding: 10px; margin-bottom: 20px; border-radius: 8px; font-weight: bold; }
+</style>
+</head>
+
+<body>
+
+<h1>DPAC 4/19 大甲媽祖 中心面板</h1>
+<div class="subtitle" id="percent-display">系統連線中...</div>
+
+<div id="status-bar" style="background: #1e293b; display: none;"></div>
+
+<div class="kpi-grid">
+  <div class="card kpi-card border-red">
+    <div class="kpi-title">總動員人數</div>
+    <div id="total" class="kpi-num">0</div>
+  </div>
+  <div class="card kpi-card border-yellow">
+    <div class="kpi-title">已完成報到</div>
+    <div id="checked" class="kpi-num" style="color: var(--yellow)">0</div>
+  </div>
+  <div class="card kpi-card border-green">
+    <div class="kpi-title">未報到人數</div>
+    <div id="notyet" class="kpi-num" style="color: var(--red)">0</div>
+  </div>
+</div>
+
+<div class="panel-grid">
+  
+  <div class="card">
+    <h3 style="margin-top:0; color:var(--purple);">🔍 人員資訊查詢</h3>
+    <select id="info-member-select" onchange="showMemberInfo()">
+      <option value="">⏳ 載入名單中...</option>
+    </select>
+    
+    <div id="member-info-display" class="info-box">
+      </div>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top:0; color:var(--blue);">⚡ 站長手動報到</h3>
+    <select id="manual-member-select">
+      <option value="">⏳ 載入名單中...</option>
+    </select>
+    <button class="btn btn-blue" onclick="manualCheckin()" id="btn-checkin">✔️ 確認報到</button>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top:0; color:var(--green);">➕ 緊急新增人員</h3>
+    <div style="display:flex; gap:10px;">
+      <input type="text" id="add-station" placeholder="站別 (例: 一大隊)" required>
+      <input type="text" id="add-name" placeholder="姓名" required>
+    </div>
+    <div style="display:flex; gap:10px;">
+      <input type="tel" id="add-phone" placeholder="電話號碼">
+      <input type="text" id="add-note" placeholder="備註">
+    </div>
+    <button class="btn btn-green" onclick="addNewMember()" id="btn-add">➕ 新增至資料庫</button>
+  </div>
+
+  <div class="card">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <h3 style="margin:0; color:var(--red);">🚨 未報到人員</h3>
+      <button class="btn btn-red" style="width:auto; padding:8px 15px; margin:0;" onclick="alertAll()">🔔 發送 LINE 催促</button>
+    </div>
+    <hr style="border-color:#1e293b; margin:15px 0;">
+    <div id="notyet-list" class="list-container">載入中...</div>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top:0; color:var(--yellow);">⏱ 最新報到動態 (前10名)</h3>
+    <hr style="border-color:#1e293b; margin:15px 0;">
+    <div id="rank-list" class="list-container">載入中...</div>
+  </div>
+
+</div>
+
+<script>
+// ==========================================
+// 👇 請在此處貼上你的 GAS 網頁應用程式網址 👇
+const API = "https://script.google.com/macros/s/AKfycbzIlP_GgPlA0U0BA9drw1Fd-RIY5GNSy6dBbhzCpSN12ZR3uto_grADXE_7UMMlm1br/exec"; 
+// ==========================================
+
+let allMembersData = []; // 儲存全體人員資料，供查詢使用
+
+function showMsg(msg, color) {
+  const bar = document.getElementById("status-bar");
+  bar.style.display = "block";
+  bar.style.backgroundColor = color;
+  bar.innerText = msg;
+  setTimeout(() => bar.style.display = "none", 4000);
+}
+
+// 載入所有資料
+function loadData() {
+  // 1. 載入統計
+  fetch(API + "?action=stats").then(r=>r.json()).then(d => {
+    document.getElementById("total").innerText = d.total;
+    document.getElementById("checked").innerText = d.checked;
+    document.getElementById("notyet").innerText = d.notyet;
+    document.getElementById("percent-display").innerText = "目前報到完成率：" + d.percent + "%";
+    
+    document.body.style.background = 
+      d.percent < 50 ? "#1a0505" : 
+      d.percent < 80 ? "#1a1605" : "#051a0b";
+  });
+
+  // 2. 載入未報到
+  fetch(API + "?action=notyet").then(r=>r.json()).then(d => {
+    const list = document.getElementById("notyet-list");
+    if(d.length === 0) { list.innerHTML = "<div style='text-align:center; color:#22c55e;'>🎉 全員已完成報到！</div>"; return; }
+    list.innerHTML = d.map(x => 
+      `<div class="list-item">
+        <span><b>${x.station}</b> - ${x.name}</span>
+        <a href="tel:${x.phone}" style="color:#22c55e; text-decoration:none;">📞 撥打</a>
+      </div>`
+    ).join("");
+  });
+
+  // 3. 載入遲到排行
+  fetch(API + "?action=rank").then(r=>r.json()).then(d => {
+    document.getElementById("rank-list").innerHTML = d.map(x => 
+      `<div class="list-item">
+        <span>👤 ${x.name}</span>
+        <span style="color:#cbd5e1;">⏰ ${x.time}</span>
+      </div>`
+    ).join("");
+  });
+
+  // 4. 更新雙重下拉選單
+  fetch(API + "?action=members").then(r=>r.json()).then(d => {
+    allMembersData = d; // 存入全域變數供查詢使用
+    
+    let checkinOptions = `<option value="">-- 請選擇要手動報到的人員 --</option>`;
+    let infoOptions = `<option value="">-- 請選擇要查詢資料的人員 --</option>`;
+
+    d.forEach(x => {
+      let label = `${x.station} - ${x.name}`;
+      // 所有人都加入查詢選單
+      let statusTag = x.status === "已報到" ? "✔️" : "❌";
+      infoOptions += `<option value="${x.name}">${statusTag} ${label}</option>`;
+      
+      // 只有未報到的人加入報到選單
+      if(x.status !== "已報到") {
+        checkinOptions += `<option value="${x.name}">${label}</option>`;
+      }
+    });
+
+    document.getElementById("manual-member-select").innerHTML = checkinOptions;
+    
+    // 如果目前查詢選單沒有被使用者選擇，才去更新內容 (避免打斷使用者看資料)
+    const infoSelect = document.getElementById("info-member-select");
+    if(!infoSelect.value) {
+      infoSelect.innerHTML = infoOptions;
+    }
+  });
+}
+
+// 顯示人員詳細資訊卡片
+function showMemberInfo() {
+  const name = document.getElementById("info-member-select").value;
+  const display = document.getElementById("member-info-display");
+  
+  if(!name) {
+    display.style.display = "none";
+    return;
+  }
+
+  const member = allMembersData.find(m => m.name === name);
+  if(member) {
+    let statusColor = member.status === "已報到" ? "var(--green)" : "var(--red)";
+    let statusText = member.status === "已報到" ? `✔️ 已報到 (${member.time})` : "❌ 未報到";
+    let phoneLink = member.phone ? `<a href="tel:${member.phone}" style="color:var(--blue);">${member.phone}</a>` : '無紀錄';
+
+    display.innerHTML = `
+      <div><span>站別/單位</span> <b>${member.station}</b></div>
+      <div><span>人員姓名</span> <b style="font-size:18px;">${member.name}</b></div>
+      <div><span>聯絡電話</span> <b>${phoneLink}</b></div>
+      <hr style="border-color:#334155; margin:10px 0;">
+      <div><span>目前狀態</span> <b style="color:${statusColor};">${statusText}</b></div>
+      <div><span>地址/單位</span> <b>${member.address || '無紀錄'}</b></div>
+      <div><span>備註事項</span> <b>${member.note || '無紀錄'}</b></div>
+    `;
+    display.style.display = "block";
+  }
+}
+
+// 執行手動報到
+function manualCheckin() {
+  const name = document.getElementById("manual-member-select").value;
+  if(!name) return alert("請先選擇人員！");
+  
+  const btn = document.getElementById("btn-checkin");
+  btn.innerText = "⏳ 處理中..."; btn.disabled = true;
+
+  fetch(API + "?action=checkin&name=" + encodeURIComponent(name))
+    .then(r=>r.json())
+    .then(res => {
+      if(res.ok) showMsg(`✅ 成功：${res.name} 已於 ${res.time} 完成報到！`, "#166534");
+      else showMsg(`❌ 失敗：${res.msg}`, "#991b1b");
+      
+      btn.innerText = "✔️ 確認報到"; btn.disabled = false;
+      loadData(); 
+    });
+}
+
+// 執行新增人員
+function addNewMember() {
+  const s = document.getElementById("add-station").value;
+  const n = document.getElementById("add-name").value;
+  const p = document.getElementById("add-phone").value;
+  const note = document.getElementById("add-note").value;
+
+  if(!s || !n) return alert("站別與姓名為必填！");
+
+  const btn = document.getElementById("btn-add");
+  btn.innerText = "⏳ 新增中..."; btn.disabled = true;
+
+  const url = `${API}?action=add&s=${encodeURIComponent(s)}&n=${encodeURIComponent(n)}&p=${encodeURIComponent(p)}&note=${encodeURIComponent(note)}`;
+  
+  fetch(url)
+    .then(r=>r.json())
+    .then(res => {
+      if(res.ok) {
+        showMsg(`✅ 成功新增人員：${n}`, "#166534");
+        document.getElementById("add-station").value = "";
+        document.getElementById("add-name").value = "";
+        document.getElementById("add-phone").value = "";
+        document.getElementById("add-note").value = "";
+      } else {
+        showMsg(`❌ 新增失敗`, "#991b1b");
+      }
+      btn.innerText = "➕ 新增至資料庫"; btn.disabled = false;
+      loadData();
+    });
+}
+
+// 發送全體提醒
+function alertAll() {
+  if(!confirm("確定要發送 LINE 提醒給所有尚未報到的人員嗎？")) return;
+  
+  fetch(API + "?action=alert").then(r=>r.json()).then(res => {
+    if(res.ok) showMsg("🔔 LINE 通報發送成功！", "#b45309");
+    else showMsg("ℹ️ " + res.msg, "#1e40af");
+  });
+}
+
+// 每 8 秒自動更新數據
+loadData();
+setInterval(loadData, 8000); 
+
+</script>
+</body>
+</html>
