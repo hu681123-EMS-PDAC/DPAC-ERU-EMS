@@ -169,4 +169,179 @@
         <option value="步行隊">步行隊</option>
         <option value="西螺橋北端站">西螺橋北端站</option>
     </select>
-    <div style="display:flex;
+    <div style="display:flex; gap:15px;">
+      <div style="flex:1;">
+        <label>姓名</label>
+        <input type="text" id="add-name" placeholder="輸入姓名">
+      </div>
+      <div style="flex:1;">
+        <label>電話</label>
+        <input type="tel" id="add-phone" placeholder="輸入電話">
+      </div>
+    </div>
+    <button class="btn btn-green" onclick="addNewMember()" id="btn-add">➕ 寫入試算表</button>
+  </div>
+
+  <div class="card">
+    <h3 style="margin:0; color:var(--red); font-size: 40px;">🚨 尚未報到清單</h3>
+    <div id="notyet-list" class="list-container" style="margin-top:20px;"></div>
+  </div>
+
+  <div class="card">
+    <h3 style="margin:0; color:var(--yellow); font-size: 40px;">⏱ 最新動態</h3>
+    <div id="rank-list" class="list-container" style="margin-top:20px;"></div>
+  </div>
+
+</div>
+
+<script>
+const API = "https://script.google.com/macros/s/AKfycbzIlP_GgPlA0U0BA9drw1Fd-RIY5GNSy6dBbhzCpSN12ZR3uto_grADXE_7UMMlm1br/exec"; 
+
+let allMembersData = []; 
+let isOperating = false;
+
+function showMsg(msg, color) {
+  const bar = document.getElementById("status-bar");
+  bar.style.display = "block";
+  bar.style.backgroundColor = color;
+  bar.innerText = msg;
+  setTimeout(() => bar.style.display = "none", 4000);
+}
+
+// 監測是否正在輸入，避免刷新洗掉資料
+document.querySelectorAll('input, select, textarea').forEach(el => {
+  el.addEventListener('focus', () => { isOperating = true; });
+  el.addEventListener('blur', () => { setTimeout(() => isOperating = false, 3000); });
+});
+
+async function loadData() {
+  if (isOperating) return; 
+
+  try {
+    const ts = Date.now();
+    const [dStats, dNotyet, dRank, dMembers] = await Promise.all([
+      fetch(`${API}?action=stats&_t=${ts}`).then(r => r.json()),
+      fetch(`${API}?action=notyet&_t=${ts}`).then(r => r.json()),
+      fetch(`${API}?action=rank&_t=${ts}`).then(r => r.json()),
+      fetch(`${API}?action=members&_t=${ts}`).then(r => r.json())
+    ]);
+
+    document.getElementById("total").innerText = dStats.total;
+    document.getElementById("checked").innerText = dStats.checked;
+    document.getElementById("checkout-count").innerText = dStats.checkout || 0;
+    document.getElementById("sync-msg").innerText = `同步成功：${new Date().toLocaleTimeString()}`;
+
+    // 渲染名單
+    const nyList = document.getElementById("notyet-list");
+    nyList.innerHTML = dNotyet.length === 0 ? `<div style="padding:100px; text-align:center; color:var(--green); font-size:40px;">全員到齊</div>` :
+      dNotyet.map(x => `<div class="list-item"><span>${x.station} - ${x.name}</span><a href="tel:${x.phone}" style="color:var(--green); text-decoration:none;">📞</a></div>`).join("");
+
+    // 渲染動態
+    document.getElementById("rank-list").innerHTML = dRank.map(x => `
+      <div class="list-item">
+        <span>👤 ${x.name} (${x.status || '動態'})</span>
+        <span style="color:var(--yellow)">${x.time}</span>
+      </div>`).join("");
+
+    allMembersData = dMembers;
+    
+    let infoHtml = '<option value="">-- 搜尋/修改人員 --</option>';
+    let manualHtml = '<option value="">-- 選擇報到/報退人員 --</option>';
+
+    dMembers.forEach(m => {
+      const tag = m.status === "已報到" ? "✔️" : (m.status === "已報退" ? "🏠" : "❌");
+      infoHtml += `<option value="${m.name}">${tag} ${m.station}-${m.name}</option>`;
+      manualHtml += `<option value="${m.name}">${m.station}-${m.name}</option>`;
+    });
+
+    if (document.activeElement !== document.getElementById("info-member-select")) {
+      document.getElementById("info-member-select").innerHTML = infoHtml;
+    }
+    if (document.activeElement !== document.getElementById("manual-member-select")) {
+      document.getElementById("manual-member-select").innerHTML = manualHtml;
+    }
+
+  } catch (e) { document.getElementById("sync-msg").innerText = "⚠️ 資料載入失敗"; }
+}
+
+function loadMemberToEdit() {
+  const name = document.getElementById("info-member-select").value;
+  if (!name) return;
+  const m = allMembersData.find(x => x.name === name);
+  if (m) {
+    document.getElementById("edit-station").value = m.station || "溪洲后天宮站";
+    document.getElementById("edit-name").value = m.name || "";
+    document.getElementById("edit-phone").value = m.phone || "";
+    document.getElementById("edit-status").value = m.status || "未報到";
+    document.getElementById("edit-note").value = m.note || "";
+  }
+}
+
+async function saveMemberEdit() {
+  const name = document.getElementById("edit-name").value;
+  if (!name) return alert("請選擇人員");
+  const btn = document.getElementById("btn-save");
+  btn.disabled = true; showMsg("⏳ 正在更新資料庫...", "#00d2ff");
+
+  const s = document.getElementById("edit-station").value;
+  const p = document.getElementById("edit-phone").value;
+  const st = document.getElementById("edit-status").value;
+  const n = document.getElementById("edit-note").value;
+
+  const url = `${API}?action=update&name=${encodeURIComponent(name)}&s=${encodeURIComponent(s)}&p=${encodeURIComponent(p)}&st=${encodeURIComponent(st)}&note=${encodeURIComponent(n)}&_t=${Date.now()}`;
+
+  try {
+    const res = await fetch(url).then(r => r.json());
+    if (res.ok) { 
+      showMsg("✅ 資料更新成功", "#1b8a00"); 
+      isOperating = false;
+      await loadData(); 
+    }
+  } catch (e) { showMsg("❌ 更新失敗", "#da3633"); }
+  finally { btn.disabled = false; }
+}
+
+async function quickAction(type) {
+  const name = document.getElementById("manual-member-select").value;
+  if (!name) return alert("請選擇人員");
+  showMsg(`⏳ 正在處理${type === 'checkin' ? '報到' : '報退'}...`, "#00d2ff");
+
+  try {
+    const url = `${API}?action=${type}&name=${encodeURIComponent(name)}&_t=${Date.now()}`;
+    const res = await fetch(url).then(r => r.json());
+    if (res.ok) {
+      showMsg(`✅ ${name} ${type === 'checkin' ? '報到' : '報退'}成功！`, "#1b8a00");
+      await loadData();
+    } else {
+      showMsg(`❌ 操作失敗：${res.msg || '未知錯誤'}`, "#da3633");
+    }
+  } catch (e) { showMsg("❌ 連線失敗", "#da3633"); }
+}
+
+async function addNewMember() {
+  const s = document.getElementById("add-station").value;
+  const n = document.getElementById("add-name").value;
+  const p = document.getElementById("add-phone").value;
+  if (!s || !n) return alert("請輸入姓名");
+  const btn = document.getElementById("btn-add");
+  btn.disabled = true;
+
+  try {
+    const url = `${API}?action=add&s=${encodeURIComponent(s)}&n=${encodeURIComponent(n)}&p=${encodeURIComponent(p)}&_t=${Date.now()}`;
+    const res = await fetch(url).then(r => r.json());
+    if (res.ok) { 
+      showMsg(`✅ 已新增：${n}`, "#1b8a00"); 
+      document.getElementById("add-name").value = ""; 
+      document.getElementById("add-phone").value = ""; 
+      await loadData(); 
+    }
+  } catch (e) { showMsg("❌ 新增失敗", "#da3633"); }
+  finally { btn.disabled = false; }
+}
+
+loadData();
+setInterval(loadData, 10000); 
+
+</script>
+</body>
+</html>
