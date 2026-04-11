@@ -195,6 +195,7 @@
 </div>
 
 <script>
+// 👇 使用你提供的網址，已原封不動放置
 const API = "https://script.google.com/macros/s/AKfycbwE0RRnK3X1X8IAbQ_Fxl2G0yz62m_dsGDUMv-b4ajHqu-Q70qT_rQd2Ue0m3tm0i5R/exec"; 
 
 let allMembersData = []; 
@@ -231,16 +232,16 @@ async function loadData() {
     document.getElementById("checkout-count").innerText = dStats.checkout || 0;
     document.getElementById("sync-msg").innerText = `同步成功：${new Date().toLocaleTimeString()}`;
 
-    // 渲染名單
+    // 渲染未報到名單
     const nyList = document.getElementById("notyet-list");
     nyList.innerHTML = dNotyet.length === 0 ? `<div style="padding:100px; text-align:center; color:var(--green); font-size:40px;">全員到齊</div>` :
       dNotyet.map(x => `<div class="list-item"><span>${x.station} - ${x.name}</span><a href="tel:${x.phone}" style="color:var(--green); text-decoration:none;">📞</a></div>`).join("");
 
-    // 渲染動態
+    // 渲染最新動態 (修正排版讓長文字更順)
     document.getElementById("rank-list").innerHTML = dRank.map(x => `
       <div class="list-item">
-        <span>👤 ${x.name} (${x.status || '動態'})</span>
-        <span style="color:var(--yellow)">${x.time}</span>
+        <span>👤 ${x.name} <span style="font-size:20px; color:#8b949e;">(${x.status})</span></span>
+        <span style="color:var(--yellow); font-family:monospace;">${x.time}</span>
       </div>`).join("");
 
     allMembersData = dMembers;
@@ -261,7 +262,7 @@ async function loadData() {
       document.getElementById("manual-member-select").innerHTML = manualHtml;
     }
 
-  } catch (e) { document.getElementById("sync-msg").innerText = "⚠️ 資料載入失敗"; }
+  } catch (e) { document.getElementById("sync-msg").innerText = "⚠️ 資料載入失敗，請檢查網路連線"; }
 }
 
 function loadMemberToEdit() {
@@ -279,7 +280,7 @@ function loadMemberToEdit() {
 
 async function saveMemberEdit() {
   const name = document.getElementById("edit-name").value;
-  if (!name) return alert("請選擇人員");
+  if (!name) return alert("請先選擇要修改的人員");
   const btn = document.getElementById("btn-save");
   btn.disabled = true; showMsg("⏳ 正在更新資料庫...", "#00d2ff");
 
@@ -293,44 +294,46 @@ async function saveMemberEdit() {
   try {
     const res = await fetch(url).then(r => r.json());
     if (res.ok) { 
-      showMsg("✅ 資料更新成功", "#1b8a00"); 
-      isOperating = false;
+      showMsg("✅ 資料庫已同步更新", "#1b8a00"); 
+      isOperating = false; // 解除暫停以便立即刷新
       await loadData(); 
     }
-  } catch (e) { showMsg("❌ 更新失敗", "#da3633"); }
+  } catch (e) { showMsg("❌ 網路異常，更新失敗", "#da3633"); }
   finally { btn.disabled = false; }
 }
 
 async function quickAction(type) {
   const name = document.getElementById("manual-member-select").value;
-  if (!name) return alert("請選擇人員");
-  showMsg(`⏳ 正在處理${type === 'checkin' ? '報到' : '報退'}...`, "#00d2ff");
+  if (!name) return alert("請先選擇人員");
+  const actionName = type === 'checkin' ? '報到' : '報退';
+  showMsg(`⏳ 正在處理 ${actionName}...`, "#00d2ff");
 
   try {
     const url = `${API}?action=${type}&name=${encodeURIComponent(name)}&_t=${Date.now()}`;
     const res = await fetch(url).then(r => r.json());
     if (res.ok) {
-      showMsg(`✅ ${name} ${type === 'checkin' ? '報到' : '報退'}成功！`, "#1b8a00");
+      showMsg(`✅ ${name} ${actionName}成功！`, "#1b8a00");
       await loadData();
     } else {
-      showMsg(`❌ 操作失敗：${res.msg || '未知錯誤'}`, "#da3633");
+      showMsg(`❌ 操作失敗：${res.msg}`, "#da3633");
     }
-  } catch (e) { showMsg("❌ 連線失敗", "#da3633"); }
+  } catch (e) { showMsg("❌ 連線異常，請稍後再試", "#da3633"); }
 }
 
 async function addNewMember() {
   const s = document.getElementById("add-station").value;
   const n = document.getElementById("add-name").value;
   const p = document.getElementById("add-phone").value;
-  if (!s || !n) return alert("請輸入姓名");
+  if (!s || !n) return alert("請完整填寫姓名與站別");
   const btn = document.getElementById("btn-add");
   btn.disabled = true;
+  showMsg("⏳ 寫入試算表中...", "#00d2ff");
 
   try {
     const url = `${API}?action=add&s=${encodeURIComponent(s)}&n=${encodeURIComponent(n)}&p=${encodeURIComponent(p)}&_t=${Date.now()}`;
     const res = await fetch(url).then(r => r.json());
     if (res.ok) { 
-      showMsg(`✅ 已新增：${n}`, "#1b8a00"); 
+      showMsg(`✅ 新增成功：${n}`, "#1b8a00"); 
       document.getElementById("add-name").value = ""; 
       document.getElementById("add-phone").value = ""; 
       await loadData(); 
@@ -339,6 +342,7 @@ async function addNewMember() {
   finally { btn.disabled = false; }
 }
 
+// 啟動初始化及輪詢
 loadData();
 setInterval(loadData, 10000); 
 
