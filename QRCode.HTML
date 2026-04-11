@@ -3,11 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-
-<link rel="preconnect" href="https://script.google.com">
-<link rel="preconnect" href="https://script.googleusercontent.com">
-
-<title>DPAC 報到與報退 QR 掃碼</title>
+<title>🚑 DPAC 現場自助系統</title>
 <style>
   :root {
     --bg: #000000;
@@ -21,7 +17,7 @@
   }
 
   body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft JhengHei", sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Microsoft JhengHei", sans-serif;
     background-color: var(--bg);
     color: var(--text);
     margin: 0;
@@ -29,128 +25,116 @@
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    /* 防止下拉更新導致畫面重新整理 */
-    overscroll-behavior-y: contain; 
+    overscroll-behavior-y: contain; /* 禁止下拉重新整理 */
   }
 
   .container {
-    width: 90%;
+    width: 92%;
     max-width: 480px;
     background: var(--card-bg);
-    padding: 35px 25px;
+    padding: 35px 20px;
     border-radius: 24px;
-    box-shadow: 0 10px 40px rgba(0, 210, 255, 0.1);
-    border: 2px solid var(--border);
+    box-shadow: 0 0 30px rgba(0, 210, 255, 0.2);
+    border: 3px solid var(--border);
     text-align: center;
+    box-sizing: border-box;
   }
 
-  /* 修正標題排版，避免使用多餘空白導致小螢幕破版 */
   h1 {
-    font-size: 38px;
+    font-size: 40px;
     font-weight: 900;
     color: var(--blue);
     margin: 0 0 10px 0;
-    text-shadow: 0 0 15px rgba(0, 210, 255, 0.4);
-    letter-spacing: 2px;
-    line-height: 1.3;
+    text-shadow: 0 0 15px rgba(0, 210, 255, 0.6);
+    line-height: 1.2;
   }
 
   p {
     font-size: 22px;
     color: #8b949e;
-    margin: 0 0 25px 0;
+    margin-bottom: 25px;
     font-weight: bold;
   }
 
-  /* 超大高對比輸入框 */
+  /* 超大字體輸入框，對比極限化 */
   input {
     width: 100%;
-    padding: 20px;
+    padding: 22px;
     font-size: 36px;
     font-weight: 900;
-    background: #000000;
-    color: #ffffff;
-    border: 3px solid var(--border);
+    background: #000;
+    color: #fff;
+    border: 4px solid var(--border);
     border-radius: 16px;
     margin-bottom: 25px;
     box-sizing: border-box;
     text-align: center;
     outline: none;
-    transition: all 0.3s;
-    /* 避免手機雙擊放大 */
-    touch-action: manipulation;
+    transition: 0.3s;
   }
 
   input:focus {
     border-color: var(--blue);
-    box-shadow: 0 0 20px rgba(0, 210, 255, 0.3);
+    box-shadow: 0 0 20px rgba(0, 210, 255, 0.4);
   }
 
-  /* 按鈕群組與間距 */
   .btn-group {
     display: flex;
     flex-direction: column;
-    gap: 18px;
+    gap: 20px;
   }
 
+  /* 超大型按鈕，方便現場快速點擊 */
   .btn {
     width: 100%;
-    padding: 22px;
-    font-size: 32px;
+    padding: 25px;
+    font-size: 38px;
     font-weight: 900;
     color: white;
     border: none;
-    border-radius: 16px;
+    border-radius: 20px;
     cursor: pointer;
-    transition: transform 0.1s, opacity 0.2s;
+    transition: 0.1s;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 15px;
-    /* 優化速度：消除手機瀏覽器預設的 300ms 點擊延遲 */
-    touch-action: manipulation;
     user-select: none;
+    touch-action: manipulation;
   }
 
-  .btn:active:not(:disabled) {
-    transform: scale(0.96);
-  }
-
-  .btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
+  .btn:active:not(:disabled) { transform: scale(0.96); opacity: 0.8; }
+  .btn:disabled { background: #222 !important; color: #555; cursor: not-allowed; }
 
   .btn-checkin { background: linear-gradient(135deg, #0070f3, #00d2ff); }
-  .btn-checkout { background: linear-gradient(135deg, #e65c00, #F9D423); color: #000; }
+  .btn-checkout { background: linear-gradient(135deg, #e65c00, #ff9f00); color: #000; }
 
-  /* 狀態回報區塊 */
   #msg-box {
     margin-top: 25px;
     padding: 20px;
-    border-radius: 16px;
-    font-size: 26px;
+    border-radius: 18px;
+    font-size: 28px;
     font-weight: bold;
     display: none;
     line-height: 1.4;
-    animation: fadeIn 0.3s ease-in-out;
+    animation: fadeIn 0.3s ease-out;
   }
 
   @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-10px); }
+    from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
   }
 
   .msg-success { background: rgba(57, 255, 20, 0.15); color: var(--green); border: 2px solid var(--green); }
   .msg-error { background: rgba(255, 49, 49, 0.15); color: var(--red); border: 2px solid var(--red); }
-  .msg-loading { background: rgba(139, 148, 158, 0.1); color: #8b949e; border: 2px solid #8b949e; }
+  .msg-loading { background: rgba(139, 148, 158, 0.15); color: #8b949e; border: 2px solid #8b949e; }
 </style>
 </head>
 <body>
 
 <div class="container">
-  <h1>DPAC<br>報到與報退 QR 掃碼</h1>
-  <p>請輸入姓名後點選動作</p>
+  <h1>🚑 DPCA<br>現場自助系統</h1>
+  <p>輸入姓名後點選動作</p>
   
   <input type="text" id="user-name" placeholder="點此輸入姓名" autocomplete="off" inputmode="text">
   
@@ -167,83 +151,50 @@
 </div>
 
 <script>
-  // 🔗 後端 API 網址 (維持你原本的)
-  const API = "https://script.google.com/macros/s/AKfycbzIlP_GgPlA0U0BA9drw1Fd-RIY5GNSy6dBbhzCpSN12ZR3uto_grADXE_7UMMlm1br/exec"; 
-
-  let timeoutId = null;
-  const nameInput = document.getElementById("user-name");
-
-  // 優化體驗：在手機上輸入完畢按下「換行/確認」時，自動收起鍵盤
-  nameInput.addEventListener('keypress', function (e) {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      this.blur();
-    }
-  });
+  // ⚠️ 請確保此網址為「建立新版本」部署後的網址
+  const API = "https://script.google.com/macros/s/AKfycbz6jLiq0iRwzoRU2uEB1Sn-9MoTEhbc7n9BhsUc22P5xbBRC8ATsV6IaIUOLReJbwH2/exec"; 
 
   async function handleAction(actionType) {
+    const nameInput = document.getElementById("user-name");
     const name = nameInput.value.trim();
     const msgBox = document.getElementById("msg-box");
-    const btnIn = document.getElementById("btn-in");
-    const btnOut = document.getElementById("btn-out");
+    const btns = document.querySelectorAll(".btn");
 
-    // 1. 擋下空白輸入
     if (!name) {
-      alert("⚠️ 請先輸入您的姓名！");
+      alert("⚠️ 請先輸入您的姓名");
       nameInput.focus();
       return;
     }
 
-    // 2. UI 狀態變更 (鎖定按鈕，顯示處理中)
-    btnIn.disabled = true;
-    btnOut.disabled = true;
-    clearTimeout(timeoutId);
-    
+    // 鎖定 UI 防止重複連打
+    btns.forEach(b => b.disabled = true);
     msgBox.style.display = "block";
     msgBox.className = "msg-loading";
-    msgBox.innerText = "⏳ 雲端連線中...";
-
-    // 加入 AbortController 來實作「網路逾時防呆」
-    const controller = new AbortController();
-    const fetchTimeout = setTimeout(() => controller.abort(), 12000); // 12秒如果沒反應就視為失敗
+    msgBox.innerText = "⏳ 雲端同步中...";
 
     try {
-      // 3. 發送 API 請求 (加入 Date.now() 防止快取)
       const url = `${API}?action=${actionType}&name=${encodeURIComponent(name)}&_t=${Date.now()}`;
-      const response = await fetch(url, { signal: controller.signal });
-      clearTimeout(fetchTimeout); // 成功連上就解除計時炸彈
-      
+      const response = await fetch(url);
       const res = await response.json();
 
-      // 4. 處理結果
       if (res.ok) {
         msgBox.className = "msg-success";
         const actionTxt = actionType === 'checkin' ? '報到' : '報退';
-        msgBox.innerHTML = `✅ <b>${res.name}</b><br>${actionTxt}成功！<br><span style="font-size:22px; color:#fff;">🕒 ${res.time}</span>`;
-        nameInput.value = ""; // 成功後自動清空
-        nameInput.blur();     // 收起手機小鍵盤
+        msgBox.innerHTML = `✅ ${res.name}<br>${actionTxt}成功！<br><span style="font-size:20px; color:#fff;">🕒 ${res.time}</span>`;
+        nameInput.value = ""; // 成功後清空
+        nameInput.blur();    // 收起手機鍵盤
       } else {
         msgBox.className = "msg-error";
-        msgBox.innerText = "❌ " + res.msg;
+        msgBox.innerText = "❌ " + (res.msg || "系統錯誤");
       }
     } catch (e) {
-      // 處理網路錯誤或 12 秒逾時
       msgBox.className = "msg-error";
-      if (e.name === 'AbortError') {
-        msgBox.innerText = "⚠️ 連線逾時，現場網路不佳，請再試一次";
-      } else {
-        msgBox.innerText = "⚠️ 網路異常，請確認手機訊號或重試";
-      }
+      msgBox.innerText = "⚠️ 網路異常，請稍後再試";
     } finally {
-      // 5. 解除鎖定
-      btnIn.disabled = false;
-      btnOut.disabled = false;
-      
-      // 6. 自動隱藏成功訊息
+      btns.forEach(b => b.disabled = false);
+      // 成功訊息 5 秒後自動隱藏
       if (msgBox.className === "msg-success") {
-        timeoutId = setTimeout(() => {
-          msgBox.style.display = "none";
-        }, 4000);
+        setTimeout(() => { msgBox.style.display = "none"; }, 5000);
       }
     }
   }
