@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🚑 自行報到系統</title>
+<style>
+  body { font-family: sans-serif; background: #f0f2f5; display: flex; justify-content: center; padding: 20px; }
+  .card { background: white; width: 100%; max-width: 400px; padding: 30px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); text-align: center; }
+  h2 { color: #1e293b; margin-bottom: 10px; }
+  input { width: 100%; padding: 15px; margin: 20px 0; border: 1px solid #ddd; border-radius: 8px; font-size: 18px; box-sizing: border-box; }
+  .btn { width: 100%; padding: 15px; background: #2563eb; color: white; border: none; border-radius: 8px; font-size: 18px; cursor: pointer; }
+  #msg { margin-top: 20px; font-weight: bold; padding: 10px; border-radius: 5px; display: none; }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <h2>DPAC 大甲媽祖4/19 現場報到</h2>
+  <p>請輸入您的姓名進行報到</p>
+  <input type="text" id="name" placeholder="範例：王小明">
+  <button class="btn" onclick="doCheckin()">確認報到</button>
+  <div id="msg"></div>
+</div>
+
+<script>
+  const API = "https://script.google.com/macros/s/AKfycbzIlP_GgPlA0U0BA9drw1Fd-RIY5GNSy6dBbhzCpSN12ZR3uto_grADXE_7UMMlm1br/exec"; // 👈 貼上你之前的 GAS 網址
+
+  function doCheckin() {
+    const name = document.getElementById("name").value;
+    const msgDiv = document.getElementById("msg");
+    const btn = document.querySelector(".btn");
+
+    if(!name) return alert("請輸入姓名");
+
+    btn.disabled = true;
+    btn.innerText = "處理中...";
+
+    fetch(`${API}?action=checkin&name=${encodeURIComponent(name)}`)
+      .then(r => r.json())
+      .then(res => {
+        msgDiv.style.display = "block";
+        if(res.ok) {
+          msgDiv.style.background = "#dcfce7";
+          msgDiv.style.color = "#166534";
+          msgDiv.innerHTML = `✅ 報到成功！<br>${res.name}<br>時間：${res.time}`;
+          document.getElementById("name").value = "";
+        } else {
+          msgDiv.style.background = "#fee2e2";
+          msgDiv.style.color = "#991b1b";
+          msgDiv.innerText = "❌ " + res.msg;
+        }
+        btn.disabled = false;
+        btn.innerText = "確認報到";
+      });
+  }
+</script>
+
+</body>
+</html>
