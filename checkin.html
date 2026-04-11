@@ -3,20 +3,20 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🚑 DPAC 指揮調度面板 v6.0</title>
+<title>🚑 DPAC 4/19 中心指揮系統 v5.5</title>
 
 <style>
   :root {
     --bg: #000000;
-    --card-bg: #0d1117;
+    --card-bg: #0a0a0a;
     --red: #ff3131;
     --green: #39ff14;
     --yellow: #faff00;
     --blue: #00d2ff;
     --purple: #bc13fe;
     --text: #ffffff;
-    --border: #30363d;
-    --input-bg: #161b22;
+    --border: #333333;
+    --input-bg: #111111;
   }
   
   body {
@@ -25,74 +25,71 @@
     color: var(--text);
     font-family: 'Segoe UI', "Microsoft JhengHei", sans-serif;
     padding: 15px;
-    letter-spacing: 1.5px;
+    letter-spacing: 1px;
+    line-height: 1.4;
   }
 
-  h1 { text-align: center; font-size: 50px; font-weight: 900; color: var(--blue); text-shadow: 0 0 20px rgba(0, 210, 255, 0.7); margin: 10px 0; }
-  .subtitle { text-align: center; color: #8b949e; margin-bottom: 25px; font-size: 26px; font-weight: bold; }
+  h1 { text-align: center; font-size: 52px; font-weight: 900; color: var(--blue); text-shadow: 0 0 20px rgba(0, 210, 255, 0.8); margin: 15px 0; }
+  .subtitle { text-align: center; color: #aaaaaa; margin-bottom: 30px; font-size: 30px; font-weight: bold; }
 
-  /* KPI 數據區塊 */
-  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; margin-bottom: 25px; }
+  /* KPI 區塊 */
+  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; margin-bottom: 30px; }
   .card {
     background: var(--card-bg);
-    border-radius: 20px;
-    padding: 25px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.8);
-    border: 2px solid var(--border);
+    border-radius: 25px;
+    padding: 35px;
+    box-shadow: 0 10px 40px rgba(0,0,0,1);
+    border: 4px solid var(--border);
   }
   
   .kpi-card { text-align: center; }
-  .kpi-title { font-size: 28px; color: #f0f6fc; font-weight: bold; margin-bottom: 5px; }
-  .kpi-num { font-size: 90px; font-weight: 900; margin: 0; font-family: 'Arial Black', sans-serif; line-height: 1; }
+  .kpi-title { font-size: 34px; color: #ffffff; font-weight: bold; margin-bottom: 10px; }
+  .kpi-num { font-size: 110px; font-weight: 900; margin: 0; font-family: 'Arial Black', sans-serif; }
 
-  .border-red { border-top: 10px solid var(--red); }
-  .border-yellow { border-top: 10px solid var(--yellow); }
-  .border-green { border-top: 10px solid var(--green); }
-  .border-blue { border-top: 10px solid var(--blue); }
+  .border-red { border-color: var(--red); }
+  .border-yellow { border-color: var(--yellow); }
+  .border-green { border-color: var(--green); }
 
   /* 網格系統 */
-  .panel-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(440px, 1fr)); gap: 20px; }
+  .panel-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 30px; }
 
-  /* 列表滾動 */
-  .list-container { height: 350px; overflow-y: auto; background: rgba(0,0,0,0.4); border-radius: 12px; border: 1px solid var(--border); }
+  /* 列表滾動容器 */
+  .list-container { height: 420px; overflow-y: auto; background: #050505; border-radius: 15px; border: 2px solid var(--border); }
   .list-item { 
-    padding: 18px 25px; border-bottom: 1px solid var(--border); 
-    display: flex; justify-content: space-between; align-items: center; font-size: 26px; font-weight: bold;
+    padding: 25px; border-bottom: 2px solid #222; 
+    display: flex; justify-content: space-between; align-items: center; font-size: 28px; font-weight: bold;
   }
 
-  /* 輸入框與選單 - 極大化與高對比 */
-  label { display: block; margin-top: 15px; font-weight: 900; color: var(--blue); font-size: 24px; }
+  /* 表單控制 - 極致大字體 */
+  label { display: block; margin-top: 25px; font-weight: 900; color: var(--blue); font-size: 28px; }
   input, select, textarea {
-    width: 100%; padding: 20px; margin: 8px 0;
+    width: 100%; padding: 25px; margin: 15px 0;
     background: var(--input-bg); color: #ffffff;
-    border: 2px solid var(--border); border-radius: 12px;
-    box-sizing: border-box; font-size: 26px; font-weight: bold;
+    border: 3px solid var(--border); border-radius: 15px;
+    box-sizing: border-box; font-size: 30px; font-weight: bold;
     outline: none;
   }
   
-  input:focus, select:focus { border-color: var(--blue); box-shadow: 0 0 12px rgba(0, 210, 255, 0.5); }
-  input[readonly] { background: #000; color: #666; border-color: #222; }
+  input:focus, select:focus { border-color: var(--yellow); box-shadow: 0 0 15px rgba(250, 255, 0, 0.5); }
+  input[readonly] { background: #1a1a1a; color: #777; border-color: #222; }
 
-  /* 按鈕 */
+  /* 按鈕樣式 */
   .btn {
-    width: 100%; padding: 22px; margin-top: 12px;
-    font-size: 28px; font-weight: 900; color: white;
-    border: none; border-radius: 12px; cursor: pointer;
-    transition: 0.2s;
+    width: 100%; padding: 28px; margin-top: 20px;
+    font-size: 32px; font-weight: 900; color: white;
+    border: none; border-radius: 18px; cursor: pointer;
+    transition: 0.1s; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
   }
-  .btn:active { transform: translateY(3px); filter: brightness(1.2); }
-  .btn:disabled { background: #333 !important; color: #777; cursor: not-allowed; }
+  .btn:active { transform: scale(0.97); filter: brightness(1.3); }
+  .btn:disabled { background: #333 !important; color: #666; cursor: not-allowed; box-shadow: none; }
   
-  .btn-blue { background: #0070f3; }
-  .btn-green { background: #238636; }
-  .btn-red { background: #da3633; }
-  .btn-purple { background: #8957e5; }
+  .btn-blue { background: linear-gradient(180deg, #00d2ff, #007bb5); }
+  .btn-green { background: linear-gradient(180deg, #39ff14, #1b8a00); color: #000; text-shadow: none; }
+  .btn-red { background: linear-gradient(180deg, #ff3131, #b30000); }
+  .btn-purple { background: linear-gradient(180deg, #bc13fe, #7a00ba); }
 
-  /* 狀態列 */
-  #status-bar { text-align: center; padding: 20px; position: fixed; bottom: 0; left: 0; right: 0; z-index: 9999; font-weight: 900; font-size: 26px; display: none; color: white; }
-  
-  /* 時間顯示專用 */
-  .time-info { color: var(--yellow); font-family: monospace; font-size: 22px; }
+  /* 全螢幕狀態通知 */
+  #status-bar { text-align: center; padding: 25px; position: fixed; top: 0; left: 0; right: 0; z-index: 10000; font-weight: 900; font-size: 32px; display: none; color: white; box-shadow: 0 5px 30px rgba(0,0,0,0.8); }
 </style>
 </head>
 
@@ -100,8 +97,8 @@
 
 <div id="status-bar"></div>
 
-<h1>🚑 DPAC 指揮指揮系統 v6.0</h1>
-<div class="subtitle" id="percent-display">系統連線中...</div>
+<h1>🚑 DPAC 指揮系統 (4/19 專用)</h1>
+<div class="subtitle" id="percent-display">系統連線初始化...</div>
 
 <div class="kpi-grid">
   <div class="card kpi-card border-red">
@@ -112,12 +109,8 @@
     <div class="kpi-title">已報到</div>
     <div id="checked" class="kpi-num" style="color: var(--yellow)">0</div>
   </div>
-  <div class="card kpi-card border-blue">
-    <div class="kpi-title">已報退</div>
-    <div id="checkout-count" class="kpi-num" style="color: var(--blue)">0</div>
-  </div>
   <div class="card kpi-card border-green">
-    <div class="kpi-title">缺席中</div>
+    <div class="kpi-title">未報到</div>
     <div id="notyet" class="kpi-num" style="color: var(--red)">0</div>
   </div>
 </div>
@@ -125,125 +118,92 @@
 <div class="panel-grid">
   
   <div class="card" style="grid-row: span 2;">
-    <h3 style="margin-top:0; color:var(--purple); font-size: 34px;">🔍 人員查詢與完整修改</h3>
-    <label>搜尋人員</label>
+    <h3 style="margin:0; color:var(--purple); font-size: 42px; border-bottom: 5px solid var(--purple); padding-bottom: 10px;">🔍 人員查詢/快速修改</h3>
+    <label>請選擇人員 (含站別)</label>
     <select id="info-member-select" onchange="loadMemberToEdit()">
-      <option value="">載入名單中...</option>
+      <option value="">載入試算表名單中...</option>
     </select>
     
     <div id="edit-area">
-      <label>站別單位</label>
-      <select id="edit-station">
-        </select>
-      
-      <label>人員姓名 (唯讀)</label>
+      <label>站別 / 單位</label>
+      <input type="text" id="edit-station" placeholder="例如: 溪洲后天宮站">
+      <label>姓名</label>
       <input type="text" id="edit-name" readonly>
-      
       <label>聯絡電話</label>
       <input type="tel" id="edit-phone">
-      
-      <label>狀態切換</label>
+      <label>報到狀態</label>
       <select id="edit-status">
-        <option value="未報到">❌ 未報到 (清除時間)</option>
-        <option value="已報到">✔️ 已報到</option>
-        <option value="已報退">🚩 已報退</option>
+        <option value="未報到">❌ 標記為未報到</option>
+        <option value="已報到">✔️ 標記為已報到</option>
       </select>
+      <label>備註事項</label>
+      <textarea id="edit-note" rows="2" placeholder="備註內容..."></textarea>
       
-      <div style="display:flex; gap:10px;">
-        <div style="flex:1;">
-          <label>報到時間</label>
-          <input type="text" id="edit-checkin-time" placeholder="無記錄">
-        </div>
-        <div style="flex:1;">
-          <label>報退時間</label>
-          <input type="text" id="edit-checkout-time" placeholder="無記錄">
-        </div>
-      </div>
-
-      <label>備註資訊</label>
-      <textarea id="edit-note" rows="2"></textarea>
-      
-      <button class="btn btn-purple" id="btn-save" onclick="saveMemberEdit()">💾 確認修改並儲存雲端</button>
+      <button class="btn btn-purple" id="btn-save" onclick="saveMemberEdit()">💾 儲存並修正資料庫</button>
     </div>
   </div>
 
   <div class="card">
-    <h3 style="margin-top:0; color:var(--blue); font-size: 34px;">⚡ 快速報到 / 報退</h3>
+    <h3 style="margin:0; color:var(--blue); font-size: 42px; border-bottom: 5px solid var(--blue); padding-bottom: 10px;">⚡ 站長快速報到</h3>
+    <label>選擇未報到者</label>
     <select id="manual-member-select">
-      <option value="">請選擇人員...</option>
+      <option value="">等待資料載入...</option>
     </select>
-    <div style="display:flex; gap:10px;">
-      <button class="btn btn-green" style="flex:1;" onclick="quickAction('checkin')" id="btn-checkin">✔️ 報到</button>
-      <button class="btn btn-blue" style="flex:1;" onclick="quickAction('checkout')" id="btn-checkout">🚩 報退</button>
-    </div>
+    <button class="btn btn-blue" onclick="manualCheckin()" id="btn-checkin">✔️ 確認報到</button>
   </div>
 
   <div class="card">
-    <h3 style="margin-top:0; color:var(--green); font-size: 34px;">➕ 新增人員</h3>
-    <div style="display:flex; gap:10px;">
-      <div style="flex:1;">
-        <label>站別</label>
-        <select id="add-station"></select>
-      </div>
-      <div style="flex:1;">
-        <label>姓名</label>
-        <input type="text" id="add-name" placeholder="姓名">
-      </div>
+    <h3 style="margin:0; color:var(--green); font-size: 42px; border-bottom: 5px solid var(--green); padding-bottom: 10px;">➕ 手動新增人員</h3>
+    <div style="display:flex; gap:15px;">
+      <div style="flex:1;"><label>站別</label><input type="text" id="add-station" placeholder="例: 步行隊"></div>
+      <div style="flex:1;"><label>姓名</label><input type="text" id="add-name" placeholder="姓名"></div>
     </div>
-    <label>手機號碼</label>
+    <label>電話</label>
     <input type="tel" id="add-phone" placeholder="電話號碼">
-    <button class="btn btn-green" onclick="addNewMember()" id="btn-add">➕ 寫入資料庫</button>
+    <button class="btn btn-green" onclick="addNewMember()" id="btn-add">➕ 寫入雲端試算表</button>
   </div>
 
   <div class="card">
     <div style="display:flex; justify-content:space-between; align-items:center;">
-      <h3 style="margin:0; color:var(--red); font-size: 34px;">🚨 尚未報到</h3>
-      <button class="btn btn-red" style="width:auto; padding:10px 25px; margin:0; font-size:22px;" onclick="alertAll()">🔔 催報</button>
+      <h3 style="margin:0; color:var(--red); font-size: 42px;">🚨 尚未報到</h3>
+      <button class="btn btn-red" style="width:auto; padding:15px 30px; margin:0; font-size:26px;" onclick="alertAll()">🔔 催報</button>
     </div>
     <div id="notyet-list" class="list-container" style="margin-top:20px;"></div>
   </div>
 
   <div class="card">
-    <h3 style="margin-top:0; color:var(--yellow); font-size: 34px;">⏱ 最新動態</h3>
+    <h3 style="margin:0; color:var(--yellow); font-size: 42px;">⏱ 最新報到記錄</h3>
     <div id="rank-list" class="list-container" style="margin-top:20px;"></div>
   </div>
 
 </div>
 
 <script>
-// --- 設定區域 ---
 const API = "https://script.google.com/macros/s/AKfycbzIlP_GgPlA0U0BA9drw1Fd-RIY5GNSy6dBbhzCpSN12ZR3uto_grADXE_7UMMlm1br/exec"; 
-const STATIONS = ["指揮中心", "第一站", "第二站", "第三站", "第四站", "第五站", "第六站", "第七站", "第八站", "機動組", "救護組"];
 
 let allMembersData = []; 
-let isEditing = false; 
+let isUserTyping = false; // 避免輸入時被刷新覆蓋
 
 function showMsg(msg, color) {
   const bar = document.getElementById("status-bar");
   bar.style.display = "block";
   bar.style.backgroundColor = color;
   bar.innerText = msg;
-  setTimeout(() => bar.style.display = "none", 3000);
+  setTimeout(() => bar.style.display = "none", 4000);
 }
 
-// 初始化站別選單
-function initStationDropdowns() {
-  const opts = STATIONS.map(s => `<option value="${s}">${s}</option>`).join("");
-  document.getElementById("edit-station").innerHTML = opts;
-  document.getElementById("add-station").innerHTML = opts;
-}
-
-// 監測輸入狀態
+// 監聽所有輸入元件，確保輸入時不刷新 UI
 document.querySelectorAll('input, select, textarea').forEach(el => {
-  el.addEventListener('focus', () => { isEditing = true; });
-  el.addEventListener('blur', () => { setTimeout(() => isEditing = false, 2000); });
+  el.addEventListener('focus', () => { isUserTyping = true; });
+  el.addEventListener('blur', () => { setTimeout(() => { isUserTyping = false; }, 3000); });
 });
 
 async function loadData() {
-  if (isEditing) return; 
+  if (isUserTyping) return; 
 
   try {
     const ts = Date.now();
+    // 🚀 並行載入所有資料，確保速度提升
     const [dStats, dNotyet, dRank, dMembers] = await Promise.all([
       fetch(`${API}?action=stats&_t=${ts}`).then(r => r.json()),
       fetch(`${API}?action=notyet&_t=${ts}`).then(r => r.json()),
@@ -251,41 +211,61 @@ async function loadData() {
       fetch(`${API}?action=members&_t=${ts}`).then(r => r.json())
     ]);
 
-    document.getElementById("total").innerText = dStats.total || 0;
-    document.getElementById("checked").innerText = dStats.checked || 0;
-    document.getElementById("notyet").innerText = dStats.notyet || 0;
-    document.getElementById("checkout-count").innerText = dStats.checkout || 0;
-    document.getElementById("percent-display").innerText = `目前進度：${dStats.percent}%`;
+    document.getElementById("total").innerText = dStats.total;
+    document.getElementById("checked").innerText = dStats.checked;
+    document.getElementById("notyet").innerText = dStats.notyet;
+    document.getElementById("percent-display").innerText = `大數據連線中：報到率 ${dStats.percent}%`;
 
-    // 渲染清單
+    // 渲染未報到名單 (處理通話連結)
     const nyList = document.getElementById("notyet-list");
-    nyList.innerHTML = dNotyet.length === 0 ? "<div style='padding:50px; text-align:center; color:var(--green); font-size:30px;'>全員到齊</div>" :
-      dNotyet.map(x => `<div class="list-item"><span>${x.station} - ${x.name}</span><a href="tel:${x.phone}" style="color:var(--green); text-decoration:none;">撥號</a></div>`).join("");
+    if(dNotyet.length === 0) {
+      nyList.innerHTML = `<div style="padding:100px 20px; text-align:center; color:var(--green); font-size:36px;">✅ 全員已報到完成</div>`;
+    } else {
+      nyList.innerHTML = dNotyet.map(x => `
+        <div class="list-item">
+          <span>${x.station} - ${x.name}</span>
+          <a href="tel:${x.phone}" style="color:var(--green); text-decoration:none; border:2px solid var(--green); padding:5px 15px; border-radius:10px;">📞 撥打</a>
+        </div>`).join("");
+    }
 
-    document.getElementById("rank-list").innerHTML = dRank.map(x => `<div class="list-item"><span>👤 ${x.name}</span><span class="time-info">${x.time}</span></div>`).join("");
+    // 渲染最新動態
+    document.getElementById("rank-list").innerHTML = dRank.map(x => `
+      <div class="list-item">
+        <span>👤 ${x.name}</span>
+        <span style="color:var(--yellow)">${x.time}</span>
+      </div>`).join("");
 
-    // 更新下拉選單
     allMembersData = dMembers;
-    let optInfo = '<option value="">-- 點擊搜尋人員 --</option>';
-    let optManual = '<option value="">-- 快速選單 --</option>';
+    
+    // 更新選單內容 (只有在使用者沒在操作時才刷新)
+    let infoOpt = '<option value="">-- 點擊搜尋人員 --</option>';
+    let manualOpt = '<option value="">-- 選擇報到者 --</option>';
 
     dMembers.forEach(m => {
-      let icon = "❌";
-      if(m.status === "已報到") icon = "✔️";
-      if(m.status === "已報退") icon = "🚩";
-      
-      optInfo += `<option value="${m.name}">${icon} ${m.station}-${m.name}</option>`;
-      if (m.status === "未報到") optManual += `<option value="${m.name}">${m.station}-${m.name}</option>`;
+      const tag = m.status === "已報到" ? "✔️" : "❌";
+      const label = `${tag} ${m.station}-${m.name}`;
+      infoOpt += `<option value="${m.name}">${label}</option>`;
+      if (m.status !== "已報到") {
+        manualOpt += `<option value="${m.name}">${m.station}-${m.name}</option>`;
+      }
     });
 
-    if (!isEditing) {
-      const infoSel = document.getElementById("info-member-select");
-      const savedVal = infoSel.value;
-      infoSel.innerHTML = optInfo;
-      if (savedVal) infoSel.value = savedVal;
-      document.getElementById("manual-member-select").innerHTML = optManual;
+    const infoSel = document.getElementById("info-member-select");
+    const manualSel = document.getElementById("manual-member-select");
+
+    if (document.activeElement !== infoSel) {
+      const prev = infoSel.value;
+      infoSel.innerHTML = infoOpt;
+      if (prev) infoSel.value = prev;
     }
-  } catch (e) { console.error("Sync Error"); }
+    if (document.activeElement !== manualSel) {
+      manualSel.innerHTML = manualOpt;
+    }
+
+  } catch (e) { 
+    console.error("Fetch error", e);
+    document.getElementById("percent-display").innerText = "⚠️ 試算表載入失敗，請檢查網路！";
+  }
 }
 
 function loadMemberToEdit() {
@@ -293,64 +273,61 @@ function loadMemberToEdit() {
   if (!name) return;
   const m = allMembersData.find(x => x.name === name);
   if (m) {
-    document.getElementById("edit-station").value = m.station || STATIONS[0];
+    document.getElementById("edit-station").value = m.station || "";
     document.getElementById("edit-name").value = m.name || "";
     document.getElementById("edit-phone").value = m.phone || "";
-    document.getElementById("edit-status").value = m.status || "未報到";
-    document.getElementById("edit-checkin-time").value = m.checkinTime || "";
-    document.getElementById("edit-checkout-time").value = m.checkoutTime || "";
+    document.getElementById("edit-status").value = (m.status === "已報到" ? "已報到" : "未報到");
     document.getElementById("edit-note").value = m.note || "";
   }
 }
 
 async function saveMemberEdit() {
   const name = document.getElementById("edit-name").value;
-  if (!name) return alert("尚未選擇人員");
+  if (!name) return alert("請先選取人員！");
 
   const btn = document.getElementById("btn-save");
-  btn.disabled = true; btn.innerText = "⏳ 正在更新資料庫...";
-  showMsg("⏳ 正在強制同步修改...", "#00d2ff");
+  btn.disabled = true;
+  btn.innerText = "⏳ 正在更新試算表...";
+  showMsg("⏳ 系統處理中，請稍候...", "#00d2ff");
 
   const s = document.getElementById("edit-station").value;
   const p = document.getElementById("edit-phone").value;
   const st = document.getElementById("edit-status").value;
-  const ci = document.getElementById("edit-checkin-time").value;
-  const co = document.getElementById("edit-checkout-time").value;
   const n = document.getElementById("edit-note").value;
 
-  // 強制帶入所有參數與時間戳
-  const url = `${API}?action=update&name=${encodeURIComponent(name)}&s=${encodeURIComponent(s)}&p=${encodeURIComponent(p)}&st=${encodeURIComponent(st)}&ci=${encodeURIComponent(ci)}&co=${encodeURIComponent(co)}&note=${encodeURIComponent(n)}&_t=${Date.now()}`;
+  // 使用 encodeURIComponent 確保特殊字元（如 ＆）能正確傳輸
+  const url = `${API}?action=update&name=${encodeURIComponent(name)}&s=${encodeURIComponent(s)}&p=${encodeURIComponent(p)}&st=${encodeURIComponent(st)}&note=${encodeURIComponent(n)}&_t=${Date.now()}`;
 
   try {
     const res = await fetch(url).then(r => r.json());
     if (res.ok) {
-      showMsg("✅ 資料已成功修正！", "#238636");
-      isEditing = false;
+      showMsg("✅ 資料已同步至資料庫", "#1b8a00");
+      isUserTyping = false;
       await loadData();
     } else {
-      showMsg("❌ 修改失敗", "#da3633");
+      showMsg("❌ 伺服器回傳錯誤", "#b30000");
     }
-  } catch (e) { showMsg("❌ 連線錯誤", "#da3633"); }
+  } catch (e) { showMsg("❌ 連線超時，請重試", "#b30000"); }
   finally {
-    btn.disabled = false; btn.innerText = "💾 確認修改並儲存雲端";
+    btn.disabled = false;
+    btn.innerText = "💾 儲存並修正資料庫";
   }
 }
 
-async function quickAction(type) {
+async function manualCheckin() {
   const name = document.getElementById("manual-member-select").value;
-  if (!name) return alert("請選取人員");
-  const btnId = type === 'checkin' ? "btn-checkin" : "btn-checkout";
-  const btn = document.getElementById(btnId);
-  btn.disabled = true; btn.innerText = "處理中...";
+  if (!name) return alert("請選擇人員");
+  const btn = document.getElementById("btn-checkin");
+  btn.disabled = true; btn.innerText = "報到中...";
 
   try {
-    const url = `${API}?action=${type}&name=${encodeURIComponent(name)}&_t=${Date.now()}`;
+    const url = `${API}?action=checkin&name=${encodeURIComponent(name)}&_t=${Date.now()}`;
     const res = await fetch(url).then(r => r.json());
-    if (res.ok) showMsg(`✅ ${name} 操作成功`, "#238636");
+    if (res.ok) showMsg(`✅ ${name} 已報到成功！`, "#1b8a00");
     await loadData();
-  } catch (e) { showMsg("連線失敗", "#da3633"); }
+  } catch (e) { showMsg("❌ 報到連線失敗", "#b30000"); }
   finally {
-    btn.disabled = false; btn.innerText = type === 'checkin' ? "✔️ 報到" : "🚩 報退";
+    btn.disabled = false; btn.innerText = "✔️ 確認報到";
   }
 }
 
@@ -358,36 +335,36 @@ async function addNewMember() {
   const s = document.getElementById("add-station").value;
   const n = document.getElementById("add-name").value;
   const p = document.getElementById("add-phone").value;
-  if (!n) return alert("姓名為必填");
+  if (!s || !n) return alert("站別與姓名為必填項目");
   const btn = document.getElementById("btn-add");
   btn.disabled = true; btn.innerText = "寫入中...";
 
   try {
-    const res = await fetch(`${API}?action=add&s=${encodeURIComponent(s)}&n=${encodeURIComponent(n)}&p=${encodeURIComponent(p)}&_t=${Date.now()}`).then(r => r.json());
+    const url = `${API}?action=add&s=${encodeURIComponent(s)}&n=${encodeURIComponent(n)}&p=${encodeURIComponent(p)}&_t=${Date.now()}`;
+    const res = await fetch(url).then(r => r.json());
     if (res.ok) {
-      showMsg(`✅ 已新增人員：${n}`, "#238636");
+      showMsg(`✅ 已新增：${n}`, "#1b8a00");
       document.getElementById("add-name").value = "";
       document.getElementById("add-phone").value = "";
       await loadData();
     }
-  } catch (e) { showMsg("連線失敗", "#da3633"); }
+  } catch (e) { showMsg("❌ 新增連線失敗", "#b30000"); }
   finally {
-    btn.disabled = false; btn.innerText = "➕ 寫入資料庫";
+    btn.disabled = false; btn.innerText = "➕ 寫入雲端試算表";
   }
 }
 
 function alertAll() {
-  if (!confirm("確定對所有未報到人員發送催報？")) return;
+  if (!confirm("確定要向所有未報到人員發送 LINE 催報？")) return;
   fetch(`${API}?action=alert&_t=${Date.now()}`)
     .then(r => r.json())
-    .then(() => showMsg("🔔 催報指令已發送", "#d29922"))
-    .catch(() => showMsg("發送失敗", "#da3633"));
+    .then(() => showMsg("🔔 催報指令已下達", "#b45309"))
+    .catch(() => showMsg("❌ 發送失敗", "#b30000"));
 }
 
-// 啟動
-initStationDropdowns();
+// 啟動與循環刷新 (每 10 秒)
 loadData();
-setInterval(loadData, 15000); 
+setInterval(loadData, 10000); 
 
 </script>
 </body>
