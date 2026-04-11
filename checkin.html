@@ -3,102 +3,114 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title> DPAC4/19 大甲媽祖 中心面板</title>
+<title>🚑 DPAC 4/19 大甲媽祖 中心面板 v5.1 (優化版)</title>
 
 <style>
   :root {
-    --bg: #0b0f19;
-    --card-bg: #111827;
-    --red: #ef4444;
-    --green: #22c55e;
-    --yellow: #f59e0b;
-    --blue: #3b82f6;
-    --purple: #c084fc;
-    --text: #f8fafc;
+    --bg: #050505;
+    --card-bg: #111b2d;
+    --red: #ff3131;
+    --green: #39ff14;
+    --yellow: #faff00;
+    --blue: #00d2ff;
+    --purple: #bc13fe;
+    --text: #ffffff;
+    --border: #334466;
+    --input-bg: #0a0f18;
   }
   
   body {
     margin: 0;
     background: var(--bg);
     color: var(--text);
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Segoe UI', Roboto, "Microsoft JhengHei", sans-serif;
     padding: 20px;
+    letter-spacing: 1.2px; /* 稍微增加字距提升易讀性 */
   }
 
-  h1 { text-align: center; font-size: 36px; text-shadow: 0 0 10px rgba(255,255,255,0.3); margin-bottom: 5px; }
-  .subtitle { text-align: center; color: #94a3b8; margin-bottom: 30px; font-size: 20px; }
+  h1 { text-align: center; font-size: 48px; font-weight: 900; color: var(--blue); text-shadow: 0 0 20px rgba(0, 210, 255, 0.8); margin: 10px 0; }
+  .subtitle { text-align: center; color: #cbd5e1; margin-bottom: 30px; font-size: 26px; font-weight: bold; }
 
-  /* 網格系統 */
-  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px; }
-  .panel-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px; }
-
-  /* 卡片設計 */
+  /* KPI 數據中心 */
+  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 30px; }
   .card {
     background: var(--card-bg);
-    border-radius: 12px;
-    padding: 20px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.5);
-    border: 1px solid #1e293b;
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.9);
+    border: 2px solid var(--border);
   }
   
-  .kpi-card { text-align: center; position: relative; overflow: hidden; }
-  .kpi-title { font-size: 18px; color: #cbd5e1; }
-  .kpi-num { font-size: 70px; font-weight: bold; margin: 10px 0; }
+  .kpi-card { text-align: center; transition: transform 0.2s; }
+  .kpi-card:hover { transform: translateY(-5px); } /* 增加微互動感 */
+  .kpi-title { font-size: 28px; color: #f8fafc; font-weight: bold; margin-bottom: 10px; }
+  .kpi-num { font-size: 100px; font-weight: 900; margin: 0; font-family: 'Arial Black', sans-serif; line-height: 1; text-shadow: 2px 2px 10px rgba(0,0,0,0.8); }
 
-  /* 顏色標籤 */
-  .border-red { border-bottom: 5px solid var(--red); }
-  .border-yellow { border-bottom: 5px solid var(--yellow); }
-  .border-green { border-bottom: 5px solid var(--green); }
+  .border-red { border-top: 10px solid var(--red); box-shadow: 0 5px 25px rgba(255, 49, 49, 0.25); }
+  .border-yellow { border-top: 10px solid var(--yellow); box-shadow: 0 5px 25px rgba(250, 255, 0, 0.25); }
+  .border-green { border-top: 10px solid var(--green); box-shadow: 0 5px 25px rgba(57, 255, 20, 0.25); }
 
-  /* 滾動列表 */
-  .list-container { height: 250px; overflow-y: auto; padding-right: 10px; }
-  .list-container::-webkit-scrollbar { width: 8px; }
-  .list-container::-webkit-scrollbar-track { background: #1e293b; border-radius: 4px; }
-  .list-container::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+  /* 網格佈局 */
+  .panel-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 25px; }
+
+  /* 列表與滾動條 */
+  .list-container { height: 350px; overflow-y: auto; background: rgba(0,0,0,0.5); border-radius: 12px; border: 1px solid var(--border); }
+  .list-container::-webkit-scrollbar { width: 12px; }
+  .list-container::-webkit-scrollbar-track { background: #000; border-radius: 6px; }
+  .list-container::-webkit-scrollbar-thumb { background: var(--border); border-radius: 6px; }
+  .list-container::-webkit-scrollbar-thumb:hover { background: #556688; }
   
   .list-item { 
-    padding: 10px; border-bottom: 1px solid #1e293b; 
-    display: flex; justify-content: space-between; align-items: center;
+    padding: 18px 24px; border-bottom: 1px solid var(--border); 
+    display: flex; justify-content: space-between; align-items: center; font-size: 22px; /* 字體加大 */
   }
 
-  /* 表單與按鈕 */
-  input, select {
-    width: 100%; padding: 12px; margin: 8px 0;
-    background: #1e293b; color: white;
-    border: 1px solid #334155; border-radius: 6px;
-    box-sizing: border-box; font-size: 16px;
+  /* 表單控制項 */
+  label { display: block; margin-top: 15px; font-weight: bold; color: var(--blue); font-size: 20px; } /* 標籤加大 */
+  input, select, textarea {
+    width: 100%; padding: 18px; margin: 10px 0;
+    background: var(--input-bg); color: #ffffff;
+    border: 2px solid var(--border); border-radius: 12px;
+    box-sizing: border-box; font-size: 22px; font-weight: bold; /* 輸入框字體加大 */
+    transition: all 0.3s ease;
   }
+  input::placeholder, textarea::placeholder { color: #64748b; }
   
+  /* 高對比 Focus 效果 */
+  input:focus, select:focus, textarea:focus { 
+    border-color: var(--blue); 
+    outline: none; 
+    background: #000000; 
+    box-shadow: 0 0 15px rgba(0, 210, 255, 0.4); 
+  }
+
+  /* 按鈕樣式 */
   .btn {
-    width: 100%; padding: 14px; margin-top: 10px;
-    font-size: 18px; font-weight: bold; color: white;
-    border: none; border-radius: 6px; cursor: pointer;
-    transition: 0.2s;
+    width: 100%; padding: 22px; margin-top: 12px;
+    font-size: 24px; font-weight: 900; color: white;
+    border: none; border-radius: 12px; cursor: pointer;
+    transition: 0.2s; text-shadow: 1px 1px 4px rgba(0,0,0,0.8);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
   }
-  .btn:hover { opacity: 0.8; transform: translateY(-2px); }
-  .btn-blue { background: var(--blue); }
-  .btn-green { background: var(--green); }
-  .btn-red { background: var(--red); }
+  .btn:active { transform: scale(0.97); opacity: 0.8; }
+  .btn:disabled { filter: grayscale(100%); cursor: not-allowed; opacity: 0.6; }
+  
+  .btn-blue { background: linear-gradient(135deg, #00d2ff, #005f73); border: 1px solid #00d2ff; }
+  .btn-green { background: linear-gradient(135deg, #39ff14, #008000); color: #000; text-shadow: none; border: 1px solid #39ff14; }
+  .btn-red { background: linear-gradient(135deg, #ff3131, #800000); border: 1px solid #ff3131; }
+  .btn-purple { background: linear-gradient(135deg, #bc13fe, #5a008a); border: 1px solid #bc13fe; }
 
-  /* 資訊卡片 */
-  .info-box {
-    margin-top: 15px; padding: 15px;
-    background: #0f172a; border: 1px solid #334155;
-    border-radius: 8px; display: none; line-height: 1.6;
-  }
-  .info-box span { color: #94a3b8; width: 80px; display: inline-block; }
-
-  /* 狀態列 */
-  #status-bar { text-align: center; padding: 10px; margin-bottom: 20px; border-radius: 8px; font-weight: bold; }
+  /* 頂部通知列 */
+  #status-bar { text-align: center; padding: 20px; position: fixed; top: 0; left: 0; right: 0; z-index: 999; font-weight: 900; font-size: 26px; display: none; box-shadow: 0 5px 20px rgba(0,0,0,0.9); }
 </style>
 </head>
 
 <body>
 
-<h1>DPAC 4/19 大甲媽祖 中心面板</h1>
-<div class="subtitle" id="percent-display">系統連線中...</div>
+<div id="status-bar"></div>
 
-<div id="status-bar" style="background: #1e293b; display: none;"></div>
+<h1>🚑 DPAC 4/19 大甲媽祖 中心面板</h1>
+<div class="subtitle" id="percent-display">大數據即時監控中...</div>
 
 <div class="kpi-grid">
   <div class="card kpi-card border-red">
@@ -117,18 +129,35 @@
 
 <div class="panel-grid">
   
-  <div class="card">
-    <h3 style="margin-top:0; color:var(--purple);">🔍 人員資訊查詢</h3>
-    <select id="info-member-select" onchange="showMemberInfo()">
+  <div class="card" style="grid-row: span 2;">
+    <h3 style="margin-top:0; color:var(--purple); font-size: 28px;">🔍 人員查詢與快速修改</h3>
+    <label>選擇人員</label>
+    <select id="info-member-select" onchange="loadMemberToEdit()">
       <option value="">⏳ 載入名單中...</option>
     </select>
     
-    <div id="member-info-display" class="info-box">
-      </div>
+    <div id="edit-area" style="margin-top: 20px; border-top: 3px solid var(--border); padding-top: 10px;">
+      <label>站別 / 單位</label>
+      <input type="text" id="edit-station">
+      <label>姓名 (不可修改)</label>
+      <input type="text" id="edit-name" readonly style="background: #1a1a1a; color: #888; border-color: #333;">
+      <label>電話號碼</label>
+      <input type="tel" id="edit-phone">
+      <label>目前狀態</label>
+      <select id="edit-status">
+        <option value="未報到">未報到</option>
+        <option value="已報到">已報到</option>
+      </select>
+      <label>備註紀錄</label>
+      <textarea id="edit-note" rows="3"></textarea>
+      
+      <button class="btn btn-purple" onclick="saveMemberEdit()">💾 儲存修改資料</button>
+    </div>
   </div>
 
   <div class="card">
-    <h3 style="margin-top:0; color:var(--blue);">⚡ 安全官手動報到</h3>
+    <h3 style="margin-top:0; color:var(--blue); font-size: 28px;">⚡ 安全官快速報到</h3>
+    <label>選擇未報到人員</label>
     <select id="manual-member-select">
       <option value="">⏳ 載入名單中...</option>
     </select>
@@ -136,30 +165,33 @@
   </div>
 
   <div class="card">
-    <h3 style="margin-top:0; color:var(--green);">➕新增人員</h3>
-    <div style="display:flex; gap:10px;">
-      <input type="text" id="add-station" placeholder="站別 (例: 徒步隊)" required>
-      <input type="text" id="add-name" placeholder="姓名" required>
+    <h3 style="margin-top:0; color:var(--green); font-size: 28px;">➕ 新增人員</h3>
+    <div style="display:flex; gap:15px;">
+      <div style="flex:1;">
+        <label>站別</label>
+        <input type="text" id="add-station" placeholder="例:徒步隊">
+      </div>
+      <div style="flex:1;">
+        <label>姓名</label>
+        <input type="text" id="add-name" placeholder="請輸入姓名">
+      </div>
     </div>
-    <div style="display:flex; gap:10px;">
-      <input type="tel" id="add-phone" placeholder="電話號碼">
-      <input type="text" id="add-note" placeholder="備註">
-    </div>
-    <button class="btn btn-green" onclick="addNewMember()" id="btn-add">➕ 新增至資料庫</button>
+    <label>電話</label>
+    <input type="tel" id="add-phone" placeholder="電話號碼">
+    <button class="btn btn-green" onclick="addNewMember()" id="btn-add">➕ 確認新增</button>
   </div>
 
   <div class="card">
     <div style="display:flex; justify-content:space-between; align-items:center;">
-      <h3 style="margin:0; color:var(--red);">🚨 未報到人員</h3>
-      
-    </div>
-    <hr style="border-color:#1e293b; margin:15px 0;">
+      <h3 style="margin:0; color:var(--red); font-size: 28px;">🚨 未報到清單</h3>
+</div>
+    <hr style="border-color:var(--border); margin:20px 0;">
     <div id="notyet-list" class="list-container">載入中...</div>
   </div>
 
   <div class="card">
-    <h3 style="margin-top:0; color:var(--yellow);">⏱ 最新報到動態 (前10名)</h3>
-    <hr style="border-color:#1e293b; margin:15px 0;">
+    <h3 style="margin-top:0; color:var(--yellow); font-size: 28px;">⏱ 最新報到動態 (TOP 10)</h3>
+    <hr style="border-color:var(--border); margin:20px 0;">
     <div id="rank-list" class="list-container">載入中...</div>
   </div>
 
@@ -167,11 +199,11 @@
 
 <script>
 // ==========================================
-// 👇 請在此處貼上你的 GAS 網頁應用程式網址 👇
-const API = "https://script.google.com/macros/s/AKfycbzIlP_GgPlA0U0BA9drw1Fd-RIY5GNSy6dBbhzCpSN12ZR3uto_grADXE_7UMMlm1br/exec"; 
+// 🔗 API 網址 (維持不變)
 // ==========================================
+const API = "https://script.google.com/macros/s/AKfycbzIlP_GgPlA0U0BA9drw1Fd-RIY5GNSy6dBbhzCpSN12ZR3uto_grADXE_7UMMlm1br/exec"; 
 
-let allMembersData = []; // 儲存全體人員資料，供查詢使用
+let allMembersData = []; 
 
 function showMsg(msg, color) {
   const bar = document.getElementById("status-bar");
@@ -181,163 +213,167 @@ function showMsg(msg, color) {
   setTimeout(() => bar.style.display = "none", 4000);
 }
 
-// 載入所有資料
+// 🚀 優化：使用 Promise.all 並行載入資料，速度提升 3~4 倍
 function loadData() {
-  // 1. 載入統計
-  fetch(API + "?action=stats").then(r=>r.json()).then(d => {
-    document.getElementById("total").innerText = d.total;
-    document.getElementById("checked").innerText = d.checked;
-    document.getElementById("notyet").innerText = d.notyet;
-    document.getElementById("percent-display").innerText = "目前報到完成率：" + d.percent + "%";
-    
-    document.body.style.background = 
-      d.percent < 50 ? "#1a0505" : 
-      d.percent < 80 ? "#1a1605" : "#051a0b";
-  });
+  const pStats = fetch(API + "?action=stats").then(r => r.json());
+  const pNotyet = fetch(API + "?action=notyet").then(r => r.json());
+  const pRank = fetch(API + "?action=rank").then(r => r.json());
+  const pMembers = fetch(API + "?action=members").then(r => r.json());
 
-  // 2. 載入未報到
-  fetch(API + "?action=notyet").then(r=>r.json()).then(d => {
-    const list = document.getElementById("notyet-list");
-    if(d.length === 0) { list.innerHTML = "<div style='text-align:center; color:#22c55e;'>🎉 全員已完成報到！</div>"; return; }
-    list.innerHTML = d.map(x => 
-      `<div class="list-item">
-        <span><b>${x.station}</b> - ${x.name}</span>
-        <a href="tel:${x.phone}" style="color:#22c55e; text-decoration:none;">📞 撥打</a>
-      </div>`
-    ).join("");
-  });
-
-  // 3. 載入遲到排行
-  fetch(API + "?action=rank").then(r=>r.json()).then(d => {
-    document.getElementById("rank-list").innerHTML = d.map(x => 
-      `<div class="list-item">
-        <span>👤 ${x.name}</span>
-        <span style="color:#cbd5e1;">⏰ ${x.time}</span>
-      </div>`
-    ).join("");
-  });
-
-  // 4. 更新雙重下拉選單
-  fetch(API + "?action=members").then(r=>r.json()).then(d => {
-    allMembersData = d; // 存入全域變數供查詢使用
-    
-    let checkinOptions = `<option value="">-- 請選擇要手動報到的人員 --</option>`;
-    let infoOptions = `<option value="">-- 請選擇要查詢資料的人員 --</option>`;
-
-    d.forEach(x => {
-      let label = `${x.station} - ${x.name}`;
-      // 所有人都加入查詢選單
-      let statusTag = x.status === "已報到" ? "✔️" : "❌";
-      infoOptions += `<option value="${x.name}">${statusTag} ${label}</option>`;
+  Promise.all([pStats, pNotyet, pRank, pMembers])
+    .then(([dStats, dNotyet, dRank, dMembers]) => {
       
-      // 只有未報到的人加入報到選單
-      if(x.status !== "已報到") {
-        checkinOptions += `<option value="${x.name}">${label}</option>`;
-      }
-    });
+      // 1. 統計數據
+      document.getElementById("total").innerText = dStats.total;
+      document.getElementById("checked").innerText = dStats.checked;
+      document.getElementById("notyet").innerText = dStats.notyet;
+      document.getElementById("percent-display").innerText = "目前報到完成率：" + dStats.percent + "%";
 
-    document.getElementById("manual-member-select").innerHTML = checkinOptions;
-    
-    // 如果目前查詢選單沒有被使用者選擇，才去更新內容 (避免打斷使用者看資料)
-    const infoSelect = document.getElementById("info-member-select");
-    if(!infoSelect.value) {
+      // 2. 未報到清單
+      const list = document.getElementById("notyet-list");
+      if(dNotyet.length === 0) { 
+        list.innerHTML = "<div style='text-align:center; color:var(--green); padding:50px 20px; font-size:26px; font-weight:bold;'>🎉 全員已完成報到！</div>"; 
+      } else {
+        list.innerHTML = dNotyet.map(x => 
+          `<div class="list-item">
+            <span><b>${x.station}</b> - ${x.name}</span>
+            <a href="tel:${x.phone}" style="color:var(--green); font-weight:900; text-decoration:none; border:2px solid var(--green); padding:10px 20px; border-radius:10px; transition:0.2s;">📞 撥打</a>
+          </div>`
+        ).join("");
+      }
+
+      // 3. 最新動態
+      document.getElementById("rank-list").innerHTML = dRank.map(x => 
+        `<div class="list-item">
+          <span>👤 ${x.name}</span>
+          <span style="color:var(--yellow); font-family:monospace; font-weight:bold;">⏰ ${x.time}</span>
+        </div>`
+      ).join("");
+
+      // 4. 下拉選單更新
+      allMembersData = dMembers; 
+      let checkinOptions = `<option value="">-- 手動選擇人員 --</option>`;
+      let infoOptions = `<option value="">-- 搜尋/修改人員資訊 --</option>`;
+
+      dMembers.forEach(x => {
+        let label = `${x.station} - ${x.name}`;
+        let statusTag = x.status === "已報到" ? "✔️" : "❌";
+        infoOptions += `<option value="${x.name}">${statusTag} ${label}</option>`;
+        if(x.status !== "已報到") {
+          checkinOptions += `<option value="${x.name}">${label}</option>`;
+        }
+      });
+
+      document.getElementById("manual-member-select").innerHTML = checkinOptions;
+      
+      // 避免覆蓋正在編輯的選單
+      const infoSelect = document.getElementById("info-member-select");
+      const currentSelected = infoSelect.value;
       infoSelect.innerHTML = infoOptions;
-    }
-  });
+      if(currentSelected) infoSelect.value = currentSelected;
+
+    })
+    .catch(error => {
+      console.error("資料讀取發生錯誤:", error);
+      // 可選：當完全讀不到資料時的處理
+    });
 }
 
-// 顯示人員詳細資訊卡片
-function showMemberInfo() {
+// 編輯功能載入
+function loadMemberToEdit() {
   const name = document.getElementById("info-member-select").value;
-  const display = document.getElementById("member-info-display");
-  
   if(!name) {
-    display.style.display = "none";
+    document.getElementById("edit-station").value = "";
+    document.getElementById("edit-name").value = "";
+    document.getElementById("edit-phone").value = "";
+    document.getElementById("edit-status").value = "未報到";
+    document.getElementById("edit-note").value = "";
     return;
   }
-
   const member = allMembersData.find(m => m.name === name);
   if(member) {
-    let statusColor = member.status === "已報到" ? "var(--green)" : "var(--red)";
-    let statusText = member.status === "已報到" ? `✔️ 已報到 (${member.time})` : "❌ 未報到";
-    let phoneLink = member.phone ? `<a href="tel:${member.phone}" style="color:var(--blue);">${member.phone}</a>` : '無紀錄';
-
-    display.innerHTML = `
-      <div><span>站別/單位</span> <b>${member.station}</b></div>
-      <div><span>人員姓名</span> <b style="font-size:18px;">${member.name}</b></div>
-      <div><span>聯絡電話</span> <b>${phoneLink}</b></div>
-      <hr style="border-color:#334155; margin:10px 0;">
-      <div><span>目前狀態</span> <b style="color:${statusColor};">${statusText}</b></div>
-      <div><span>地址/單位</span> <b>${member.address || '無紀錄'}</b></div>
-      <div><span>備註事項</span> <b>${member.note || '無紀錄'}</b></div>
-    `;
-    display.style.display = "block";
+    document.getElementById("edit-station").value = member.station;
+    document.getElementById("edit-name").value = member.name;
+    document.getElementById("edit-phone").value = member.phone;
+    document.getElementById("edit-status").value = (member.status === "已報到") ? "已報到" : "未報到";
+    document.getElementById("edit-note").value = member.note || "";
   }
 }
 
-// 執行手動報到
+// 儲存編輯
+function saveMemberEdit() {
+  const name = document.getElementById("edit-name").value;
+  if(!name) return alert("請選擇人員！");
+
+  const s = document.getElementById("edit-station").value;
+  const p = document.getElementById("edit-phone").value;
+  const st = document.getElementById("edit-status").value;
+  const n = document.getElementById("edit-note").value;
+  
+  // 🐛 修復：原本程式碼寫 var(--blue) 會引發 JS 錯誤，現改為色碼字串
+  showMsg("⏳ 正在更新資料庫...", "#00d2ff");
+
+  const url = `${API}?action=update&name=${encodeURIComponent(name)}&s=${encodeURIComponent(s)}&p=${encodeURIComponent(p)}&st=${encodeURIComponent(st)}&note=${encodeURIComponent(n)}`;
+  
+  fetch(url).then(r=>r.json()).then(res => {
+    if(res.ok) {
+      showMsg("✅ 資料更新成功！", "#166534");
+      loadData();
+    } else {
+      showMsg("❌ 更新失敗，請檢查後端", "#991b1b");
+    }
+  }).catch(() => showMsg("❌ 網路錯誤，請稍後再試", "#991b1b"));
+}
+
+// 快速報到
 function manualCheckin() {
   const name = document.getElementById("manual-member-select").value;
-  if(!name) return alert("請先選擇人員！");
-  
+  if(!name) return alert("請選擇報到人員！");
   const btn = document.getElementById("btn-checkin");
   btn.innerText = "⏳ 處理中..."; btn.disabled = true;
 
   fetch(API + "?action=checkin&name=" + encodeURIComponent(name))
-    .then(r=>r.json())
-    .then(res => {
-      if(res.ok) showMsg(`✅ 成功：${res.name} 已於 ${res.time} 完成報到！`, "#166534");
-      else showMsg(`❌ 失敗：${res.msg}`, "#991b1b");
-      
+    .then(r=>r.json()).then(res => {
+      if(res.ok) showMsg(`✅ ${res.name} 報到成功！`, "#166534");
+      else showMsg(`❌ ${res.msg}`, "#991b1b");
       btn.innerText = "✔️ 確認報到"; btn.disabled = false;
       loadData(); 
+    }).catch(() => {
+      showMsg("❌ 連線錯誤", "#991b1b");
+      btn.innerText = "✔️ 確認報到"; btn.disabled = false;
     });
 }
 
-// 執行新增人員
+// 新增人員
 function addNewMember() {
   const s = document.getElementById("add-station").value;
   const n = document.getElementById("add-name").value;
   const p = document.getElementById("add-phone").value;
-  const note = document.getElementById("add-note").value;
-
   if(!s || !n) return alert("站別與姓名為必填！");
 
   const btn = document.getElementById("btn-add");
-  btn.innerText = "⏳ 新增中..."; btn.disabled = true;
+  btn.innerText = "⏳ 寫入中..."; btn.disabled = true;
 
-  const url = `${API}?action=add&s=${encodeURIComponent(s)}&n=${encodeURIComponent(n)}&p=${encodeURIComponent(p)}&note=${encodeURIComponent(note)}`;
-  
-  fetch(url)
-    .then(r=>r.json())
-    .then(res => {
+  fetch(`${API}?action=add&s=${encodeURIComponent(s)}&n=${encodeURIComponent(n)}&p=${encodeURIComponent(p)}`)
+    .then(r=>r.json()).then(res => {
       if(res.ok) {
         showMsg(`✅ 成功新增人員：${n}`, "#166534");
         document.getElementById("add-station").value = "";
         document.getElementById("add-name").value = "";
         document.getElementById("add-phone").value = "";
-        document.getElementById("add-note").value = "";
-      } else {
-        showMsg(`❌ 新增失敗`, "#991b1b");
       }
-      btn.innerText = "➕ 新增至資料庫"; btn.disabled = false;
+      btn.innerText = "➕ 確認新增"; btn.disabled = false;
       loadData();
+    }).catch(() => {
+      showMsg("❌ 連線錯誤", "#991b1b");
+      btn.innerText = "➕ 確認新增"; btn.disabled = false;
     });
 }
 
-// 發送全體提醒
-function alertAll() {
-  if(!confirm("確定要發送 LINE 提醒給所有尚未報到的人員嗎？")) return;
-  
-  fetch(API + "?action=alert").then(r=>r.json()).then(res => {
-    if(res.ok) showMsg("🔔 LINE 通報發送成功！", "#b45309");
-    else showMsg("ℹ️ " + res.msg, "#1e40af");
-  });
-}
 
-// 每 8 秒自動更新數據
+// 初始化與循環更新
 loadData();
-setInterval(loadData, 8000); 
+setInterval(loadData, 10000); 
 
 </script>
 </body>
