@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>⚠️ 尚未報到清單</title>
+<style>
+  :root { --bg: #000; --card-bg: #110505; --red: #ff3131; --orange: #ff9f00; --text: #fff; --border: #4a1a1a; }
+  body { background: var(--bg); color: var(--text); font-family: sans-serif; padding: 15px; margin: 0; }
+  
+  .header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid var(--red); padding-bottom: 10px; }
+  h2 { color: var(--red); font-size: 28px; margin: 0; text-shadow: 0 0 10px rgba(255, 49, 49, 0.5); }
+  .counter { font-size: 18px; color: var(--orange); margin-top: 5px; font-weight: bold; }
+
+  .search-box { width: 100%; padding: 15px; background: #222; border: 1px solid var(--border); border-radius: 10px; color: white; font-size: 18px; margin-bottom: 15px; box-sizing: border-box; outline: none; }
+  .search-box:focus { border-color: var(--red); box-shadow: 0 0 10px rgba(255, 49, 49, 0.3); }
+
+  .list-container { display: flex; flex-direction: column; gap: 10px; }
+  .member-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 15px; display: flex; justify-content: space-between; align-items: center; }
+  .info-left { display: flex; flex-direction: column; }
+  .station-tag { font-size: 12px; color: #888; text-transform: uppercase; margin-bottom: 4px; }
+  .name-text { font-size: 22px; font-weight: bold; color: #fff; }
+  .phone-link { font-size: 14px; color: var(--red); text-decoration: none; margin-top: 5px; }
+  
+  #loading { text-align: center; color: #888; padding: 40px; font-size: 20px; }
+  #empty-msg { text-align: center; color: #39ff14; padding: 40px; font-size: 24px; display: none; font-weight: bold; }
+</style>
+</head>
+<body>
+
+  <div class="header">
+    <h2>⚠️ 尚未報到人員</h2>
+    <div class="counter">剩餘 <span id="count-num">0</span> 人未到</div>
+  </div>
+
+  <input type="text" id="search-input" class="search-box" placeholder="🔍 搜尋站別或姓名..." onkeyup="filterList()">
+  
+  <div id="loading">⏳ 正在掃描名單...</div>
+  <div id="empty-msg">🎉 太棒了！全員報到完成！</div>
+  
+  <div id="list-container" class="list-container"></div>
+
+<script>
+  const API = "https://script.google.com/macros/s/AKfycbxKJGoKVQcMbuv6TV_Gka38ijUf8-NitIfpX4lzK3XIwea0ERsmFLDENw3CKGJgkw/exec";
+  let pendingData = [];
+
+  async function loadPending() {
+    try {
+      const res = await fetch(API + "?action=load&_t=" + Date.now()).then(r=>r.json());
+      if(res.ok) {
+        // 過濾出「尚未報到」的人員
+        pendingData = res.data.filter(m => m.status === "未報到" || m.status === "");
+        renderList();
+        document.getElementById("loading").style.display = "none";
+      }
+    } catch(e) { 
+      document.getElementById("loading").innerText = "❌ 載入失敗，請檢查網路"; 
+    }
+  }
+
+  function renderList() {
+    const container = document.getElementById("list-container");
+    const emptyMsg = document.getElementById("empty-msg");
+    const countNum = document.getElementById("count-num");
+    const query = document.getElementById("search-input").value.toLowerCase();
+    
+    // 執行搜尋過濾
+    const filtered = pendingData.filter(m => 
+      m.station.toLowerCase().includes(query) || m.name.toLowerCase().includes(query)
+    );
+
+    countNum.innerText = filtered.length;
+
+    if (filtered.length === 0 && query === "") {
+      emptyMsg.style.display = "block";
+      container.innerHTML = "";
+    } else {
+      emptyMsg.style.display = "none";
+      container.innerHTML = filtered.map(m => `
+        <div class="member-card">
+          <div class="info-left">
+            <span class="station-tag">${m.station}</span>
+            <span class="name-text">${m.name}</span>
+            ${m.phone ? `<a href="tel:${m.phone}" class="phone-link">📞 撥打電話: ${m.phone}</a>` : ''}
+          </div>
+          <div style="color: #444; font-size: 24px;">🚫</div>
+        </div>
+      `).join("");
+    }
+  }
+
+  function filterList() { renderList(); }
+  
+  // 每 60 秒自動重新整理一次，保持數據最新
+  loadPending();
+  setInterval(loadPending, 60000);
+</script>
+</body>
+</html>
