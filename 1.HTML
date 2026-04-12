@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>快速報到 / 報退</title>
+<style>
+  :root { --bg: #000; --card-bg: #080808; --blue: #00d2ff; --green: #39ff14; --orange: #ff9f00; --text: #fff; --border: #222; }
+  body { background: var(--bg); color: var(--text); font-family: sans-serif; padding: 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; box-sizing: border-box;}
+  .card { width: 100%; max-width: 400px; background: var(--card-bg); padding: 30px 20px; border-radius: 15px; border: 1px solid var(--border); box-shadow: 0 0 15px rgba(0,210,255,0.1); text-align: center; }
+  h2 { color: var(--blue); margin-top: 0; font-size: 28px; }
+  select { width: 100%; padding: 15px; margin-bottom: 20px; background: #111; color: #fff; border: 1px solid var(--border); border-radius: 8px; font-size: 20px; }
+  .btn-group { display: flex; flex-direction: column; gap: 15px; }
+  button { padding: 18px; font-size: 22px; font-weight: bold; border: none; border-radius: 10px; cursor: pointer; color: #000; transition: 0.2s; }
+  button:disabled { background: #333; color: #666; }
+  .btn-in { background: var(--green); }
+  .btn-out { background: var(--orange); }
+  #msg { margin-top: 20px; font-size: 18px; padding: 10px; border-radius: 8px; display: none; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <h2>⚡ 快速報到作業</h2>
+    <select id="member-select">
+      <option value="">⏳ 載入名單中...</option>
+    </select>
+    <div class="btn-group">
+      <button class="btn-in" onclick="handleAction('checkin', '報到')">✔️ 確認報到 (IN)</button>
+      <button class="btn-out" onclick="handleAction('checkout', '報退')">🏠 確認報退 (OUT)</button>
+    </div>
+    <div id="msg"></div>
+  </div>
+
+<script>
+  const API = "https://script.google.com/macros/s/AKfycbz6jLiq0iRwzoRU2uEB1Sn-9MoTEhbc7n9BhsUc22P5xbBRC8ATsV6IaIUOLReJbwH2/exec";
+  
+  // 載入名單
+  fetch(API + "?action=load").then(r=>r.json()).then(res => {
+    if(res.ok) {
+      const sel = document.getElementById("member-select");
+      sel.innerHTML = '<option value="">-- 請選擇人員 --</option>' + 
+        res.data.map(m => `<option value="${m.name}">${m.station} - ${m.name}</option>`).join("");
+    }
+  });
+
+  async function handleAction(type, actionName) {
+    const name = document.getElementById("member-select").value;
+    if (!name) return alert("⚠️ 請先選擇人員");
+    
+    const btns = document.querySelectorAll("button");
+    const msg = document.getElementById("msg");
+    btns.forEach(b => b.disabled = true);
+    
+    msg.style.display = "block";
+    msg.style.background = "#111";
+    msg.style.color = "var(--blue)";
+    msg.innerText = `⏳ 執行 ${actionName} 中...`;
+
+    try {
+      const url = `${API}?action=${type}&name=${encodeURIComponent(name)}&_t=${Date.now()}`;
+      const res = await fetch(url).then(r => r.json());
+      if (res.ok) {
+        msg.style.color = "var(--green)";
+        msg.innerText = `✅ ${name} ${actionName}成功！`;
+        document.getElementById("member-select").value = ""; // 清空選擇
+      } else {
+        msg.style.color = "var(--red)";
+        msg.innerText = `❌ 失敗：${res.msg}`;
+      }
+    } catch(e) {
+      msg.style.color = "var(--red)";
+      msg.innerText = "❌ 網路連線異常";
+    } finally {
+      btns.forEach(b => b.disabled = false);
+      setTimeout(() => msg.style.display="none", 5000);
+    }
+  }
+</script>
+</body>
+</html>
