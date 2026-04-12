@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>新增/修改人員</title>
+<style>
+  :root { --bg: #000; --card-bg: #111; --blue: #00d2ff; --text: #fff; --border: #333; }
+  body { background: var(--bg); color: var(--text); font-family: sans-serif; padding: 20px; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh;}
+  .card { width: 100%; max-width: 400px; background: var(--card-bg); padding: 30px 20px; border-radius: 15px; border: 1px solid var(--border); }
+  h2 { color: var(--blue); text-align: center; margin-top: 0; font-size: 26px;}
+  input { width: 100%; padding: 15px; margin-bottom: 15px; background: #000; color: #fff; border: 1px solid var(--border); border-radius: 8px; font-size: 18px; box-sizing: border-box; }
+  button { width: 100%; padding: 15px; font-size: 20px; font-weight: bold; background: var(--blue); color: #000; border: none; border-radius: 8px; cursor: pointer; }
+  button:disabled { background: #444; color: #888; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <h2>➕ 新增人員編制</h2>
+    <input type="text" id="add-station" placeholder="站別 (例: 一站)">
+    <input type="text" id="add-name" placeholder="姓名 (必填)">
+    <input type="text" id="add-phone" placeholder="電話 (選填)">
+    <button id="btn-add" onclick="addNewMember()">新增至資料庫</button>
+  </div>
+
+<script>
+  const API = "https://script.google.com/macros/s/AKfycbz6jLiq0iRwzoRU2uEB1Sn-9MoTEhbc7n9BhsUc22P5xbBRC8ATsV6IaIUOLReJbwH2/exec";
+  
+  async function addNewMember() {
+    const s = document.getElementById("add-station").value.trim();
+    const n = document.getElementById("add-name").value.trim();
+    const p = document.getElementById("add-phone").value.trim();
+    if (!n) return alert("⚠️ 姓名必填！");
+    
+    const btn = document.getElementById("btn-add");
+    btn.disabled = true;
+    btn.innerText = "⏳ 建立中...";
+
+    try {
+      const url = `${API}?action=add&s=${encodeURIComponent(s)}&n=${encodeURIComponent(n)}&p=${encodeURIComponent(p)}&_t=${Date.now()}`;
+      const res = await fetch(url).then(r => r.json());
+      if (res.ok) {
+        alert(`✅ 成功新增：${n}`);
+        document.getElementById("add-station").value = "";
+        document.getElementById("add-name").value = "";
+        document.getElementById("add-phone").value = "";
+      } else {
+        alert(`❌ 失敗：${res.msg}`);
+      }
+    } catch (e) {
+      alert("❌ 網路連線異常");
+    } finally {
+      btn.disabled = false;
+      btn.innerText = "新增至資料庫";
+    }
+  }
+</script>
+</body>
+</html>
