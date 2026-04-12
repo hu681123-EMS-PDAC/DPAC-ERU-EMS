@@ -8,15 +8,16 @@
   :root { --bg: #000; --card-bg: #111; --blue: #00d2ff; --text: #fff; --border: #333; }
   body { background: var(--bg); color: var(--text); font-family: sans-serif; padding: 10px; margin: 0; }
   h2 { color: var(--blue); text-align: center; margin-bottom: 10px; font-size: 24px;}
-  .search-box { width: 100%; padding: 12px; background: #000; border: 1px solid var(--border); border-radius: 8px; color: white; font-size: 16px; margin-bottom: 15px; box-sizing: border-box; }
+  .search-box { width: 100%; padding: 12px; background: #000; border: 1px solid var(--border); border-radius: 8px; color: white; font-size: 16px; margin-bottom: 15px; box-sizing: border-box; outline: none; }
+  .search-box:focus { border-color: var(--blue); }
   .table-wrapper { overflow-x: auto; border-radius: 8px; border: 1px solid var(--border); }
   table { width: 100%; border-collapse: collapse; text-align: center; font-size: 15px; }
   th { background: #222; color: var(--blue); padding: 12px 8px; white-space: nowrap; }
   td { padding: 12px 8px; border-bottom: 1px solid #222; background: var(--card-bg); white-space: nowrap; }
-  .status-in { color: #39ff14; }
-  .status-out { color: #ff9f00; }
-  .status-pending { color: #ff3131; }
-  #loading { text-align: center; color: #888; padding: 20px; }
+  .status-in { color: #39ff14; font-weight: bold; }
+  .status-out { color: #ff9f00; font-weight: bold; }
+  .status-pending { color: #ff3131; font-weight: bold; }
+  #loading { text-align: center; color: #888; padding: 20px; font-size: 18px; }
 </style>
 </head>
 <body>
@@ -35,8 +36,29 @@
   </div>
 
 <script>
+  // 確認 API 網址是否正確
   const API = "https://script.google.com/macros/s/AKfycbxKJGoKVQcMbuv6TV_Gka38ijUf8-NitIfpX4lzK3XIwea0ERsmFLDENw3CKGJgkw/exec";
   let allData = [];
+
+  // --- 新增：專門處理 1899 年時間異常的過濾器 ---
+  function formatTimeDisplay(rawTime) {
+    if (!rawTime || rawTime === '-') return '-';
+    
+    // 如果已經是正常的 HH:mm 或 HH:mm:ss 格式，就直接回傳
+    if (/^\d{1,2}:\d{2}/.test(rawTime)) return rawTime;
+
+    try {
+      // 嘗試將長字串轉換為 Date 物件
+      const d = new Date(rawTime);
+      if (!isNaN(d.getTime())) {
+        // 利用 toTimeString() 取得類似 "00:14:57 GMT+0800..." 的字串，再用空白切開取第一段
+        return d.toTimeString().split(' ')[0]; 
+      }
+    } catch(e) {}
+
+    // 如果上面都失敗，就原樣顯示
+    return rawTime;
+  }
 
   async function loadList() {
     try {
@@ -47,7 +69,9 @@
         document.getElementById("loading").style.display = "none";
         document.getElementById("data-table").style.display = "table";
       }
-    } catch(e) { document.getElementById("loading").innerText = "❌ 載入失敗，請重整"; }
+    } catch(e) { 
+      document.getElementById("loading").innerText = "❌ 載入失敗，請重整網頁"; 
+    }
   }
 
   function renderTable() {
@@ -60,11 +84,15 @@
         let statusClass = "status-pending";
         if(row.status.includes("報到")) statusClass = "status-in";
         if(row.status.includes("報退")) statusClass = "status-out";
+        
+        // 套用時間格式過濾器
+        let cleanTime = formatTimeDisplay(row.time);
+
         return `<tr>
           <td>${row.station}</td>
           <td>${row.name}</td>
           <td class="${statusClass} 狀態欄位">${row.status || '未報到'}</td>
-          <td style="color:#aaa;">${row.time || '-'}</td>
+          <td style="color:#aaa; font-family: monospace; font-size: 16px;">${cleanTime}</td>
         </tr>`;
       }).join("");
   }
