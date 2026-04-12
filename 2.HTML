@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>動態戰報</title>
+<title>DPAC 現場動態戰報</title>
 <style>
   :root { 
     --bg: #000; 
@@ -19,104 +19,185 @@
     --text: #fff; 
   }
   
-  body { background: var(--bg); color: var(--text); font-family: -apple-system, "Microsoft JhengHei", sans-serif; padding: 15px; margin: 0; }
+  body { 
+    background: var(--bg); 
+    color: var(--text); 
+    font-family: -apple-system, "Microsoft JhengHei", "Segoe UI", sans-serif; 
+    padding: 15px; 
+    margin: 0; 
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
   
-  h2 { text-align: center; color: var(--blue); font-size: 28px; margin: 10px 0 20px 0; font-weight: 900; letter-spacing: 2px; }
-  
-  .section-title { font-size: 14px; color: #666; margin: 20px 0 10px 5px; border-left: 3px solid #444; padding-left: 10px; }
+  .wrapper {
+    width: 100%;
+    max-width: 600px;
+  }
 
-  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  h2 { 
+    text-align: center; 
+    color: var(--blue); 
+    font-size: 28px; 
+    margin: 10px 0 20px 0; 
+    font-weight: 900; 
+    letter-spacing: 2px;
+    text-shadow: 0 0 15px rgba(0, 210, 255, 0.5);
+  }
+  
+  .section-title { 
+    font-size: 14px; 
+    color: #888; 
+    margin: 20px 0 10px 5px; 
+    border-left: 4px solid var(--blue); 
+    padding-left: 10px; 
+    font-weight: bold;
+    text-transform: uppercase;
+  }
+
+  .grid { 
+    display: grid; 
+    grid-template-columns: 1fr 1fr; 
+    gap: 12px; 
+  }
   
   .stat-card { 
     background: var(--card-bg); 
-    border-radius: 12px; 
-    padding: 15px 10px; 
+    border-radius: 16px; 
+    padding: 20px 10px; 
     text-align: center; 
     border: 1px solid #222; 
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+    transition: transform 0.2s;
   }
   
-  .stat-card.full { grid-column: span 2; display: flex; justify-content: space-between; align-items: center; padding: 20px 25px; }
-  .stat-card.full .stat-title { margin-bottom: 0; }
+  .stat-card:active { transform: scale(0.98); }
+
+  .stat-card.full { 
+    grid-column: span 2; 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    padding: 25px 30px; 
+  }
+  .stat-card.full .stat-title { margin-bottom: 0; font-size: 18px; }
 
   .stat-title { font-size: 15px; color: #aaa; margin-bottom: 8px; font-weight: bold; }
-  .stat-value { font-size: 38px; font-weight: 900; font-family: 'Arial', sans-serif; }
+  .stat-value { font-size: 42px; font-weight: 900; font-family: 'Impact', 'Arial Black', sans-serif; }
 
   /* 顏色定義 */
-  .c-blue { color: var(--blue); } .c-green { color: var(--green); }
-  .c-orange { color: var(--orange); } .c-red { color: var(--red); }
-  .c-purple { color: var(--purple); } .c-cyan { color: var(--cyan); }
-  .c-lime { color: var(--lime); } .c-pink { color: var(--pink); }
+  .c-blue { color: var(--blue); } 
+  .c-green { color: var(--green); }
+  .c-orange { color: var(--orange); } 
+  .c-red { color: var(--red); }
+  .c-purple { color: var(--purple); } 
+  .c-cyan { color: var(--cyan); }
+  .c-lime { color: var(--lime); } 
+  .c-pink { color: var(--pink); }
 
   #refresh-btn { 
-    width: 100%; padding: 18px; margin-top: 25px; 
-    background: #1a1a1a; color: #fff; border: 1px solid #333; 
-    border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; 
+    width: 100%; 
+    padding: 20px; 
+    margin-top: 30px; 
+    background: linear-gradient(145deg, #1a1a1a, #000); 
+    color: #fff; 
+    border: 1px solid #333; 
+    border-radius: 15px; 
+    font-size: 20px; 
+    font-weight: 800; 
+    cursor: pointer; 
+    box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+    outline: none;
   }
-  #refresh-btn:active { background: #333; }
+  
+  #refresh-btn:active { 
+    background: #333; 
+    box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);
+  }
 
-  .update-time { text-align: center; font-size: 12px; color: #444; margin-top: 15px; }
+  .update-time { 
+    text-align: center; 
+    font-size: 13px; 
+    color: #555; 
+    margin-top: 20px; 
+    font-weight: 500;
+  }
+
+  /* 行動裝置小螢幕優化 */
+  @media (max-width: 380px) {
+    .stat-value { font-size: 32px; }
+    h2 { font-size: 24px; }
+  }
 </style>
 </head>
 <body>
 
-  <h2>📊 現場動態戰報</h2>
+  <div class="wrapper">
+    <h2>📊 現場動態戰報</h2>
 
-  <div class="section-title">📊 總體數據概況</div>
-  <div class="grid">
-    <div class="stat-card full">
-      <div class="stat-title">總編制人數</div>
-      <div class="stat-value c-blue" id="total-count">-</div>
+    <div class="section-title">📊 總體數據概況</div>
+    <div class="grid">
+      <div class="stat-card full">
+        <div class="stat-title">總編制人數</div>
+        <div class="stat-value c-blue" id="total-count">-</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-title">🟢 站內執勤</div>
+        <div class="stat-value c-green" id="in-count">-</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-title">🏠 報退下哨</div>
+        <div class="stat-value c-orange" id="out-count">-</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-title">⚠️ 尚未報到</div>
+        <div class="stat-value c-red" id="pending-count">-</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-title">📍 啟用站點</div>
+        <div class="stat-value c-purple" id="station-count">-</div>
+      </div>
     </div>
-    <div class="stat-card">
-      <div class="stat-title">🟢 站內執勤</div>
-      <div class="stat-value c-green" id="in-count">-</div>
+
+    <div class="section-title">🏢 各單位執勤明細 (目前在站)</div>
+    <div class="grid">
+      <div class="stat-card">
+        <div class="stat-title">溪洲后天宮</div>
+        <div class="stat-value c-cyan" id="xizhou-count">-</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-title">步行隊</div>
+        <div class="stat-value c-lime" id="walking-count">-</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-title">西螺橋北端</div>
+        <div class="stat-value c-orange" id="beiduan-count">-</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-title">支援組</div>
+        <div class="stat-value c-pink" id="support-count">-</div>
+      </div>
     </div>
-    <div class="stat-card">
-      <div class="stat-title">🏠 報退下哨</div>
-      <div class="stat-value c-orange" id="out-count">-</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-title">⚠️ 尚未報到</div>
-      <div class="stat-value c-red" id="pending-count">-</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-title">📍 啟用站點</div>
-      <div class="stat-value c-purple" id="station-count">-</div>
-    </div>
+
+    <button id="refresh-btn" onclick="loadStats()">🔄 手動更新數據</button>
+    <div class="update-time" id="update-timer">最後更新時間：-- : -- : --</div>
   </div>
-
-  <div class="section-title">🏢 各單位執勤明細 (目前在站)</div>
-  <div class="grid">
-    <div class="stat-card">
-      <div class="stat-title">溪洲后天宮</div>
-      <div class="stat-value c-cyan" id="xizhou-count">-</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-title">步行隊</div>
-      <div class="stat-value c-lime" id="walking-count">-</div>
-    </div>
-    <div class="stat-card full">
-      <div class="stat-title">支援組</div>
-      <div class="stat-value c-pink" id="support-count">-</div>
-    </div>
-  </div>
-
-  <button id="refresh-btn" onclick="loadStats()">🔄 手動更新數據</button>
-  <div class="update-time" id="update-timer">最後更新日期：-- : -- : --</div>
 
 <script>
-  // 請確認此 API 網址與您的 GAS 部署網址一致
-  const API = "https://script.google.com/macros/s/AKfycbyRzStpQaQVLJcnEV6sngNY2AsnCaPgWYJI3FkIHPdjJxyVSDrg2W1Bl96Ouc162nVl/exec";
+  // 重要：請確保此處的 API 網址與您最新部署的 Google Apps Script 網址完全一致
+  const API = "https://script.google.com/macros/s/AKfycbxKJGoKVQcMbuv6TV_Gka38ijUf8-NitIfpX4lzK3XIwea0ERsmFLDENw3CKGJgkw/exec";
   
   async function loadStats() {
     const btn = document.getElementById("refresh-btn");
     const timer = document.getElementById("update-timer");
-    btn.innerText = "⏳ 同步中...";
+    
+    btn.innerText = "⏳ 同步雲端數據...";
     btn.disabled = true;
 
     try {
-      const res = await fetch(API + "?action=load&_t=" + Date.now()).then(r => r.json());
+      // 加上時間戳記防止快取問題
+      const res = await fetch(`${API}?action=load&_t=${Date.now()}`).then(r => r.json());
+      
       if(res.ok) {
         // 1. 更新總體概況
         document.getElementById("total-count").innerText = res.stats.total;
@@ -125,26 +206,29 @@
         document.getElementById("pending-count").innerText = res.stats.pending;
         document.getElementById("station-count").innerText = res.stats.stations;
 
-        // 2. 更新單位明細 (對應 GAS 回傳的欄位)
+        // 2. 更新各站點明細 (需對應 GAS 回傳的欄位名稱)
         document.getElementById("xizhou-count").innerText = res.stats.xizhou || 0;
         document.getElementById("walking-count").innerText = res.stats.walking || 0;
+        document.getElementById("beiduan-count").innerText = res.stats.beiduan || 0;
         document.getElementById("support-count").innerText = res.stats.support || 0;
 
         timer.innerText = "最後更新時間：" + new Date().toLocaleTimeString();
+      } else {
+        alert("雲端回傳錯誤：" + (res.msg || "未知原因"));
       }
     } catch(e) { 
       console.error(e);
-      alert("數據讀取失敗，請檢查網路連線或 GAS 權限設定"); 
+      alert("無法連線至資料庫，請檢查網路狀態"); 
     } finally {
       btn.innerText = "🔄 手動更新數據";
       btn.disabled = false;
     }
   }
 
-  // 初次載入
+  // 網頁開啟時自動載入一次
   loadStats();
   
-  // 每 30 秒自動更新一次
+  // 設定每 30 秒自動靜默更新，保持數據準確
   setInterval(loadStats, 30000); 
 </script>
 </body>
