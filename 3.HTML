@@ -3,24 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>DPAC 人員編制管理</title>
+<title>DPAC 人員編制管理系統</title>
 <style>
   :root { 
     --bg: #000; 
     --card-bg: #111; 
     --blue: #00d2ff; 
     --purple: #bc13fe;
-    --green: #39ff14;
-    --red: #ff3131;
     --text: #fff; 
     --border: #333; 
-    --input-focus: #555;
   }
   
   body { 
     background: var(--bg); 
     color: var(--text); 
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Microsoft JhengHei", sans-serif; 
+    font-family: -apple-system, "Microsoft JhengHei", sans-serif; 
     padding: 20px; 
     margin: 0; 
     display: flex; 
@@ -51,17 +48,26 @@
 
   label { display: block; margin-bottom: 8px; font-weight: bold; font-size: 18px; color: #aaa; }
 
-  input, select, textarea { 
+  input, select { 
     width: 100%; 
-    padding: 16px; 
+    padding: 18px; 
     margin-bottom: 20px; 
     background: #000; 
     color: #fff; 
     border: 1px solid var(--border); 
     border-radius: 12px; 
-    font-size: 20px; 
+    font-size: 22px; 
     box-sizing: border-box; 
     outline: none;
+    appearance: none; /* 移除行動裝置預設樣式 */
+  }
+
+  /* 下拉選單的小箭頭樣式 */
+  select {
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 15px center;
+    background-size: 30px;
   }
 
   input:focus, select:focus { border-color: var(--blue); background: #050505; }
@@ -69,7 +75,7 @@
   .btn { 
     width: 100%; 
     padding: 20px; 
-    font-size: 22px; 
+    font-size: 24px; 
     font-weight: bold; 
     border: none; 
     border-radius: 12px; 
@@ -83,29 +89,26 @@
   .btn-blue { background: var(--blue); color: #000; }
   .btn-purple { background: var(--purple); color: #fff; }
 
-  .status-tag {
-    display: inline-block;
-    padding: 4px 12px;
-    border-radius: 6px;
-    font-size: 16px;
-    margin-bottom: 10px;
-    font-weight: bold;
-  }
-
-  #sync-status { margin-bottom: 20px; color: #666; font-size: 14px; }
+  #sync-status { margin-bottom: 20px; color: #666; font-size: 16px; font-weight: bold; }
 </style>
 </head>
 <body>
 
-  <h1 style="color:#fff; font-size: 28px; margin-bottom: 5px;">🚑 DPAC 系統管理</h1>
-  <div id="sync-status">正在連線至雲端資料庫...</div>
+  <h1 style="color:#fff; font-size: 32px; margin-bottom: 5px; font-weight: 900;">🚑 DPAC 系統後台</h1>
+  <div id="sync-status">正在同步雲端資料...</div>
 
   <div class="container">
     
     <div class="card">
       <h2 class="title-add">➕ 新增人員編制</h2>
-      <label>分配站別</label>
-      <input type="text" id="add-station" placeholder="例如: 溪洲后天宮站">
+      
+      <label>選擇分配站別</label>
+      <select id="add-station">
+        <option value="溪洲后天宮站">溪洲后天宮站</option>
+        <option value="步行隊">步行隊</option>
+        <option value="西螺橋北端站">西螺橋北端站</option>
+        <option value="支援組">支援組</option>
+      </select>
       
       <label>人員姓名 (必填)</label>
       <input type="text" id="add-name" placeholder="請輸入姓名">
@@ -119,22 +122,27 @@
     <div class="card">
       <h2 class="title-edit">🔍 查詢與強制修正</h2>
       
-      <label>選擇要修改的人員</label>
+      <label>選擇人員</label>
       <select id="member-select" onchange="loadMemberData()">
         <option value="">⏳ 載入人員名單中...</option>
       </select>
 
       <div id="edit-form">
         <label>修正姓名</label>
-        <input type="text" id="edit-name" placeholder="姓名">
+        <input type="text" id="edit-name">
 
         <label>修正站別</label>
-        <input type="text" id="edit-station" placeholder="站別">
+        <select id="edit-station">
+          <option value="溪洲后天宮站">溪洲后天宮站</option>
+          <option value="步行隊">步行隊</option>
+          <option value="西螺橋北端站">西螺橋北端站</option>
+          <option value="支援組">支援組</option>
+        </select>
 
         <label>修正電話</label>
-        <input type="tel" id="edit-phone" placeholder="電話">
+        <input type="tel" id="edit-phone">
 
-        <label>修正目前狀態</label>
+        <label>強制變更狀態</label>
         <select id="edit-status">
           <option value="未報到">❌ 未報到</option>
           <option value="已報到">✔️ 已報到</option>
@@ -151,7 +159,6 @@
   const API = "https://script.google.com/macros/s/AKfycbz6jLiq0iRwzoRU2uEB1Sn-9MoTEhbc7n9BhsUc22P5xbBRC8ATsV6IaIUOLReJbwH2/exec";
   let allMembers = [];
 
-  // 初始化：載入人員名單
   async function init() {
     try {
       const res = await fetch(`${API}?action=members&_t=${Date.now()}`).then(r => r.json());
@@ -162,53 +169,79 @@
         html += `<option value="${m.name}">${m.station} - ${m.name}</option>`;
       });
       select.innerHTML = html;
-      document.getElementById("sync-status").innerText = "✅ 雲端連線正常";
+      document.getElementById("sync-status").innerText = "✅ 雲端同步完成 " + new Date().toLocaleTimeString();
     } catch (e) {
-      document.getElementById("sync-status").innerText = "❌ 無法讀取資料，請檢查網路";
+      document.getElementById("sync-status").innerText = "❌ 無法連線，請檢查網路";
     }
   }
 
-  // --- 新增功能 ---
   async function addNewMember() {
-    const s = document.getElementById("add-station").value.trim();
+    const s = document.getElementById("add-station").value;
     const n = document.getElementById("add-name").value.trim();
     const p = document.getElementById("add-phone").value.trim();
     if (!n) return alert("⚠️ 姓名必填！");
     
     const btn = document.getElementById("btn-add");
     btn.disabled = true;
-    btn.innerText = "⏳ 建立中...";
+    btn.innerText = "⏳ 寫入中...";
 
     try {
       const url = `${API}?action=add&s=${encodeURIComponent(s)}&n=${encodeURIComponent(n)}&p=${encodeURIComponent(p)}&_t=${Date.now()}`;
       const res = await fetch(url).then(r => r.json());
       if (res.ok) {
         alert(`✅ 成功新增：${n}`);
-        // 清空輸入
         document.getElementById("add-name").value = "";
         document.getElementById("add-phone").value = "";
-        // 重新載入下拉選單
-        init();
+        init(); 
       }
-    } catch (e) { alert("❌ 新增失敗"); }
+    } catch (e) { alert("❌ 連線超時"); }
     finally {
       btn.disabled = false;
       btn.innerText = "確認新增至資料庫";
     }
   }
 
-  // --- 查詢功能：載入選中人員的資料 ---
   function loadMemberData() {
     const selectedName = document.getElementById("member-select").value;
     const btnSave = document.getElementById("btn-save");
-    
-    if (!selectedName) {
-      btnSave.disabled = true;
-      return;
-    }
+    if (!selectedName) { btnSave.disabled = true; return; }
 
     const member = allMembers.find(m => m.name === selectedName);
     if (member) {
       document.getElementById("edit-name").value = member.name;
       document.getElementById("edit-station").value = member.station;
-      document.getElementById("edit
+      document.getElementById("edit-phone").value = member.phone;
+      document.getElementById("edit-status").value = member.status;
+      btnSave.disabled = false;
+    }
+  }
+
+  async function saveEdit() {
+    const originalName = document.getElementById("member-select").value;
+    const newName = document.getElementById("edit-name").value.trim();
+    const s = document.getElementById("edit-station").value;
+    const p = document.getElementById("edit-phone").value.trim();
+    const st = document.getElementById("edit-status").value;
+
+    const btn = document.getElementById("btn-save");
+    btn.disabled = true;
+    btn.innerText = "⏳ 修正中...";
+
+    try {
+      const url = `${API}?action=update&name=${encodeURIComponent(originalName)}&newName=${encodeURIComponent(newName)}&s=${encodeURIComponent(s)}&p=${encodeURIComponent(p)}&st=${encodeURIComponent(st)}&_t=${Date.now()}`;
+      const res = await fetch(url).then(r => r.json());
+      if (res.ok) {
+        alert("✅ 資料已成功更新");
+        init();
+      }
+    } catch (e) { alert("❌ 更新失敗"); }
+    finally {
+      btn.disabled = false;
+      btn.innerText = "💾 儲存修正內容";
+    }
+  }
+
+  init();
+</script>
+</body>
+</html>
