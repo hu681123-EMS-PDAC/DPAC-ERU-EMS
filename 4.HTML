@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>出勤名單</title>
+<style>
+  :root { --bg: #000; --card-bg: #111; --blue: #00d2ff; --text: #fff; --border: #333; }
+  body { background: var(--bg); color: var(--text); font-family: sans-serif; padding: 10px; margin: 0; }
+  h2 { color: var(--blue); text-align: center; margin-bottom: 10px; font-size: 24px;}
+  .search-box { width: 100%; padding: 12px; background: #000; border: 1px solid var(--border); border-radius: 8px; color: white; font-size: 16px; margin-bottom: 15px; box-sizing: border-box; }
+  .table-wrapper { overflow-x: auto; border-radius: 8px; border: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; text-align: center; font-size: 15px; }
+  th { background: #222; color: var(--blue); padding: 12px 8px; white-space: nowrap; }
+  td { padding: 12px 8px; border-bottom: 1px solid #222; background: var(--card-bg); white-space: nowrap; }
+  .status-in { color: #39ff14; }
+  .status-out { color: #ff9f00; }
+  .status-pending { color: #ff3131; }
+  #loading { text-align: center; color: #888; padding: 20px; }
+</style>
+</head>
+<body>
+  <h2>📋 現場出勤名單</h2>
+  <input type="text" id="search-input" class="search-box" placeholder="🔍 搜尋站別或姓名..." onkeyup="filterTable()">
+  
+  <div id="loading">⏳ 資料載入中...</div>
+  
+  <div class="table-wrapper">
+    <table id="data-table" style="display:none;">
+      <thead>
+        <tr><th>站別</th><th>姓名</th><th>狀態</th><th>時間</th></tr>
+      </thead>
+      <tbody id="table-body"></tbody>
+    </table>
+  </div>
+
+<script>
+  const API = "https://script.google.com/macros/s/AKfycbz6jLiq0iRwzoRU2uEB1Sn-9MoTEhbc7n9BhsUc22P5xbBRC8ATsV6IaIUOLReJbwH2/exec";
+  let allData = [];
+
+  async function loadList() {
+    try {
+      const res = await fetch(API + "?action=load&_t=" + Date.now()).then(r=>r.json());
+      if(res.ok) {
+        allData = res.data;
+        renderTable();
+        document.getElementById("loading").style.display = "none";
+        document.getElementById("data-table").style.display = "table";
+      }
+    } catch(e) { document.getElementById("loading").innerText = "❌ 載入失敗，請重整"; }
+  }
+
+  function renderTable() {
+    const tbody = document.getElementById("table-body");
+    const query = document.getElementById("search-input").value.toLowerCase();
+    
+    tbody.innerHTML = allData
+      .filter(row => row.station.toLowerCase().includes(query) || row.name.toLowerCase().includes(query))
+      .map(row => {
+        let statusClass = "status-pending";
+        if(row.status.includes("報到")) statusClass = "status-in";
+        if(row.status.includes("報退")) statusClass = "status-out";
+        return `<tr>
+          <td>${row.station}</td>
+          <td>${row.name}</td>
+          <td class="${statusClass} 狀態欄位">${row.status || '未報到'}</td>
+          <td style="color:#aaa;">${row.time || '-'}</td>
+        </tr>`;
+      }).join("");
+  }
+
+  function filterTable() { renderTable(); }
+  
+  loadList();
+</script>
+</body>
+</html>
