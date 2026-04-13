@@ -3,205 +3,195 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>DPAC 快速報到系統</title>
+<title>DPAC 04/19 快速報到面板</title>
 <style>
   :root { 
-    --bg: #000000; --card: #111111; --blue: #00d2ff; --green: #39ff14; 
-    --orange: #ff9f00; --text: #ffffff; --border: #333333; --dim: #555555;
+    --bg: #000000; --card: #0c0c0c; --blue: #00d2ff; --green: #39ff14; 
+    --orange: #ff9f00; --red: #ff3131; --text: #ffffff; --border: #333333;
   }
   body { 
-    background: var(--bg); color: var(--text); font-family: "Microsoft JhengHei", sans-serif; 
-    margin: 0; padding: 15px; padding-bottom: 100px;
+    background: var(--bg); color: var(--text); font-family: -apple-system, "Microsoft JhengHei", sans-serif; 
+    margin: 0; padding: 15px; padding-bottom: 120px; line-height: 1.5;
   }
   
-  h1 { text-align: center; color: var(--blue); font-size: 34px; margin: 10px 0; font-weight: 900; }
+  h1 { text-align: center; color: var(--blue); font-size: 38px; font-weight: 900; margin: 10px 0 20px; text-shadow: 0 0 10px rgba(0,210,255,0.4); }
 
-  /* 區塊框架 */
-  .box { 
-    background: var(--card); border: 2px solid var(--border); border-radius: 20px; 
-    padding: 18px; margin-bottom: 25px; box-shadow: 0 0 20px rgba(0,0,0,0.5);
+  .panel { 
+    background: var(--card); border: 3px solid var(--border); border-radius: 25px; 
+    padding: 22px; margin-bottom: 30px; box-shadow: 0 8px 30px rgba(0,0,0,0.8);
   }
-  .box-label { font-size: 22px; font-weight: bold; color: var(--blue); margin-bottom: 15px; display: block; border-left: 6px solid var(--blue); padding-left: 10px; }
+  .label { font-size: 24px; font-weight: bold; color: var(--blue); margin-bottom: 15px; display: block; }
 
-  /* 下拉與輸入控制 */
+  /* 大字體控制項 */
   select { 
-    width: 100%; padding: 18px; font-size: 26px; font-weight: bold; 
-    background: #1a1a1a; color: #fff; border: 3px solid #444; border-radius: 12px; margin-bottom: 15px;
+    width: 100%; padding: 22px; font-size: 28px; font-weight: bold; 
+    background: #111; color: #fff; border: 3px solid #555; border-radius: 15px; margin-bottom: 15px;
   }
-
-  /* 按鈕系統 */
-  .btn-group { display: flex; gap: 12px; }
+  .btn-row { display: flex; gap: 15px; }
   .btn { 
-    flex: 1; padding: 22px; font-size: 24px; font-weight: 900; border-radius: 15px; 
+    flex: 1; padding: 25px; font-size: 26px; font-weight: 900; border-radius: 18px; 
     border: none; cursor: pointer; transition: 0.1s; text-align: center;
   }
   .btn:active { transform: scale(0.96); opacity: 0.8; }
   .btn-in { background: var(--green); color: #000; }
   .btn-out { background: var(--orange); color: #000; }
 
-  /* 數據表格 */
-  .table-scroll { width: 100%; border-radius: 15px; overflow: hidden; border: 1px solid var(--border); }
-  table { width: 100%; border-collapse: collapse; background: #050505; }
-  th { background: #222; color: var(--blue); padding: 18px 10px; font-size: 20px; border-bottom: 2px solid var(--border); }
-  td { padding: 20px 10px; border-bottom: 1px solid #1a1a1a; font-size: 22px; text-align: center; vertical-align: middle; }
+  /* 報到清單表格 */
+  .table-box { width: 100%; border-radius: 20px; overflow: hidden; border: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; background: #000; table-layout: fixed; }
+  th { background: #1a1a1a; color: var(--blue); padding: 15px 5px; font-size: 20px; text-align: center; }
+  td { padding: 25px 5px; border-bottom: 1px solid #1a1a1a; font-size: 24px; text-align: center; word-break: break-all; }
   
-  /* 多選框 */
-  input[type="checkbox"] { transform: scale(2.5); cursor: pointer; accent-color: var(--blue); }
+  /* 勾選框放大 3 倍，極速操作 */
+  input[type="checkbox"] { transform: scale(3); cursor: pointer; accent-color: var(--blue); }
 
-  /* 狀態美化 */
-  .status-tag { display: inline-block; padding: 4px 10px; border-radius: 8px; font-size: 16px; font-weight: bold; margin-top: 5px; }
-  .st-wait { background: #333; color: #aaa; }
-  .st-in { background: var(--green); color: #000; }
-  .st-out { background: var(--orange); color: #000; }
-  
-  .attr-text { color: var(--dim); font-size: 16px; font-weight: normal; }
-  tr.done { background: #080808; opacity: 0.6; }
+  /* 狀態標籤 */
+  .st-wait { color: #555; font-size: 20px; }
+  .st-in { color: var(--green); font-weight: 900; }
+  .st-out { color: var(--orange); font-weight: 900; }
+  .sub-info { display: block; font-size: 16px; color: #888; margin-top: 5px; }
 
-  /* 浮動提示 */
-  #msg { 
-    position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); width: 80%;
-    padding: 20px; border-radius: 20px; font-size: 22px; font-weight: bold; text-align: center;
-    z-index: 100; display: none; box-shadow: 0 0 30px rgba(0,0,0,0.8);
+  /* 訊息提示 */
+  #toast { 
+    position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); width: 85%;
+    padding: 25px; border-radius: 20px; font-size: 22px; font-weight: bold; text-align: center;
+    z-index: 1000; display: none; box-shadow: 0 0 40px rgba(0,0,0,1); border: 2px solid #fff;
   }
 </style>
 </head>
 <body>
 
-  <h1>⚡ DPAC 快速作業面板</h1>
+  <h1>⚡ DPAC 快速作業系統</h1>
 
-  <div class="box">
-    <span class="box-label">👤 單人報到/退</span>
-    <select id="sel-single"><option value="">讀取名單中...</option></select>
-    <div class="btn-group">
-      <button class="btn btn-in" onclick="doAction('checkin', 'single')">直接報到</button>
-      <button class="btn btn-out" onclick="doAction('checkout', 'single')">直接報退</button>
+  <div class="panel">
+    <span class="label">👤 單人快速處理</span>
+    <select id="sel-one">
+      <option value="">⏳ 資料載入中...</option>
+    </select>
+    <div class="btn-row">
+      <button class="btn btn-in" onclick="doSubmit('checkin', 'one')">報到</button>
+      <button class="btn btn-out" onclick="doSubmit('checkout', 'one')">報退</button>
     </div>
   </div>
 
-  <div class="box">
-    <span class="box-label">👥 多人批次作業</span>
-    <div class="btn-group" style="margin-bottom:20px;">
-      <button class="btn btn-in" onclick="doAction('checkin', 'multi')">勾選者：報到</button>
-      <button class="btn btn-out" onclick="doAction('checkout', 'multi')">勾選者：報退</button>
+  <div class="panel">
+    <span class="label">👥 多人批次勾選</span>
+    <div class="btn-row" style="margin-bottom:25px;">
+      <button class="btn btn-in" onclick="doSubmit('checkin', 'multi')">勾選者報到</button>
+      <button class="btn btn-out" onclick="doSubmit('checkout', 'multi')">勾選者報退</button>
     </div>
 
-    <div class="table-scroll">
+    <div class="table-box">
       <table>
         <thead>
           <tr>
-            <th style="width:18%"><input type="checkbox" id="chk-all" onchange="toggleAll(this)"></th>
-            <th style="width:35%">人員姓名</th>
-            <th style="width:47%">站別 / 屬性 / 狀態</th>
+            <th style="width:18%"><input type="checkbox" id="all-box" onchange="toggleAll(this)" style="transform:scale(2.2)"></th>
+            <th style="width:34%">姓名</th>
+            <th style="width:48%">站別 / 屬性 / 時間</th>
           </tr>
         </thead>
         <tbody id="list-body">
-          <tr><td colspan="3" style="padding:50px; color:#666;">⏳ 正在連線伺服器...</td></tr>
+          <tr><td colspan="3" style="padding:60px; color:#444;">連線同步中...</td></tr>
         </tbody>
       </table>
     </div>
   </div>
 
-  <div id="msg"></div>
+  <div id="toast"></div>
 
 <script>
-  // 🔗 ⚠️ 請務必在此處填入您的 GAS 部署網址
-  const API = "https://script.google.com/macros/s/AKfycbwqZr8w576ityytCwCkEWCFrwdj32V8GiqcAb5AP12tT9BlyE15uwu8IqOf85KFDMXg/exec";
+  // 🔗 ⚠️ 請務必在此處填入您的 GAS 最新部署網址
+  const API = "https://script.google.com/macros/s/AKfycbxLuViTjZ-J8hQ7EyeiR6Whj3BD0uUfBO7jQFu8gj8UnSRCLDuZozQe7BUIpgAmqBbu/exec";
 
-  let db = [];
+  let listData = [];
 
-  // 1. 載入並執行複合排序
-  async function fetchList() {
+  // 載入資料並執行複合排序
+  async function load() {
     try {
-      const r = await fetch(`${API}?action=load&_t=${Date.now()}`).then(res => res.json());
-      if (r.ok) {
-        db = r.data;
+      const res = await fetch(`${API}?action=load&_t=${Date.now()}`).then(r => r.json());
+      if (res.ok) {
+        listData = res.data;
         
-        // 【核心排序邏輯】
-        db.sort((a, b) => {
-          // A. 狀態權重 (未報到=0, 已報到=1, 已報退=2)
-          const weight = { "未報到": 0, "": 0, "已報到": 1, "已報退": 2 };
-          let wa = weight[a.status] || 0;
-          let wb = weight[b.status] || 0;
-          
+        // 【複合排序規則】
+        // 1. 狀態權重 (未報到=0, 已報到=1, 已報退=2)
+        // 2. 站別
+        // 3. 屬性
+        listData.sort((a, b) => {
+          const w = { "未報到": 0, "": 0, "已報到": 1, "已報退": 2 };
+          let wa = w[a.status] || 0;
+          let wb = w[b.status] || 0;
           if (wa !== wb) return wa - wb;
-          // B. 站別排序
           if (a.station !== b.station) return a.station.localeCompare(b.station, 'zh-Hant');
-          // C. 屬性排序
           return a.attr.localeCompare(b.attr, 'zh-Hant');
         });
 
         render();
       }
-    } catch (e) { toast("❌ 無法連線伺服器，請重整", "var(--red)"); }
+    } catch (e) { showToast("❌ 連線失敗，請檢查網路或 API 網址", "var(--red)"); }
   }
 
-  // 2. 渲染 UI
+  // 渲染畫面
   function render() {
-    const sel = document.getElementById('sel-single');
-    sel.innerHTML = '<option value="">-- 點此選人 --</option>' + 
-      db.map(m => `<option value="${m.name}">${m.station} | ${m.name}</option>`).join("");
+    const sel = document.getElementById('sel-one');
+    sel.innerHTML = '<option value="">-- 請選擇人員 --</option>' + 
+      listData.map(m => `<option value="${m.name}">${m.station} | ${m.name}</option>`).join("");
 
     const body = document.getElementById('list-body');
-    body.innerHTML = db.map(m => {
-      let stClass = "st-wait";
-      if(m.status === "已報到") stClass = "st-in";
-      if(m.status === "已報退") stClass = "st-out";
-      
-      const isDone = m.status === "已報退" ? "done" : "";
-
+    body.innerHTML = listData.map(m => {
+      let stClass = m.status === "已報到" ? "st-in" : (m.status === "已報退" ? "st-out" : "st-wait");
       return `
-        <tr class="${isDone}">
-          <td><input type="checkbox" class="user-chk" value="${m.name}"></td>
+        <tr>
+          <td><input type="checkbox" class="cb-item" value="${m.name}"></td>
           <td style="font-weight:900;">${m.name}</td>
           <td>
-            <div style="font-size:18px;"><b>${m.station}</b> <span class="attr-text">(${m.attr})</span></div>
-            <span class="status-tag ${stClass}">${m.status || '未報到'}</span>
-            <div style="font-size:12px; color:#777; margin-top:3px;">${m.checkinTime || m.checkoutTime || ''}</div>
+            <div style="font-weight:bold; font-size:20px;">${m.station} <span style="font-size:16px; font-weight:normal; color:#888;">(${m.attr})</span></div>
+            <span class="${stClass}">${m.status || '未報到'}</span>
+            <span class="sub-info">${m.time}</span>
           </td>
         </tr>
       `;
     }).join("");
   }
 
-  // 3. 送出 API 請求
-  async function doAction(type, mode) {
+  // 執行報到/報退
+  async function doSubmit(act, type) {
     let names = "";
-    if (mode === 'single') {
-      names = document.getElementById('sel-single').value;
-      if (!names) return alert("請先選取人員");
+    if (type === 'one') {
+      names = document.getElementById('sel-one').value;
+      if (!names) return alert("⚠️ 請先選擇人員");
     } else {
-      const selected = Array.from(document.querySelectorAll('.user-chk:checked')).map(c => c.value);
-      if (selected.length === 0) return alert("請先勾選人員");
+      const selected = Array.from(document.querySelectorAll('.cb-item:checked')).map(c => c.value);
+      if (selected.length === 0) return alert("⚠️ 請先勾選名單");
       names = selected.join(",");
     }
 
-    toast("⏳ 處理中...", "#333");
+    showToast("⏳ 雲端同步中...", "#222");
 
     try {
-      const r = await fetch(`${API}?action=${type}&name=${encodeURIComponent(names)}&_t=${Date.now()}`).then(res => res.json());
-      if (r.ok) {
-        toast(r.msg, "var(--green)", "#000");
-        document.getElementById('chk-all').checked = false;
-        fetchList(); // 重新整理並重新排序
+      const res = await fetch(`${API}?action=${act}&name=${encodeURIComponent(names)}&_t=${Date.now()}`).then(r => r.json());
+      if (res.ok) {
+        showToast(res.msg, act === 'checkin' ? "var(--green)" : "var(--orange)", "#000");
+        document.getElementById('all-box').checked = false;
+        load(); // 成功後自動更新排序
       } else {
-        toast("❌ 失敗: " + r.msg, "var(--red)");
+        showToast("❌ 錯誤: " + res.msg, "var(--red)");
       }
-    } catch (e) { toast("❌ 通訊錯誤", "var(--red)"); }
+    } catch (e) { showToast("❌ 通訊失敗", "var(--red)"); }
   }
 
   // 輔助函式
   function toggleAll(src) {
-    document.querySelectorAll('.user-chk').forEach(c => c.checked = src.checked);
+    document.querySelectorAll('.cb-item').forEach(c => c.checked = src.checked);
   }
 
-  function toast(txt, bg, color = "#fff") {
-    const m = document.getElementById('msg');
-    m.innerText = txt; m.style.background = bg; m.style.color = color; m.style.display = "block";
-    if (bg !== "#333") setTimeout(() => m.style.display = "none", 4000);
+  function showToast(txt, bg, color = "#fff") {
+    const t = document.getElementById('toast');
+    t.innerText = txt; t.style.background = bg; t.style.color = color; t.style.display = "block";
+    if (bg !== "#222") setTimeout(() => t.style.display = "none", 4000);
   }
 
-  fetchList();
-  setInterval(fetchList, 60000); // 每一分鐘背景自動同步一次
+  load();
+  setInterval(load, 45000); // 45 秒自動背景更新
 </script>
 </body>
 </html>
