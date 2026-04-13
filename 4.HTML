@@ -24,7 +24,7 @@
   .status-out { color: #ff9f00; font-weight: bold; }
   .status-pending { color: #ff3131; }
   
-  /* D欄個人屬性標籤樣式 */
+  /* 個人屬性標籤樣式 */
   .attr-tag { 
     background: #222; color: #00d2ff; padding: 2px 6px; border-radius: 4px; 
     font-size: 12px; border: 1px solid #333;
@@ -56,10 +56,11 @@
   </div>
 
 <script>
-  // ⚠️ 記得替換成您最新的 API 網址
-  const API = "https://script.google.com/macros/s/AKfycbzDeSJWAFSc4lsKnjKmtcJLWzN2pA7Wvyi0K1FGpov9NeMJ54TSoEJf08-YtC6uUBw/exec"; 
+  // ⚠️⚠️⚠️ 記得替換成您最新的 GAS 網頁應用程式 API 網址！
+  const API = "https://script.google.com/macros/s/AKfycbwFMuR1LuYeMZyK7D7Ym1n7-4sZ97ThD_5v52j_zsxIvpScfgAoEx-DAWLJB_d8Vmbf/exec"; 
   let allData = [];
 
+  // 時間過濾器：過濾 1899 日期並正確顯示 年月日時間
   function formatTimeDisplay(rawTime) {
     if (!rawTime || rawTime === '-' || rawTime === "") return '-';
     if (typeof rawTime === 'string' && rawTime.includes('/')) return rawTime;
@@ -77,6 +78,7 @@
     return rawTime;
   }
 
+  // 讀取名單
   async function loadList() {
     try {
       const res = await fetch(API + "?action=load&_t=" + Date.now()).then(r=>r.json());
@@ -86,9 +88,10 @@
         document.getElementById("loading").style.display = "none";
         document.getElementById("data-table").style.display = "table";
       }
-    } catch(e) { document.getElementById("loading").innerText = "❌ 無法連線資料庫"; }
+    } catch(e) { document.getElementById("loading").innerText = "❌ 無法連線資料庫，請檢查網路或API網址"; }
   }
 
+  // 渲染表格與搜尋過濾
   function renderTable() {
     const tbody = document.getElementById("table-body");
     const query = document.getElementById("search-input").value.toLowerCase();
@@ -115,6 +118,8 @@
   }
 
   function filterTable() { renderTable(); }
+  
+  // 每 30 秒自動更新
   setInterval(loadList, 30000);
   loadList();
 </script>
