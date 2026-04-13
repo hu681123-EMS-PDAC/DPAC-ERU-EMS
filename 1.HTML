@@ -3,160 +3,174 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>DPAC 快速報到系統 (支援多人批次)</title>
+<title>DPAC 快速報到 (純點選版)</title>
 <style>
-  :root { --bg: #000; --card: #111; --blue: #00d2ff; --green: #39ff14; --orange: #ff9f00; --red: #ff3131; }
-  body { background: var(--bg); color: #fff; font-family: sans-serif; margin: 0; padding: 15px; }
+  :root { --bg: #000; --card: #0d1117; --blue: #00d2ff; --green: #39ff14; --orange: #ff9f00; --red: #ff3131; --border: #333; }
+  body { background: var(--bg); color: #fff; font-family: sans-serif; margin: 0; padding: 15px; padding-bottom: 80px; }
   
-  /* 快速操作區 */
-  .action-panel { background: var(--card); padding: 20px; border-radius: 12px; border: 1px solid #333; margin-bottom: 20px; }
-  input[type="text"] { width: 100%; padding: 15px; background: #222; border: 1px solid #444; color: #fff; font-size: 16px; border-radius: 8px; box-sizing: border-box; margin-bottom: 15px; }
+  h2 { text-align: center; color: var(--blue); margin-top: 0; }
+  
+  .panel { background: var(--card); padding: 20px; border-radius: 16px; border: 1px solid var(--border); margin-bottom: 20px; }
+  .panel-title { color: #fff; font-size: 18px; font-weight: bold; margin-bottom: 15px; border-left: 5px solid var(--blue); padding-left: 10px; }
+  
+  /* 單人下拉選單 */
+  select { width: 100%; padding: 20px; font-size: 20px; font-weight: bold; background: #000; color: #fff; border: 2px solid #555; border-radius: 10px; margin-bottom: 15px; box-sizing: border-box; }
+  
+  /* 按鈕樣式 */
   .btn-group { display: flex; gap: 10px; }
-  button { flex: 1; padding: 15px; font-size: 16px; font-weight: bold; border-radius: 8px; border: none; cursor: pointer; color: #000; }
-  .btn-checkin { background: var(--green); }
-  .btn-checkout { background: var(--orange); }
-  button:active { opacity: 0.7; }
-  
-  #msg-box { margin: 15px 0 0; font-size: 14px; text-align: left; white-space: pre-wrap; line-height: 1.5; }
+  .btn { flex: 1; padding: 18px; font-size: 20px; font-weight: 900; border: none; border-radius: 10px; cursor: pointer; color: #000; }
+  .btn:active { opacity: 0.8; transform: scale(0.98); }
+  .btn-in { background: var(--green); }
+  .btn-out { background: var(--orange); }
 
-  /* 名單區 */
-  .table-wrapper { overflow-x: auto; border: 1px solid #333; border-radius: 8px; }
-  table { width: 100%; border-collapse: collapse; text-align: center; }
-  th { background: #222; color: var(--blue); padding: 12px; font-size: 14px; }
-  td { padding: 12px; border-bottom: 1px solid #222; font-size: 14px; }
+  /* 多人表格區 */
+  .table-wrapper { overflow-x: auto; border: 1px solid var(--border); border-radius: 10px; }
+  table { width: 100%; border-collapse: collapse; text-align: center; background: #000; }
+  th { background: #161b22; color: var(--blue); padding: 15px 10px; font-size: 16px; white-space: nowrap; }
+  td { padding: 15px 10px; border-bottom: 1px solid #222; font-size: 16px; white-space: nowrap; }
   
-  /* 勾選框放大，方便手機點擊 */
-  input[type="checkbox"] { transform: scale(1.5); accent-color: var(--blue); cursor: pointer; }
+  input[type="checkbox"] { transform: scale(1.8); accent-color: var(--blue); cursor: pointer; }
+  
+  .st-in { color: var(--green); font-weight: bold; }
+  .st-out { color: var(--orange); font-weight: bold; }
+  .st-none { color: #888; }
 
-  .status-in { color: var(--green); font-weight: bold; }
-  .status-out { color: var(--orange); font-weight: bold; }
-  .status-none { color: var(--red); }
-  .attr-tag { background: #222; color: var(--blue); padding: 2px 6px; border-radius: 4px; font-size: 12px; }
+  /* 浮動訊息 */
+  #msg-box { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; padding: 15px; border-radius: 10px; font-size: 16px; font-weight: bold; text-align: center; display: none; z-index: 1000; white-space: pre-wrap; }
 </style>
 </head>
 <body>
 
-  <div class="action-panel">
-    <h3 style="margin-top:0; color:var(--blue);">⚡ 快速報到/報退 (可選多人)</h3>
-    <input type="text" id="name-input" placeholder="可輸入多人，以空格或逗號隔開 (也可直接勾選下方名單)">
+  <h2>⚡ 現場快速作業站</h2>
+
+  <div class="panel">
+    <div class="panel-title">👤 單人作業 (下拉式選單)</div>
+    <select id="single-select">
+      <option value="">⏳ 名單載入中...</option>
+    </select>
     <div class="btn-group">
-      <button class="btn-checkin" onclick="doAction('checkin')">送出報到</button>
-      <button class="btn-checkout" onclick="doAction('checkout')">送出報退</button>
+      <button class="btn btn-in" onclick="doSingle('checkin')">✔️ 單人報到</button>
+      <button class="btn btn-out" onclick="doSingle('checkout')">🏠 單人報退</button>
     </div>
-    <p id="msg-box"></p>
   </div>
 
-  <div class="table-wrapper">
-    <table>
-      <thead>
-        <tr>
-          <th style="width: 40px;"><input type="checkbox" id="check-all" onclick="toggleAll(this)"></th>
-          <th>姓名</th><th>屬性</th><th>狀態</th><th>時間</th>
-        </tr>
-      </thead>
-      <tbody id="list-body"></tbody>
-    </table>
+  <div class="panel">
+    <div class="panel-title">👥 多人作業 (打勾批次處理)</div>
+    <div class="btn-group" style="margin-bottom: 15px;">
+      <button class="btn btn-in" onclick="doMulti('checkin')">✔️ 勾選者 批次報到</button>
+      <button class="btn btn-out" onclick="doMulti('checkout')">🏠 勾選者 批次報退</button>
+    </div>
+    
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 50px;"><input type="checkbox" id="check-all" onclick="toggleAll(this)"></th>
+            <th>姓名</th>
+            <th>屬性</th>
+            <th>狀態</th>
+            <th>時間</th>
+          </tr>
+        </thead>
+        <tbody id="list-body">
+          <tr><td colspan="5" style="padding: 30px; color:#666;">載入中...</td></tr>
+        </tbody>
+      </table>
+    </div>
   </div>
+
+  <div id="msg-box"></div>
 
 <script>
-  // ⚠️ 貼上後務必替換為最新的 API 網址
-  const API = "https://script.google.com/macros/s/AKfycbwxTjPiIrbtxxV6bE4gKWbe12_k4LJTY8spIHaTha21rHCynmmM7romVjN4RO5d1g0b/exec"; 
+  // 🔗 ⚠️ 貼上您重新部署後獲得的最新 API 網址
+  const API = "https://script.google.com/macros/s/AKfycbw6G2j72S9JlWwWIJmYPRZCe2Ubtq096wcf8xWUUIomgXnWFQy5D65xiqDdp7HxzafA/exec"; 
 
-  // 全選/取消全選
-  function toggleAll(source) {
-    const checkboxes = document.querySelectorAll('.row-check');
-    checkboxes.forEach(cb => cb.checked = source.checked);
-  }
-
-  // 格式化時間
-  function formatTimeDisplay(rawTime) {
-    if (!rawTime || rawTime === '-' || rawTime === "") return '-';
-    if (typeof rawTime === 'string' && rawTime.includes('/')) return rawTime;
-    try {
-      const d = new Date(rawTime);
-      if (!isNaN(d.getTime())) {
-        if (d.getFullYear() === 1899) return d.toTimeString().split(' ')[0];
-        const y = d.getFullYear();
-        const mo = String(d.getMonth() + 1).padStart(2, '0');
-        const da = String(d.getDate()).padStart(2, '0');
-        const time = d.toTimeString().split(' ')[0];
-        return `${y}/${mo}/${da} ${time}`;
-      }
-    } catch(e) {}
-    return rawTime;
-  }
-
-  // 執行報到/報退
-  async function doAction(act) {
-    // 1. 取得輸入框的名字
-    const inputNames = document.getElementById('name-input').value.trim();
-    
-    // 2. 取得有打勾的名字
-    const checkedBoxes = document.querySelectorAll('.row-check:checked');
-    const checkedNames = Array.from(checkedBoxes).map(cb => cb.value);
-
-    // 3. 合併名單
-    let allNamesArr = [];
-    if (inputNames) allNamesArr.push(inputNames);
-    if (checkedNames.length > 0) allNamesArr = allNamesArr.concat(checkedNames);
-
-    // 轉成逗號分隔字串
-    const finalNames = allNamesArr.join(","); 
-
-    const msgBox = document.getElementById('msg-box');
-    if (!finalNames) { 
-      msgBox.innerText = "⚠️ 請先在上方輸入姓名，或在下方名單打勾！";
-      msgBox.style.color = "var(--orange)";
-      return; 
-    }
-    
-    msgBox.style.color = "#888";
-    msgBox.innerText = "處理中，請稍候...";
-    
-    try {
-      const res = await fetch(`${API}?action=${act}&name=${encodeURIComponent(finalNames)}`).then(r => r.json());
-      msgBox.innerText = res.msg;
-      
-      // 若有成功名單，字體顏色依照動作改變
-      if (res.ok) {
-        msgBox.style.color = (act === 'checkin') ? "var(--green)" : "var(--orange)";
-        // 清空輸入框與勾選狀態
-        document.getElementById('name-input').value = "";
-        document.getElementById('check-all').checked = false;
-        loadList(); // 成功後自動更新名單
-      } else {
-        msgBox.style.color = "var(--red)"; // 全數失敗顯示紅色
-      }
-    } catch (e) {
-      msgBox.innerText = "❌ 連線失敗，請檢查網址或網路狀態";
-      msgBox.style.color = "var(--red)";
-    }
-  }
-
-  // 讀取名單
+  // ================= 1. 讀取與渲染名單 =================
   async function loadList() {
     try {
       const res = await fetch(API + "?action=load&_t=" + Date.now()).then(r => r.json());
       if (res.ok) {
+        // 渲染下拉選單 (單人)
+        const sel = document.getElementById('single-select');
+        sel.innerHTML = '<option value="">-- 請點此選擇人員 --</option>' + 
+          res.data.map(m => `<option value="${m.name}">${m.station} | ${m.name}</option>`).join("");
+
+        // 渲染表格 (多人)
         const body = document.getElementById('list-body');
         body.innerHTML = res.data.map(row => {
-          let sClass = "status-none";
-          if(row.status === "已報到") sClass = "status-in";
-          if(row.status === "已報退") sClass = "status-out";
+          let sClass = "st-none";
+          if(row.status === "已報到") sClass = "st-in";
+          if(row.status === "已報退") sClass = "st-out";
           return `<tr>
             <td><input type="checkbox" class="row-check" value="${row.name}"></td>
-            <td style="font-weight:bold;">${row.name}</td>
-            <td><span class="attr-tag">${row.attr}</span></td>
+            <td style="font-weight:bold; color:#fff;">${row.name}</td>
+            <td style="font-size:14px; color:#aaa;">${row.attr}</td>
             <td class="${sClass}">${row.status}</td>
-            <td style="font-size:11px; color:#666;">${formatTimeDisplay(row.time)}</td>
+            <td style="font-size:12px; color:#888;">${formatTime(row.time)}</td>
           </tr>`;
         }).join("");
       }
-    } catch (e) {}
+    } catch (e) { showMsg("❌ 名單載入失敗，請檢查網路", "var(--red)"); }
+  }
+
+  // ================= 2. 單人處理邏輯 =================
+  async function doSingle(act) {
+    const name = document.getElementById('single-select').value;
+    if (!name) return alert("⚠️ 請先從下拉選單選擇一名人員！");
+    await sendRequest(act, name);
+  }
+
+  // ================= 3. 多人處理邏輯 =================
+  async function doMulti(act) {
+    const checkedBoxes = document.querySelectorAll('.row-check:checked');
+    if (checkedBoxes.length === 0) return alert("⚠️ 請先在下方表格中勾選人員！");
+    const names = Array.from(checkedBoxes).map(cb => cb.value).join(",");
+    
+    if (!confirm(`確定要為這 ${checkedBoxes.length} 人執行批次作業嗎？`)) return;
+    await sendRequest(act, names);
+  }
+
+  // ================= 4. 共用送出 API 邏輯 =================
+  async function sendRequest(act, namesStr) {
+    showMsg("⏳ 雲端同步中，請稍候...", "#222");
+    try {
+      const res = await fetch(`${API}?action=${act}&name=${encodeURIComponent(namesStr)}&_t=${Date.now()}`).then(r => r.json());
+      if (res.ok) {
+        showMsg(res.msg, act === 'checkin' ? "rgba(57, 255, 20, 0.9)" : "rgba(255, 159, 0, 0.9)", "#000");
+        // 清空選擇狀態
+        document.getElementById('single-select').value = "";
+        document.getElementById('check-all').checked = false;
+        await loadList(); // 重新整理畫面
+      } else {
+        showMsg(res.msg, "rgba(255, 49, 49, 0.9)"); // 失敗顯示紅色
+      }
+    } catch (e) {
+      showMsg("❌ 網路異常，無法連線", "var(--red)");
+    }
+  }
+
+  // ================= 輔助功能 =================
+  function toggleAll(source) {
+    document.querySelectorAll('.row-check').forEach(cb => cb.checked = source.checked);
+  }
+
+  function showMsg(text, bg, color = "#fff") {
+    const box = document.getElementById('msg-box');
+    box.innerText = text; box.style.background = bg; box.style.color = color;
+    box.style.display = "block";
+    if (bg !== "#222") setTimeout(() => box.style.display = "none", 5000);
+  }
+
+  // 強制修正時間格式 (只取 HH:mm:ss)
+  function formatTime(raw) {
+    if (!raw || raw === '-') return '-';
+    if (typeof raw === 'string' && !raw.includes('T')) return raw; 
+    try { const d = new Date(raw); return isNaN(d.getTime()) ? raw : d.toTimeString().split(' ')[0]; } 
+    catch(e) { return raw; }
   }
 
   loadList();
-  setInterval(loadList, 30000); // 每 30 秒自動更新名單
+  setInterval(loadList, 30000); // 30秒自動更新
 </script>
 </body>
 </html>
