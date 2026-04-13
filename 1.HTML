@@ -3,299 +3,205 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>DPAC 快速報到系統 (高對比強化版)</title>
+<title>DPAC 快速報到系統</title>
 <style>
   :root { 
-    --bg: #000000; 
-    --card: #0a0a0a; 
-    --blue: #00d2ff; 
-    --green: #39ff14; 
-    --orange: #ff9f00; 
-    --red: #ff3131; 
-    --text: #ffffff; 
-    --border: #333333;
-    --gray: #666666;
+    --bg: #000000; --card: #111111; --blue: #00d2ff; --green: #39ff14; 
+    --orange: #ff9f00; --text: #ffffff; --border: #333333; --dim: #555555;
   }
-
   body { 
-    background: var(--bg); 
-    color: var(--text); 
-    font-family: -apple-system, "Microsoft JhengHei", sans-serif; 
-    margin: 0; 
-    padding: 15px; 
-    padding-bottom: 120px;
+    background: var(--bg); color: var(--text); font-family: "Microsoft JhengHei", sans-serif; 
+    margin: 0; padding: 15px; padding-bottom: 100px;
   }
+  
+  h1 { text-align: center; color: var(--blue); font-size: 34px; margin: 10px 0; font-weight: 900; }
 
-  h1 { 
-    text-align: center; 
-    color: var(--blue); 
-    font-size: 36px; 
-    margin: 10px 0 20px; 
-    font-weight: 900;
-    text-shadow: 0 0 15px rgba(0, 210, 255, 0.4);
+  /* 區塊框架 */
+  .box { 
+    background: var(--card); border: 2px solid var(--border); border-radius: 20px; 
+    padding: 18px; margin-bottom: 25px; box-shadow: 0 0 20px rgba(0,0,0,0.5);
   }
+  .box-label { font-size: 22px; font-weight: bold; color: var(--blue); margin-bottom: 15px; display: block; border-left: 6px solid var(--blue); padding-left: 10px; }
 
-  /* 區塊樣式 */
-  .section { 
-    background: var(--card); 
-    border: 3px solid var(--border); 
-    border-radius: 20px; 
-    padding: 20px; 
-    margin-bottom: 25px; 
-  }
-
-  .label { 
-    font-size: 22px; 
-    font-weight: bold; 
-    color: var(--blue); 
-    margin-bottom: 15px; 
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  /* 下拉選單 */
+  /* 下拉與輸入控制 */
   select { 
-    width: 100%; 
-    padding: 20px; 
-    font-size: 26px; 
-    font-weight: bold; 
-    background: #111; 
-    color: #fff; 
-    border: 3px solid #555; 
-    border-radius: 15px; 
-    margin-bottom: 20px;
-    appearance: none;
+    width: 100%; padding: 18px; font-size: 26px; font-weight: bold; 
+    background: #1a1a1a; color: #fff; border: 3px solid #444; border-radius: 12px; margin-bottom: 15px;
   }
 
-  /* 按鈕樣式 */
-  .btn-row { display: flex; gap: 12px; }
+  /* 按鈕系統 */
+  .btn-group { display: flex; gap: 12px; }
   .btn { 
-    flex: 1; 
-    padding: 22px; 
-    font-size: 24px; 
-    font-weight: 900; 
-    border-radius: 15px; 
-    border: none; 
-    cursor: pointer; 
-    text-align: center;
-    transition: 0.1s;
+    flex: 1; padding: 22px; font-size: 24px; font-weight: 900; border-radius: 15px; 
+    border: none; cursor: pointer; transition: 0.1s; text-align: center;
   }
-  .btn:active { transform: scale(0.95); opacity: 0.8; }
+  .btn:active { transform: scale(0.96); opacity: 0.8; }
   .btn-in { background: var(--green); color: #000; }
   .btn-out { background: var(--orange); color: #000; }
 
-  /* 表格區域 */
-  .table-container { 
-    width: 100%; 
-    border-radius: 15px; 
-    overflow: hidden; 
-    border: 2px solid var(--border); 
-  }
-  table { width: 100%; border-collapse: collapse; background: #000; }
-  th { background: #1a1a1a; color: var(--blue); padding: 18px 10px; font-size: 20px; border-bottom: 2px solid var(--border); }
-  td { padding: 22px 10px; border-bottom: 1px solid #1a1a1a; font-size: 22px; text-align: center; }
+  /* 數據表格 */
+  .table-scroll { width: 100%; border-radius: 15px; overflow: hidden; border: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; background: #050505; }
+  th { background: #222; color: var(--blue); padding: 18px 10px; font-size: 20px; border-bottom: 2px solid var(--border); }
+  td { padding: 20px 10px; border-bottom: 1px solid #1a1a1a; font-size: 22px; text-align: center; vertical-align: middle; }
   
-  /* 已完成項目的視覺淡化 */
-  tr.is-done { opacity: 0.5; background: #050505; }
-  tr.is-done td { color: #888; }
+  /* 多選框 */
+  input[type="checkbox"] { transform: scale(2.5); cursor: pointer; accent-color: var(--blue); }
 
-  /* 勾選框放大 */
-  input[type="checkbox"] { 
-    transform: scale(2.5); 
-    cursor: pointer; 
-    accent-color: var(--blue); 
-  }
+  /* 狀態美化 */
+  .status-tag { display: inline-block; padding: 4px 10px; border-radius: 8px; font-size: 16px; font-weight: bold; margin-top: 5px; }
+  .st-wait { background: #333; color: #aaa; }
+  .st-in { background: var(--green); color: #000; }
+  .st-out { background: var(--orange); color: #000; }
+  
+  .attr-text { color: var(--dim); font-size: 16px; font-weight: normal; }
+  tr.done { background: #080808; opacity: 0.6; }
 
-  /* 狀態標籤 */
-  .st-wait { color: var(--gray); font-weight: normal; }
-  .st-in { color: var(--green); font-weight: bold; }
-  .st-out { color: var(--orange); font-weight: bold; }
-  .tag { 
-    background: #222; 
-    color: var(--blue); 
-    padding: 4px 10px; 
-    border-radius: 8px; 
-    font-size: 16px; 
-    font-weight: bold;
-  }
-
-  /* 浮動訊息框 */
-  #toast { 
-    position: fixed; 
-    bottom: 30px; 
-    left: 50%; 
-    transform: translateX(-50%); 
-    width: 90%;
-    max-width: 500px;
-    padding: 25px; 
-    border-radius: 20px; 
-    font-size: 22px; 
-    font-weight: bold; 
-    text-align: center;
-    z-index: 9999; 
-    display: none; 
-    box-shadow: 0 0 40px rgba(0,0,0,1);
-    border: 2px solid #fff;
+  /* 浮動提示 */
+  #msg { 
+    position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); width: 80%;
+    padding: 20px; border-radius: 20px; font-size: 22px; font-weight: bold; text-align: center;
+    z-index: 100; display: none; box-shadow: 0 0 30px rgba(0,0,0,0.8);
   }
 </style>
 </head>
 <body>
 
-  <h1>⚡ DPAC 快速報到系統</h1>
+  <h1>⚡ DPAC 快速作業面板</h1>
 
-  <div class="section">
-    <span class="label">👤 單人點選區</span>
-    <select id="user-select">
-      <option value="">載入中，請稍候...</option>
-    </select>
-    <div class="btn-row">
-      <button class="btn btn-in" onclick="submit('checkin', 'single')">報到</button>
-      <button class="btn btn-out" onclick="submit('checkout', 'single')">報退</button>
+  <div class="box">
+    <span class="box-label">👤 單人報到/退</span>
+    <select id="sel-single"><option value="">讀取名單中...</option></select>
+    <div class="btn-group">
+      <button class="btn btn-in" onclick="doAction('checkin', 'single')">直接報到</button>
+      <button class="btn btn-out" onclick="doAction('checkout', 'single')">直接報退</button>
     </div>
   </div>
 
-  <div class="section">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-      <span class="label" style="margin:0;">👥 多人勾選區</span>
-      <span id="stat-info" style="color:var(--gray); font-size:18px;">正在同步...</span>
-    </div>
-    
-    <div class="btn-row" style="margin-bottom:20px;">
-      <button class="btn btn-in" onclick="submit('checkin', 'multi')">批次報到</button>
-      <button class="btn btn-out" onclick="submit('checkout', 'multi')">批次報退</button>
+  <div class="box">
+    <span class="box-label">👥 多人批次作業</span>
+    <div class="btn-group" style="margin-bottom:20px;">
+      <button class="btn btn-in" onclick="doAction('checkin', 'multi')">勾選者：報到</button>
+      <button class="btn btn-out" onclick="doAction('checkout', 'multi')">勾選者：報退</button>
     </div>
 
-    <div class="table-container">
+    <div class="table-scroll">
       <table>
         <thead>
           <tr>
-            <th style="width:20%"><input type="checkbox" id="all-box" onchange="toggleAll(this)"></th>
-            <th style="width:40%">姓名</th>
-            <th style="width:40%">站別狀態</th>
+            <th style="width:18%"><input type="checkbox" id="chk-all" onchange="toggleAll(this)"></th>
+            <th style="width:35%">人員姓名</th>
+            <th style="width:47%">站別 / 屬性 / 狀態</th>
           </tr>
         </thead>
         <tbody id="list-body">
-          <tr><td colspan="3" style="padding:50px; color:var(--gray);">連線中...</td></tr>
+          <tr><td colspan="3" style="padding:50px; color:#666;">⏳ 正在連線伺服器...</td></tr>
         </tbody>
       </table>
     </div>
   </div>
 
-  <div id="toast"></div>
+  <div id="msg"></div>
 
 <script>
-  // 🔗 ⚠️ 請務必替換為您的 Google Apps Script 部署網址
-  const API_URL = "https://script.google.com/macros/s/AKfycbyxOZRGoMC_py-fsMFbpCZodw_rjRrxp7KX__y1HR18LlCuVRHn7Ah-N6Goe1htafKB/exec";
+  // 🔗 ⚠️ 請務必在此處填入您的 GAS 部署網址
+  const API = "https://script.google.com/macros/s/AKfycbwqZr8w576ityytCwCkEWCFrwdj32V8GiqcAb5AP12tT9BlyE15uwu8IqOf85KFDMXg/exec";
 
-  let masterData = [];
+  let db = [];
 
-  // 1. 核心載入函式：包含排序與錯誤偵測
-  async function loadData() {
+  // 1. 載入並執行複合排序
+  async function fetchList() {
     try {
-      const res = await fetch(`${API_URL}?action=load&_t=${Date.now()}`)
-                        .then(r => r.json());
-      
-      if (res && res.ok) {
-        masterData = res.data;
+      const r = await fetch(`${API}?action=load&_t=${Date.now()}`).then(res => res.json());
+      if (r.ok) {
+        db = r.data;
         
-        // 【排序邏輯】
-        // 權重：未報到 = 0, 已報到/已報退 = 1
-        // 未報到的人會排在最前面
-        masterData.sort((a, b) => {
-          let statusA = (a.status === "未報到" || !a.status) ? 0 : 1;
-          let statusB = (b.status === "未報到" || !b.status) ? 0 : 1;
-          if (statusA !== statusB) return statusA - statusB;
-          return a.station.localeCompare(b.station); // 狀態相同則按站別排
+        // 【核心排序邏輯】
+        db.sort((a, b) => {
+          // A. 狀態權重 (未報到=0, 已報到=1, 已報退=2)
+          const weight = { "未報到": 0, "": 0, "已報到": 1, "已報退": 2 };
+          let wa = weight[a.status] || 0;
+          let wb = weight[b.status] || 0;
+          
+          if (wa !== wb) return wa - wb;
+          // B. 站別排序
+          if (a.station !== b.station) return a.station.localeCompare(b.station, 'zh-Hant');
+          // C. 屬性排序
+          return a.attr.localeCompare(b.attr, 'zh-Hant');
         });
 
-        renderUI();
-        updateStats();
-      } else {
-        throw new Error("API 回傳格式錯誤");
+        render();
       }
-    } catch (e) {
-      console.error(e);
-      showToast("❌ 無法連線伺服器\n請檢查網址或權限設定", "var(--red)");
-    }
+    } catch (e) { toast("❌ 無法連線伺服器，請重整", "var(--red)"); }
   }
 
   // 2. 渲染 UI
-  function renderUI() {
-    const sel = document.getElementById('user-select');
-    sel.innerHTML = '<option value="">-- 請點此選擇人員 --</option>' + 
-      masterData.map(m => `<option value="${m.name}">${m.station} - ${m.name}</option>`).join("");
+  function render() {
+    const sel = document.getElementById('sel-single');
+    sel.innerHTML = '<option value="">-- 點此選人 --</option>' + 
+      db.map(m => `<option value="${m.name}">${m.station} | ${m.name}</option>`).join("");
 
     const body = document.getElementById('list-body');
-    body.innerHTML = masterData.map(m => {
-      const isDone = (m.status === "已報到" || m.status === "已報退");
-      const stClass = m.status === "已報到" ? "st-in" : (m.status === "已報退" ? "st-out" : "st-wait");
+    body.innerHTML = db.map(m => {
+      let stClass = "st-wait";
+      if(m.status === "已報到") stClass = "st-in";
+      if(m.status === "已報退") stClass = "st-out";
       
+      const isDone = m.status === "已報退" ? "done" : "";
+
       return `
-        <tr class="${isDone ? 'is-done' : ''}">
-          <td><input type="checkbox" class="user-cb" value="${m.name}"></td>
+        <tr class="${isDone}">
+          <td><input type="checkbox" class="user-chk" value="${m.name}"></td>
           <td style="font-weight:900;">${m.name}</td>
           <td>
-            <span class="tag">${m.station}</span><br>
-            <span class="${stClass}">${m.status || '未報到'}</span>
-            <div style="font-size:14px; margin-top:5px; color:#666;">${m.time || ''}</div>
+            <div style="font-size:18px;"><b>${m.station}</b> <span class="attr-text">(${m.attr})</span></div>
+            <span class="status-tag ${stClass}">${m.status || '未報到'}</span>
+            <div style="font-size:12px; color:#777; margin-top:3px;">${m.checkinTime || m.checkoutTime || ''}</div>
           </td>
         </tr>
       `;
     }).join("");
   }
 
-  // 3. 送出作業
-  async function submit(act, mode) {
+  // 3. 送出 API 請求
+  async function doAction(type, mode) {
     let names = "";
     if (mode === 'single') {
-      names = document.getElementById('user-select').value;
-      if (!names) return alert("⚠️ 請先選擇人員");
+      names = document.getElementById('sel-single').value;
+      if (!names) return alert("請先選取人員");
     } else {
-      const selected = Array.from(document.querySelectorAll('.user-cb:checked')).map(cb => cb.value);
-      if (selected.length === 0) return alert("⚠️ 請先勾選名單");
+      const selected = Array.from(document.querySelectorAll('.user-chk:checked')).map(c => c.value);
+      if (selected.length === 0) return alert("請先勾選人員");
       names = selected.join(",");
     }
 
-    showToast("⏳ 雲端同步中...", "#333");
+    toast("⏳ 處理中...", "#333");
 
     try {
-      const res = await fetch(`${API_URL}?action=${act}&name=${encodeURIComponent(names)}&_t=${Date.now()}`)
-                        .then(r => r.json());
-      
-      if (res.ok) {
-        showToast(res.msg, act === 'checkin' ? "var(--green)" : "var(--orange)", "#000");
-        document.getElementById('all-box').checked = false;
-        loadData(); // 成功後自動重新整理並排序
+      const r = await fetch(`${API}?action=${type}&name=${encodeURIComponent(names)}&_t=${Date.now()}`).then(res => res.json());
+      if (r.ok) {
+        toast(r.msg, "var(--green)", "#000");
+        document.getElementById('chk-all').checked = false;
+        fetchList(); // 重新整理並重新排序
       } else {
-        showToast("❌ 錯誤: " + res.msg, "var(--red)");
+        toast("❌ 失敗: " + r.msg, "var(--red)");
       }
-    } catch (e) {
-      showToast("❌ 傳送失敗，請再試一次", "var(--red)");
-    }
+    } catch (e) { toast("❌ 通訊錯誤", "var(--red)"); }
   }
 
-  // 輔助功能
+  // 輔助函式
   function toggleAll(src) {
-    document.querySelectorAll('.user-cb').forEach(cb => cb.checked = src.checked);
+    document.querySelectorAll('.user-chk').forEach(c => c.checked = src.checked);
   }
 
-  function updateStats() {
-    const total = masterData.length;
-    const checked = masterData.filter(m => m.status === "已報到" || m.status === "已報退").length;
-    document.getElementById('stat-info').innerText = `進度：${checked} / ${total}`;
+  function toast(txt, bg, color = "#fff") {
+    const m = document.getElementById('msg');
+    m.innerText = txt; m.style.background = bg; m.style.color = color; m.style.display = "block";
+    if (bg !== "#333") setTimeout(() => m.style.display = "none", 4000);
   }
 
-  function showToast(text, bg, color = "#fff") {
-    const t = document.getElementById('toast');
-    t.innerText = text; t.style.background = bg; t.style.color = color; t.style.display = "block";
-    // 如果不是「處理中」，則 4 秒後自動關閉
-    if (bg !== "#333") setTimeout(() => t.style.display = "none", 4000);
-  }
-
-  // 初始化
-  loadData();
-  setInterval(loadData, 30000); // 每 30 秒自動同步最新狀態
+  fetchList();
+  setInterval(fetchList, 60000); // 每一分鐘背景自動同步一次
 </script>
 </body>
 </html>
