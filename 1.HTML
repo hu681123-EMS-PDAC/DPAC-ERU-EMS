@@ -3,19 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>DPAC 快速報到系統</title>
+<title>DPAC 快速報到系統 (支援多人批次)</title>
 <style>
   :root { --bg: #000; --card: #111; --blue: #00d2ff; --green: #39ff14; --orange: #ff9f00; --red: #ff3131; }
   body { background: var(--bg); color: #fff; font-family: sans-serif; margin: 0; padding: 15px; }
   
   /* 快速操作區 */
   .action-panel { background: var(--card); padding: 20px; border-radius: 12px; border: 1px solid #333; margin-bottom: 20px; }
-  input { width: 100%; padding: 15px; background: #222; border: 1px solid #444; color: #fff; font-size: 18px; border-radius: 8px; box-sizing: border-box; margin-bottom: 15px; }
+  input[type="text"] { width: 100%; padding: 15px; background: #222; border: 1px solid #444; color: #fff; font-size: 16px; border-radius: 8px; box-sizing: border-box; margin-bottom: 15px; }
   .btn-group { display: flex; gap: 10px; }
   button { flex: 1; padding: 15px; font-size: 16px; font-weight: bold; border-radius: 8px; border: none; cursor: pointer; color: #000; }
   .btn-checkin { background: var(--green); }
   .btn-checkout { background: var(--orange); }
   button:active { opacity: 0.7; }
+  
+  #msg-box { margin: 15px 0 0; font-size: 14px; text-align: left; white-space: pre-wrap; line-height: 1.5; }
 
   /* 名單區 */
   .table-wrapper { overflow-x: auto; border: 1px solid #333; border-radius: 8px; }
@@ -23,6 +25,9 @@
   th { background: #222; color: var(--blue); padding: 12px; font-size: 14px; }
   td { padding: 12px; border-bottom: 1px solid #222; font-size: 14px; }
   
+  /* 勾選框放大，方便手機點擊 */
+  input[type="checkbox"] { transform: scale(1.5); accent-color: var(--blue); cursor: pointer; }
+
   .status-in { color: var(--green); font-weight: bold; }
   .status-out { color: var(--orange); font-weight: bold; }
   .status-none { color: var(--red); }
@@ -32,49 +37,103 @@
 <body>
 
   <div class="action-panel">
-    <h3 style="margin-top:0; color:var(--blue);">⚡ 快速報到/報退</h3>
-    <input type="text" id="name-input" placeholder="請輸入姓名 (或掃描條碼)...">
+    <h3 style="margin-top:0; color:var(--blue);">⚡ 快速報到/報退 (可選多人)</h3>
+    <input type="text" id="name-input" placeholder="可輸入多人，以空格或逗號隔開 (也可直接勾選下方名單)">
     <div class="btn-group">
-      <button class="btn-checkin" onclick="doAction('checkin')">報到</button>
-      <button class="btn-checkout" onclick="doAction('checkout')">報退</button>
+      <button class="btn-checkin" onclick="doAction('checkin')">送出報到</button>
+      <button class="btn-checkout" onclick="doAction('checkout')">送出報退</button>
     </div>
-    <p id="msg-box" style="margin: 15px 0 0; font-size: 14px; text-align: center;"></p>
+    <p id="msg-box"></p>
   </div>
 
   <div class="table-wrapper">
     <table>
       <thead>
-        <tr><th>姓名</th><th>屬性</th><th>狀態</th><th>時間</th></tr>
+        <tr>
+          <th style="width: 40px;"><input type="checkbox" id="check-all" onclick="toggleAll(this)"></th>
+          <th>姓名</th><th>屬性</th><th>狀態</th><th>時間</th>
+        </tr>
       </thead>
       <tbody id="list-body"></tbody>
     </table>
   </div>
 
 <script>
-  // ⚠️ 請務必替換為您「最新部署」的 API 網址
-  const API = "https://script.google.com/macros/s/AKfycbzvhGsQ40OYBJUJ9MnhRrrFXnNjtHrcSWuwefk-zIQqAWNB0k6vkxLSd9FfFS97DBf3/exec";
+  // ⚠️ 貼上後務必替換為最新的 API 網址
+  const API = "https://script.google.com/macros/s/AKfycbwxTjPiIrbtxxV6bE4gKWbe12_k4LJTY8spIHaTha21rHCynmmM7romVjN4RO5d1g0b/exec"; 
 
+  // 全選/取消全選
+  function toggleAll(source) {
+    const checkboxes = document.querySelectorAll('.row-check');
+    checkboxes.forEach(cb => cb.checked = source.checked);
+  }
+
+  // 格式化時間
+  function formatTimeDisplay(rawTime) {
+    if (!rawTime || rawTime === '-' || rawTime === "") return '-';
+    if (typeof rawTime === 'string' && rawTime.includes('/')) return rawTime;
+    try {
+      const d = new Date(rawTime);
+      if (!isNaN(d.getTime())) {
+        if (d.getFullYear() === 1899) return d.toTimeString().split(' ')[0];
+        const y = d.getFullYear();
+        const mo = String(d.getMonth() + 1).padStart(2, '0');
+        const da = String(d.getDate()).padStart(2, '0');
+        const time = d.toTimeString().split(' ')[0];
+        return `${y}/${mo}/${da} ${time}`;
+      }
+    } catch(e) {}
+    return rawTime;
+  }
+
+  // 執行報到/報退
   async function doAction(act) {
-    const name = document.getElementById('name-input').value.trim();
+    // 1. 取得輸入框的名字
+    const inputNames = document.getElementById('name-input').value.trim();
+    
+    // 2. 取得有打勾的名字
+    const checkedBoxes = document.querySelectorAll('.row-check:checked');
+    const checkedNames = Array.from(checkedBoxes).map(cb => cb.value);
+
+    // 3. 合併名單
+    let allNamesArr = [];
+    if (inputNames) allNamesArr.push(inputNames);
+    if (checkedNames.length > 0) allNamesArr = allNamesArr.concat(checkedNames);
+
+    // 轉成逗號分隔字串
+    const finalNames = allNamesArr.join(","); 
+
     const msgBox = document.getElementById('msg-box');
-    if (!name) { alert("請先輸入姓名"); return; }
+    if (!finalNames) { 
+      msgBox.innerText = "⚠️ 請先在上方輸入姓名，或在下方名單打勾！";
+      msgBox.style.color = "var(--orange)";
+      return; 
+    }
     
     msgBox.style.color = "#888";
-    msgBox.innerText = "處理中...";
+    msgBox.innerText = "處理中，請稍候...";
     
     try {
-      const res = await fetch(`${API}?action=${act}&name=${encodeURIComponent(name)}`).then(r => r.json());
+      const res = await fetch(`${API}?action=${act}&name=${encodeURIComponent(finalNames)}`).then(r => r.json());
       msgBox.innerText = res.msg;
-      msgBox.style.color = res.ok ? "#39ff14" : "#ff3131";
+      
+      // 若有成功名單，字體顏色依照動作改變
       if (res.ok) {
+        msgBox.style.color = (act === 'checkin') ? "var(--green)" : "var(--orange)";
+        // 清空輸入框與勾選狀態
         document.getElementById('name-input').value = "";
+        document.getElementById('check-all').checked = false;
         loadList(); // 成功後自動更新名單
+      } else {
+        msgBox.style.color = "var(--red)"; // 全數失敗顯示紅色
       }
     } catch (e) {
-      msgBox.innerText = "連線失敗，請檢查網址或網路";
+      msgBox.innerText = "❌ 連線失敗，請檢查網址或網路狀態";
+      msgBox.style.color = "var(--red)";
     }
   }
 
+  // 讀取名單
   async function loadList() {
     try {
       const res = await fetch(API + "?action=load&_t=" + Date.now()).then(r => r.json());
@@ -85,10 +144,11 @@
           if(row.status === "已報到") sClass = "status-in";
           if(row.status === "已報退") sClass = "status-out";
           return `<tr>
+            <td><input type="checkbox" class="row-check" value="${row.name}"></td>
             <td style="font-weight:bold;">${row.name}</td>
             <td><span class="attr-tag">${row.attr}</span></td>
             <td class="${sClass}">${row.status}</td>
-            <td style="font-size:11px; color:#666;">${row.time}</td>
+            <td style="font-size:11px; color:#666;">${formatTimeDisplay(row.time)}</td>
           </tr>`;
         }).join("");
       }
@@ -97,10 +157,6 @@
 
   loadList();
   setInterval(loadList, 30000); // 每 30 秒自動更新名單
-</script>
-</body>
-</html>
-  init();
 </script>
 </body>
 </html>
