@@ -7,14 +7,13 @@
 <style>
   :root { --bg: #000; --card-bg: #080808; --blue: #00d2ff; --text: #fff; --border: #333; }
   body { background: var(--bg); color: var(--text); font-family: sans-serif; padding: 10px; margin: 0; letter-spacing: 0.5px; }
-  h2 { color: var(--blue); text-align: center; margin-bottom: 10px; font-size: 24px; text-shadow: 0 0 10px rgba(0,210,255,0.3); }
+  h2 { color: var(--blue); text-align: center; margin-bottom: 10px; font-size: 24px; }
   
   .search-box { 
     width: 100%; padding: 12px; background: #111; border: 1px solid var(--border); 
     border-radius: 8px; color: white; font-size: 16px; margin-bottom: 15px; 
     box-sizing: border-box; outline: none; 
   }
-  .search-box:focus { border-color: var(--blue); box-shadow: 0 0 8px rgba(0,210,255,0.2); }
 
   .table-wrapper { overflow-x: auto; border-radius: 8px; border: 1px solid var(--border); }
   table { width: 100%; border-collapse: collapse; text-align: center; font-size: 14px; }
@@ -25,59 +24,54 @@
   .status-out { color: #ff9f00; font-weight: bold; }
   .status-pending { color: #ff3131; }
   
-  /* 時間欄位特別設定 */
-  .time-col { 
-    font-family: 'Courier New', monospace; 
-    font-size: 13px; 
-    color: #aaa; 
+  /* D欄個人屬性標籤樣式 */
+  .attr-tag { 
+    background: #222; color: #00d2ff; padding: 2px 6px; border-radius: 4px; 
+    font-size: 12px; border: 1px solid #333;
   }
 
+  .time-col { font-family: 'Courier New', monospace; font-size: 12px; color: #888; }
   #loading { text-align: center; color: #888; padding: 20px; font-size: 16px; }
 </style>
 </head>
 <body>
   <h2>📋 現場出勤名單</h2>
-  <input type="text" id="search-input" class="search-box" placeholder="🔍 搜尋站別或姓名..." onkeyup="filterTable()">
+  <input type="text" id="search-input" class="search-box" placeholder="🔍 搜尋姓名、站別或屬性..." onkeyup="filterTable()">
   
-  <div id="loading">⏳ 資料同步中...</div>
+  <div id="loading">⏳ 同步資料中...</div>
   
   <div class="table-wrapper">
     <table id="data-table" style="display:none;">
       <thead>
-        <tr><th>站別</th><th>姓名</th><th>狀態</th><th>時間</th></tr>
+        <tr>
+          <th>站別</th>
+          <th>姓名</th>
+          <th>屬性</th>
+          <th>狀態</th>
+          <th>時間 (最後動態)</th>
+        </tr>
       </thead>
       <tbody id="table-body"></tbody>
     </table>
   </div>
 
 <script>
-  // 請更換成你部署後的最新 API 網址
-  const API = "https://script.google.com/macros/s/AKfycbymD99VHoMrINyMRdW3CA9wJPm6uYrWw9LDIYoo34ZIDn-htr2busUds5OPdYKB3Fks/exec"; 
+  // ⚠️ 記得替換成您最新的 API 網址
+  const API = "https://script.google.com/macros/s/AKfycbzDeSJWAFSc4lsKnjKmtcJLWzN2pA7Wvyi0K1FGpov9NeMJ54TSoEJf08-YtC6uUBw/exec"; 
   let allData = [];
 
-  // --- 時間過濾器：修正 1899 日期並支援 年/月/日 ---
   function formatTimeDisplay(rawTime) {
     if (!rawTime || rawTime === '-' || rawTime === "") return '-';
-    
-    // 如果已經是字串且包含 "/" (後端傳回的格式)
-    if (typeof rawTime === 'string' && rawTime.includes('/')) {
-      return rawTime;
-    }
-
+    if (typeof rawTime === 'string' && rawTime.includes('/')) return rawTime;
     try {
       const d = new Date(rawTime);
       if (!isNaN(d.getTime())) {
-        // 判斷是否為試算表異常基準日
-        if (d.getFullYear() === 1899) {
-          return d.toTimeString().split(' ')[0]; // 只回傳時間
-        } else {
-          // 回傳 年/月/日 時:分:秒
-          const y = d.getFullYear();
-          const mo = String(d.getMonth() + 1).padStart(2, '0');
-          const da = String(d.getDate()).padStart(2, '0');
-          const time = d.toTimeString().split(' ')[0];
-          return `${y}/${mo}/${da} ${time}`;
-        }
+        if (d.getFullYear() === 1899) return d.toTimeString().split(' ')[0];
+        const y = d.getFullYear();
+        const mo = String(d.getMonth() + 1).padStart(2, '0');
+        const da = String(d.getDate()).padStart(2, '0');
+        const time = d.toTimeString().split(' ')[0];
+        return `${y}/${mo}/${da} ${time}`;
       }
     } catch(e) {}
     return rawTime;
@@ -92,9 +86,7 @@
         document.getElementById("loading").style.display = "none";
         document.getElementById("data-table").style.display = "table";
       }
-    } catch(e) { 
-      document.getElementById("loading").innerText = "❌ 無法連線資料庫，請檢查網路"; 
-    }
+    } catch(e) { document.getElementById("loading").innerText = "❌ 無法連線資料庫"; }
   }
 
   function renderTable() {
@@ -102,26 +94,27 @@
     const query = document.getElementById("search-input").value.toLowerCase();
     
     tbody.innerHTML = allData
-      .filter(row => (row.station || "").toLowerCase().includes(query) || (row.name || "").toLowerCase().includes(query))
+      .filter(row => 
+        (row.station || "").toLowerCase().includes(query) || 
+        (row.name || "").toLowerCase().includes(query) ||
+        (row.attr || "").toLowerCase().includes(query)
+      )
       .map(row => {
         let statusClass = "status-pending";
         if(row.status.includes("報到")) statusClass = "status-in";
         if(row.status.includes("報退")) statusClass = "status-out";
         
-        let cleanTime = formatTimeDisplay(row.time);
-
         return `<tr>
           <td>${row.station}</td>
-          <td>${row.name}</td>
+          <td style="font-weight:bold;">${row.name}</td>
+          <td><span class="attr-tag">${row.attr}</span></td>
           <td class="${statusClass}">${row.status || '未報到'}</td>
-          <td class="time-col">${cleanTime}</td>
+          <td class="time-col">${formatTimeDisplay(row.time)}</td>
         </tr>`;
       }).join("");
   }
 
   function filterTable() { renderTable(); }
-  
-  // 每 30 秒自動更新一次
   setInterval(loadList, 30000);
   loadList();
 </script>
