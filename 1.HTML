@@ -3,167 +3,103 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>快速報到作業</title>
+<title>DPAC 快速報到系統</title>
 <style>
-  :root { --bg: #000; --card: #0d1117; --blue: #00d2ff; --green: #39ff14; --orange: #ff9f00; --border: #333; }
-  body { background: var(--bg); color: #fff; font-family: sans-serif; margin: 0; padding: 15px; padding-bottom: 120px; }
+  :root { --bg: #000; --card: #111; --blue: #00d2ff; --green: #39ff14; --orange: #ff9f00; --red: #ff3131; }
+  body { background: var(--bg); color: #fff; font-family: sans-serif; margin: 0; padding: 15px; }
   
-  .section-title { color: var(--blue); font-size: 14px; font-weight: bold; margin: 20px 0 10px 5px; border-left: 4px solid var(--blue); padding-left: 10px; }
-  
-  /* 下拉選單樣式 */
-  .select-box { background: var(--card); padding: 15px; border-radius: 12px; border: 1px solid var(--border); }
-  select { width: 100%; padding: 15px; font-size: 18px; background: #000; color: #fff; border: 1px solid #555; border-radius: 8px; }
+  /* 快速操作區 */
+  .action-panel { background: var(--card); padding: 20px; border-radius: 12px; border: 1px solid #333; margin-bottom: 20px; }
+  input { width: 100%; padding: 15px; background: #222; border: 1px solid #444; color: #fff; font-size: 18px; border-radius: 8px; box-sizing: border-box; margin-bottom: 15px; }
+  .btn-group { display: flex; gap: 10px; }
+  button { flex: 1; padding: 15px; font-size: 16px; font-weight: bold; border-radius: 8px; border: none; cursor: pointer; color: #000; }
+  .btn-checkin { background: var(--green); }
+  .btn-checkout { background: var(--orange); }
+  button:active { opacity: 0.7; }
 
-  /* 多選列表樣式 */
-  .search-bar { margin: 10px 0; display: flex; gap: 8px; }
-  #search-input { flex: 1; padding: 12px; background: #111; border: 1px solid var(--border); border-radius: 8px; color: #fff; }
+  /* 名單區 */
+  .table-wrapper { overflow-x: auto; border: 1px solid #333; border-radius: 8px; }
+  table { width: 100%; border-collapse: collapse; text-align: center; }
+  th { background: #222; color: var(--blue); padding: 12px; font-size: 14px; }
+  td { padding: 12px; border-bottom: 1px solid #222; font-size: 14px; }
   
-  .member-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
-  .member-card { 
-    background: var(--card); border: 1px solid var(--border); border-radius: 10px; 
-    padding: 12px; text-align: center; position: relative; transition: 0.2s;
-  }
-  .member-card.selected { border-color: var(--blue); background: rgba(0, 210, 255, 0.15); box-shadow: 0 0 8px rgba(0,210,255,0.4); }
-  .member-card.selected::after { content: "✓"; position: absolute; top: 5px; right: 8px; color: var(--blue); font-weight: bold; }
-  
-  .m-name { font-size: 18px; font-weight: bold; display: block; }
-  .m-station { font-size: 11px; color: #888; }
-  .m-status { font-size: 10px; margin-top: 4px; display: block; }
-
-  /* 底部固定按鈕 */
-  .footer-actions { 
-    position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(0,0,0,0.9); 
-    border-top: 1px solid var(--border); padding: 15px; box-sizing: border-box;
-    display: flex; gap: 10px; align-items: center; z-index: 100;
-  }
-  .count-info { flex: 1; color: var(--blue); font-size: 13px; font-weight: bold; }
-  .btn { padding: 15px 20px; border: none; border-radius: 10px; font-weight: 900; font-size: 18px; cursor: pointer; }
-  .btn-in { background: #0070f3; color: white; }
-  .btn-out { background: var(--orange); color: black; }
-  .btn:disabled { opacity: 0.2; }
-  
-  #loading { text-align: center; padding: 40px; color: #666; }
+  .status-in { color: var(--green); font-weight: bold; }
+  .status-out { color: var(--orange); font-weight: bold; }
+  .status-none { color: var(--red); }
+  .attr-tag { background: #222; color: var(--blue); padding: 2px 6px; border-radius: 4px; font-size: 12px; }
 </style>
 </head>
 <body>
 
-<h2 style="text-align:center; margin: 0 0 20px 0;">⚡ 快速報到作業</h2>
+  <div class="action-panel">
+    <h3 style="margin-top:0; color:var(--blue);">⚡ 快速報到/報退</h3>
+    <input type="text" id="name-input" placeholder="請輸入姓名 (或掃描條碼)...">
+    <div class="btn-group">
+      <button class="btn-checkin" onclick="doAction('checkin')">報到</button>
+      <button class="btn-checkout" onclick="doAction('checkout')">報退</button>
+    </div>
+    <p id="msg-box" style="margin: 15px 0 0; font-size: 14px; text-align: center;"></p>
+  </div>
 
-<div class="section-title">單人作業 (下拉選單)</div>
-<div class="select-box">
-  <select id="single-select" onchange="syncToMulti()">
-    <option value="">-- 請選擇人員 --</option>
-  </select>
-</div>
-
-<div class="section-title">多人作業 (直接點選名單)</div>
-<div class="search-bar">
-  <input type="text" id="search-input" placeholder="🔍 搜尋站別或姓名..." onkeyup="renderGrid()">
-  <button onclick="clearSelect()" style="background:#333; color:#ccc; border:none; border-radius:8px; padding:0 10px; font-size:12px;">清空</button>
-</div>
-
-<div id="loading">載入名單中...</div>
-<div id="member-grid" class="member-grid"></div>
-
-<div class="footer-actions">
-  <div class="count-info">已選 <span id="selected-count">0</span> 人</div>
-  <button class="btn btn-in" id="btn-in" onclick="handleBatch('checkin')" disabled>集體報到</button>
-  <button class="btn btn-out" id="btn-out" onclick="handleBatch('checkout')" disabled>集體報退</button>
-</div>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr><th>姓名</th><th>屬性</th><th>狀態</th><th>時間</th></tr>
+      </thead>
+      <tbody id="list-body"></tbody>
+    </table>
+  </div>
 
 <script>
-  const API = "https://script.google.com/macros/s/AKfycbySE58XY4Dcd5vDNQY2l6zZATq0zI3h2PpPfKfW2F4Zu2jX0xbtOxY7fV4d52iQTFNM/exec"; 
-  let allMembers = [];
-  let selectedSet = new Set();
+  // ⚠️ 請務必替換為您「最新部署」的 API 網址
+  const API = "https://script.google.com/macros/s/AKfycbzvhGsQ40OYBJUJ9MnhRrrFXnNjtHrcSWuwefk-zIQqAWNB0k6vkxLSd9FfFS97DBf3/exec";
 
-  // 初始載入
-  async function init() {
+  async function doAction(act) {
+    const name = document.getElementById('name-input').value.trim();
+    const msgBox = document.getElementById('msg-box');
+    if (!name) { alert("請先輸入姓名"); return; }
+    
+    msgBox.style.color = "#888";
+    msgBox.innerText = "處理中...";
+    
     try {
-      const res = await fetch(`${API}?action=loadAll&_t=${Date.now()}`).then(r => r.json());
-      allMembers = res.members;
-      document.getElementById("loading").style.display = "none";
-      
-      // 填充下拉選單
-      const sel = document.getElementById("single-select");
-      sel.innerHTML = '<option value="">-- 請選擇人員 --</option>' + 
-        allMembers.map(m => `<option value="${m.name}">${m.station} - ${m.name}</option>`).join("");
-      
-      renderGrid();
-    } catch(e) { alert("讀取資料失敗"); }
-  }
-
-  // 渲染多選網格
-  function renderGrid() {
-    const q = document.getElementById("search-input").value.toLowerCase();
-    const container = document.getElementById("member-grid");
-    
-    const filtered = allMembers.filter(m => m.name.toLowerCase().includes(q) || m.station.toLowerCase().includes(q));
-    
-    container.innerHTML = filtered.map(m => {
-      const isSelected = selectedSet.has(m.name) ? 'selected' : '';
-      let stColor = m.status === "已報到" ? "var(--green)" : (m.status === "已報退" ? "var(--orange)" : "#555");
-      return `
-        <div class="member-card ${isSelected}" onclick="toggleMember('${m.name}')">
-          <span class="m-station">${m.station}</span>
-          <span class="m-name">${m.name}</span>
-          <span class="m-status" style="color:${stColor}">${m.status}</span>
-        </div>
-      `;
-    }).join("");
-  }
-
-  // 處理點選邏輯
-  function toggleMember(name) {
-    if (selectedSet.has(name)) selectedSet.delete(name);
-    else selectedSet.add(name);
-    updateUI();
-  }
-
-  // 同步下拉選單到多選 (當下拉選單改變時)
-  function syncToMulti() {
-    const val = document.getElementById("single-select").value;
-    if (val) {
-      selectedSet.add(val);
-      updateUI();
+      const res = await fetch(`${API}?action=${act}&name=${encodeURIComponent(name)}`).then(r => r.json());
+      msgBox.innerText = res.msg;
+      msgBox.style.color = res.ok ? "#39ff14" : "#ff3131";
+      if (res.ok) {
+        document.getElementById('name-input').value = "";
+        loadList(); // 成功後自動更新名單
+      }
+    } catch (e) {
+      msgBox.innerText = "連線失敗，請檢查網址或網路";
     }
   }
 
-  function clearSelect() {
-    selectedSet.clear();
-    document.getElementById("single-select").value = "";
-    updateUI();
-  }
-
-  function updateUI() {
-    document.getElementById("selected-count").innerText = selectedSet.size;
-    const hasValue = selectedSet.size > 0;
-    document.getElementById("btn-in").disabled = !hasValue;
-    document.getElementById("btn-out").disabled = !hasValue;
-    renderGrid();
-  }
-
-  // 執行批量作業
-  async function handleBatch(type) {
-    const names = Array.from(selectedSet).join(",");
-    const actionName = type === 'checkin' ? "報到" : "報退";
-    
-    if (!confirm(`確定要為這 ${selectedSet.size} 人執行「${actionName}」嗎？`)) return;
-
-    const btn = document.getElementById(type === 'checkin' ? "btn-in" : "btn-out");
-    const originalText = btn.innerText;
-    btn.innerText = "⏳..."; btn.disabled = true;
-
+  async function loadList() {
     try {
-      const url = `${API}?action=batch&subAction=${type}&names=${encodeURIComponent(names)}&_t=${Date.now()}`;
-      const res = await fetch(url).then(r => r.json());
-      alert(`✅ 執行成功！共處理 ${res.successCount} 位人員。`);
-      selectedSet.clear();
-      document.getElementById("single-select").value = "";
-      await init(); // 重新整理名單
-    } catch(e) { alert("連線發生錯誤"); }
-    finally { btn.innerText = originalText; }
+      const res = await fetch(API + "?action=load&_t=" + Date.now()).then(r => r.json());
+      if (res.ok) {
+        const body = document.getElementById('list-body');
+        body.innerHTML = res.data.map(row => {
+          let sClass = "status-none";
+          if(row.status === "已報到") sClass = "status-in";
+          if(row.status === "已報退") sClass = "status-out";
+          return `<tr>
+            <td style="font-weight:bold;">${row.name}</td>
+            <td><span class="attr-tag">${row.attr}</span></td>
+            <td class="${sClass}">${row.status}</td>
+            <td style="font-size:11px; color:#666;">${row.time}</td>
+          </tr>`;
+        }).join("");
+      }
+    } catch (e) {}
   }
 
+  loadList();
+  setInterval(loadList, 30000); // 每 30 秒自動更新名單
+</script>
+</body>
+</html>
   init();
 </script>
 </body>
