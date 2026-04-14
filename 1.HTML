@@ -3,59 +3,59 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>DPAC 04/19 快速報到面板</title>
+<title>⚡ DPAC 快速作業系統</title>
 <style>
   :root { 
-    --bg: #000000; --card: #0c0c0c; --blue: #00d2ff; --green: #39ff14; 
+    --bg: #000000; --card: #111111; --blue: #00d2ff; --green: #39ff14; 
     --orange: #ff9f00; --red: #ff3131; --text: #ffffff; --border: #333333;
   }
   body { 
-    background: var(--bg); color: var(--text); font-family: -apple-system, "Microsoft JhengHei", sans-serif; 
+    background: var(--bg); color: var(--text); font-family: "Microsoft JhengHei", sans-serif; 
     margin: 0; padding: 15px; padding-bottom: 120px; line-height: 1.5;
   }
   
-  h1 { text-align: center; color: var(--blue); font-size: 38px; font-weight: 900; margin: 10px 0 20px; text-shadow: 0 0 10px rgba(0,210,255,0.4); }
+  h1 { text-align: center; color: var(--blue); font-size: 32px; font-weight: 900; margin: 10px 0 20px; letter-spacing: 2px; }
 
   .panel { 
-    background: var(--card); border: 3px solid var(--border); border-radius: 25px; 
-    padding: 22px; margin-bottom: 30px; box-shadow: 0 8px 30px rgba(0,0,0,0.8);
+    background: var(--card); border: 2px solid var(--border); border-radius: 20px; 
+    padding: 20px; margin-bottom: 25px; box-shadow: 0 0 20px rgba(0, 210, 255, 0.15);
   }
-  .label { font-size: 24px; font-weight: bold; color: var(--blue); margin-bottom: 15px; display: block; }
+  .label { font-size: 22px; font-weight: bold; color: var(--blue); margin-bottom: 15px; display: block; border-bottom: 1px solid #333; padding-bottom: 10px; }
 
-  /* 大字體控制項 */
+  /* 20px 中字體控制項 */
   select { 
-    width: 100%; padding: 22px; font-size: 28px; font-weight: bold; 
-    background: #111; color: #fff; border: 3px solid #555; border-radius: 15px; margin-bottom: 15px;
+    width: 100%; padding: 18px; font-size: 20px; font-weight: bold; 
+    background: #1a1a1a; color: #fff; border: 2px solid #555; border-radius: 12px; margin-bottom: 15px;
   }
   .btn-row { display: flex; gap: 15px; }
   .btn { 
-    flex: 1; padding: 25px; font-size: 26px; font-weight: 900; border-radius: 18px; 
-    border: none; cursor: pointer; transition: 0.1s; text-align: center;
+    flex: 1; padding: 20px; font-size: 22px; font-weight: 900; border-radius: 15px; 
+    border: none; cursor: pointer; transition: 0.1s; text-align: center; color: #000;
   }
   .btn:active { transform: scale(0.96); opacity: 0.8; }
-  .btn-in { background: var(--green); color: #000; }
-  .btn-out { background: var(--orange); color: #000; }
+  .btn-in { background: var(--green); }
+  .btn-out { background: var(--orange); }
 
-  /* 報到清單表格 */
-  .table-box { width: 100%; border-radius: 20px; overflow: hidden; border: 1px solid var(--border); }
+  /* 報到清單表格 - 高對比優化 */
+  .table-box { width: 100%; border-radius: 15px; overflow: hidden; border: 2px solid var(--border); }
   table { width: 100%; border-collapse: collapse; background: #000; table-layout: fixed; }
-  th { background: #1a1a1a; color: var(--blue); padding: 15px 5px; font-size: 20px; text-align: center; }
-  td { padding: 25px 5px; border-bottom: 1px solid #1a1a1a; font-size: 24px; text-align: center; word-break: break-all; }
+  th { background: #1a1a1a; color: var(--blue); padding: 12px 5px; font-size: 18px; text-align: center; border-bottom: 2px solid var(--blue); }
+  td { padding: 18px 5px; border-bottom: 1px solid #222; font-size: 20px; text-align: center; vertical-align: middle; }
   
-  /* 勾選框放大 3 倍，極速操作 */
-  input[type="checkbox"] { transform: scale(3); cursor: pointer; accent-color: var(--blue); }
+  /* 勾選框放大，極速操作 */
+  input[type="checkbox"] { transform: scale(2.5); cursor: pointer; accent-color: var(--blue); margin: 0; }
 
   /* 狀態標籤 */
-  .st-wait { color: #555; font-size: 20px; }
+  .st-wait { color: #888; font-size: 18px; }
   .st-in { color: var(--green); font-weight: 900; }
   .st-out { color: var(--orange); font-weight: 900; }
-  .sub-info { display: block; font-size: 16px; color: #888; margin-top: 5px; }
+  .sub-info { display: block; font-size: 14px; color: #aaa; margin-top: 4px; }
 
   /* 訊息提示 */
   #toast { 
     position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); width: 85%;
-    padding: 25px; border-radius: 20px; font-size: 22px; font-weight: bold; text-align: center;
-    z-index: 1000; display: none; box-shadow: 0 0 40px rgba(0,0,0,1); border: 2px solid #fff;
+    padding: 20px; border-radius: 15px; font-size: 20px; font-weight: bold; text-align: center;
+    z-index: 1000; display: none; box-shadow: 0 0 30px rgba(0,0,0,0.9); border: 2px solid #fff;
   }
 </style>
 </head>
@@ -75,8 +75,8 @@
   </div>
 
   <div class="panel">
-    <span class="label">👥 多人批次勾選</span>
-    <div class="btn-row" style="margin-bottom:25px;">
+    <span class="label">👥 多人批次作業 (未還裝備將阻擋報退)</span>
+    <div class="btn-row" style="margin-bottom:20px;">
       <button class="btn btn-in" onclick="doSubmit('checkin', 'multi')">勾選者報到</button>
       <button class="btn btn-out" onclick="doSubmit('checkout', 'multi')">勾選者報退</button>
     </div>
@@ -85,13 +85,14 @@
       <table>
         <thead>
           <tr>
-            <th style="width:18%"><input type="checkbox" id="all-box" onchange="toggleAll(this)" style="transform:scale(2.2)"></th>
-            <th style="width:34%">姓名</th>
-            <th style="width:48%">站別 / 屬性 / 時間</th>
+            <th style="width:15%"><input type="checkbox" id="all-box" onchange="toggleAll(this)" style="transform:scale(2)"></th>
+            <th style="width:25%">站別</th>
+            <th style="width:30%">姓名(屬性)</th>
+            <th style="width:30%">狀態</th>
           </tr>
         </thead>
         <tbody id="list-body">
-          <tr><td colspan="3" style="padding:60px; color:#444;">連線同步中...</td></tr>
+          <tr><td colspan="4" style="padding:50px; color:#666; font-size: 20px;">連線同步中...</td></tr>
         </tbody>
       </table>
     </div>
@@ -100,8 +101,8 @@
   <div id="toast"></div>
 
 <script>
-  // 🔗 ⚠️ 請務必在此處填入您的 GAS 最新部署網址
-  const API = "https://script.google.com/macros/s/AKfycbxLuViTjZ-J8hQ7EyeiR6Whj3BD0uUfBO7jQFu8gj8UnSRCLDuZozQe7BUIpgAmqBbu/exec";
+  // 🔗 ⚠️ 請將引號內替換為您「建立新版本」後的最新部署網址
+  const API = "https://script.google.com/macros/s/AKfycbyqX6SunzkwZ2n0EGUSNsGzLP0sfiOQHODSxtqq-LJ12x3b0VsDY-cCBC17H4Ndn4ou/exec";
 
   let listData = [];
 
@@ -112,29 +113,26 @@
       if (res.ok) {
         listData = res.data;
         
-        // 【複合排序規則】
-        // 1. 狀態權重 (未報到=0, 已報到=1, 已報退=2)
-        // 2. 站別
-        // 3. 屬性
+        // 【排序規則】：站別 -> 姓名 -> 屬性 -> 狀態
         listData.sort((a, b) => {
-          const w = { "未報到": 0, "": 0, "已報到": 1, "已報退": 2 };
-          let wa = w[a.status] || 0;
-          let wb = w[b.status] || 0;
-          if (wa !== wb) return wa - wb;
           if (a.station !== b.station) return a.station.localeCompare(b.station, 'zh-Hant');
-          return a.attr.localeCompare(b.attr, 'zh-Hant');
+          if (a.name !== b.name) return a.name.localeCompare(b.name, 'zh-Hant');
+          if (a.attr !== b.attr) return a.attr.localeCompare(b.attr, 'zh-Hant');
+          
+          const w = { "未報到": 0, "": 0, "已報到": 1, "已報退": 2 };
+          return (w[a.status] || 0) - (w[b.status] || 0);
         });
 
         render();
       }
-    } catch (e) { showToast("❌ 連線失敗，請檢查網路或 API 網址", "var(--red)"); }
+    } catch (e) { showToast("❌ 連線失敗，請檢查網址", "var(--red)"); }
   }
 
   // 渲染畫面
   function render() {
     const sel = document.getElementById('sel-one');
     sel.innerHTML = '<option value="">-- 請選擇人員 --</option>' + 
-      listData.map(m => `<option value="${m.name}">${m.station} | ${m.name}</option>`).join("");
+      listData.map(m => `<option value="${m.name}">[${m.station}] ${m.name}</option>`).join("");
 
     const body = document.getElementById('list-body');
     body.innerHTML = listData.map(m => {
@@ -142,9 +140,12 @@
       return `
         <tr>
           <td><input type="checkbox" class="cb-item" value="${m.name}"></td>
-          <td style="font-weight:900;">${m.name}</td>
+          <td style="font-weight:bold; color:var(--blue);">${m.station}</td>
           <td>
-            <div style="font-weight:bold; font-size:20px;">${m.station} <span style="font-size:16px; font-weight:normal; color:#888;">(${m.attr})</span></div>
+            <div style="font-weight:900;">${m.name}</div>
+            <span style="font-size:16px; color:#888;">${m.attr}</span>
+          </td>
+          <td>
             <span class="${stClass}">${m.status || '未報到'}</span>
             <span class="sub-info">${m.time}</span>
           </td>
@@ -165,21 +166,25 @@
       names = selected.join(",");
     }
 
-    showToast("⏳ 雲端同步中...", "#222");
+    showToast("⏳ 雲端驗證中...", "#222");
 
     try {
       const res = await fetch(`${API}?action=${act}&name=${encodeURIComponent(names)}&_t=${Date.now()}`).then(r => r.json());
-      if (res.ok) {
+      
+      // 判斷是否包含「裝備未還」的拒絕訊息
+      if (res.msg.includes("拒絕報退")) {
+        showToast(res.msg, "var(--red)", "#fff"); // 顯示紅色警告
+      } else if (res.ok) {
         showToast(res.msg, act === 'checkin' ? "var(--green)" : "var(--orange)", "#000");
-        document.getElementById('all-box').checked = false;
-        load(); // 成功後自動更新排序
       } else {
         showToast("❌ 錯誤: " + res.msg, "var(--red)");
       }
+
+      document.getElementById('all-box').checked = false;
+      load(); // 操作後自動刷新名單
     } catch (e) { showToast("❌ 通訊失敗", "var(--red)"); }
   }
 
-  // 輔助函式
   function toggleAll(src) {
     document.querySelectorAll('.cb-item').forEach(c => c.checked = src.checked);
   }
@@ -187,11 +192,11 @@
   function showToast(txt, bg, color = "#fff") {
     const t = document.getElementById('toast');
     t.innerText = txt; t.style.background = bg; t.style.color = color; t.style.display = "block";
-    if (bg !== "#222") setTimeout(() => t.style.display = "none", 4000);
+    if (bg !== "#222") setTimeout(() => t.style.display = "none", 4500);
   }
 
   load();
-  setInterval(load, 45000); // 45 秒自動背景更新
+  setInterval(load, 45000); // 45 秒背景同步
 </script>
 </body>
 </html>
