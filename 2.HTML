@@ -19,6 +19,8 @@
     --text: #fff; 
   }
   
+  * { box-sizing: border-box; }
+
   body { 
     background: var(--bg); 
     color: var(--text); 
@@ -28,6 +30,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    line-height: 1.5;
   }
   
   .wrapper {
@@ -38,19 +41,19 @@
   h2 { 
     text-align: center; 
     color: var(--blue); 
-    font-size: 28px; 
-    margin: 10px 0 20px 0; 
+    font-size: 32px; /* 加大標題 */
+    margin: 15px 0 25px 0; 
     font-weight: 900; 
-    letter-spacing: 2px;
+    letter-spacing: 3px;
     text-shadow: 0 0 15px rgba(0, 210, 255, 0.5);
   }
   
   .section-title { 
-    font-size: 14px; 
-    color: #888; 
-    margin: 20px 0 10px 5px; 
-    border-left: 4px solid var(--blue); 
-    padding-left: 10px; 
+    font-size: 18px; /* 中字體優化 */
+    color: #999; 
+    margin: 25px 0 12px 5px; 
+    border-left: 5px solid var(--blue); 
+    padding-left: 12px; 
     font-weight: bold;
     text-transform: uppercase;
   }
@@ -64,11 +67,11 @@
   .stat-card { 
     background: var(--card-bg); 
     border-radius: 16px; 
-    padding: 20px 10px; 
+    padding: 22px 10px; 
     text-align: center; 
     border: 1px solid #222; 
     box-shadow: 0 4px 15px rgba(0,0,0,0.6);
-    transition: transform 0.2s;
+    transition: transform 0.1s;
   }
   
   .stat-card:active { transform: scale(0.98); }
@@ -78,14 +81,14 @@
     display: flex; 
     justify-content: space-between; 
     align-items: center; 
-    padding: 25px 30px; 
+    padding: 25px 35px; 
   }
+
+  .stat-title { font-size: 16px; color: #aaa; margin-bottom: 8px; font-weight: bold; }
   .stat-card.full .stat-title { margin-bottom: 0; font-size: 18px; }
+  .stat-value { font-size: 44px; font-weight: 900; font-family: 'Impact', 'Arial Black', sans-serif; }
 
-  .stat-title { font-size: 15px; color: #aaa; margin-bottom: 8px; font-weight: bold; }
-  .stat-value { font-size: 42px; font-weight: 900; font-family: 'Impact', 'Arial Black', sans-serif; }
-
-  /* 顏色定義 */
+  /* 顏色定義 - 增加明度確保高對比 */
   .c-blue { color: var(--blue); } 
   .c-green { color: var(--green); }
   .c-orange { color: var(--orange); } 
@@ -95,38 +98,42 @@
   .c-lime { color: var(--lime); } 
   .c-pink { color: var(--pink); }
 
+  /* 無資料站點的特殊樣式 */
+  .no-data { opacity: 0.6; border-style: dashed; }
+  .no-data .stat-value { font-size: 28px; color: #555; }
+
   #refresh-btn { 
     width: 100%; 
     padding: 20px; 
-    margin-top: 30px; 
+    margin-top: 35px; 
     background: linear-gradient(145deg, #1a1a1a, #000); 
     color: #fff; 
     border: 1px solid #333; 
     border-radius: 15px; 
-    font-size: 20px; 
+    font-size: 22px; 
     font-weight: 800; 
     cursor: pointer; 
     box-shadow: 0 5px 15px rgba(0,0,0,0.4);
     outline: none;
+    transition: 0.2s;
   }
   
   #refresh-btn:active { 
     background: #333; 
-    box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);
+    transform: translateY(2px);
   }
 
   .update-time { 
     text-align: center; 
-    font-size: 13px; 
+    font-size: 14px; 
     color: #555; 
-    margin-top: 20px; 
+    margin-top: 25px; 
     font-weight: 500;
   }
 
-  /* 行動裝置小螢幕優化 */
   @media (max-width: 380px) {
-    .stat-value { font-size: 32px; }
-    h2 { font-size: 24px; }
+    .stat-value { font-size: 34px; }
+    h2 { font-size: 26px; }
   }
 </style>
 </head>
@@ -169,9 +176,9 @@
         <div class="stat-title">步行隊</div>
         <div class="stat-value c-lime" id="walking-count">-</div>
       </div>
-      <div class="stat-card">
+      <div class="stat-card no-data" id="beiduan-card">
         <div class="stat-title">西螺大橋北站</div>
-        <div class="stat-value c-orange" id="beiduan-count">-</div>
+        <div class="stat-value" id="beiduan-count">無</div>
       </div>
       <div class="stat-card">
         <div class="stat-title">支援組</div>
@@ -184,7 +191,7 @@
   </div>
 
 <script>
-  // 重要：請確保此處的 API 網址與您最新部署的 Google Apps Script 網址完全一致
+  // 重要：請確保此處的 API 網址正確
   const API = "https://script.google.com/macros/s/AKfycbzH6hGY9XVJuwKE1mgPxDGg-4pFkosMDXT8WRWQmQVIxrJ76hSiINKOjJm92K7_jgXf/exec";
   
   async function loadStats() {
@@ -195,40 +202,50 @@
     btn.disabled = true;
 
     try {
-      // 加上時間戳記防止快取問題
       const res = await fetch(`${API}?action=load&_t=${Date.now()}`).then(r => r.json());
       
       if(res.ok) {
         // 1. 更新總體概況
-        document.getElementById("total-count").innerText = res.stats.total;
-        document.getElementById("in-count").innerText = res.stats.in;
-        document.getElementById("out-count").innerText = res.stats.out;
-        document.getElementById("pending-count").innerText = res.stats.pending;
-        document.getElementById("station-count").innerText = res.stats.stations;
+        document.getElementById("total-count").innerText = res.stats.total || 0;
+        document.getElementById("in-count").innerText = res.stats.in || 0;
+        document.getElementById("out-count").innerText = res.stats.out || 0;
+        document.getElementById("pending-count").innerText = res.stats.pending || 0;
+        document.getElementById("station-count").innerText = res.stats.stations || 0;
 
-        // 2. 更新各站點明細 (需對應 GAS 回傳的欄位名稱)
+        // 2. 更新各單位明細
         document.getElementById("xizhou-count").innerText = res.stats.xizhou || 0;
         document.getElementById("walking-count").innerText = res.stats.walking || 0;
-        document.getElementById("beiduan-count").innerText = res.stats.beiduan || 0;
         document.getElementById("support-count").innerText = res.stats.support || 0;
 
+        // 西螺大橋北站：若 API 有回傳則顯示，若無則維持「無」
+        const beiduanVal = res.stats.beiduan;
+        const beiduanEl = document.getElementById("beiduan-count");
+        const beiduanCard = document.getElementById("beiduan-card");
+        
+        if (beiduanVal !== undefined && beiduanVal !== 0) {
+          beiduanEl.innerText = beiduanVal;
+          beiduanEl.style.color = "var(--orange)";
+          beiduanCard.classList.remove("no-data");
+        } else {
+          beiduanEl.innerText = "無";
+          beiduanCard.classList.add("no-data");
+        }
+
         timer.innerText = "最後更新時間：" + new Date().toLocaleTimeString();
-      } else {
-        alert("雲端回傳錯誤：" + (res.msg || "未知原因"));
       }
     } catch(e) { 
       console.error(e);
-      alert("無法連線至資料庫，請檢查網路狀態"); 
+      timer.innerText = "最後更新失敗，請檢查網路";
     } finally {
       btn.innerText = "🔄 手動更新數據";
       btn.disabled = false;
     }
   }
 
-  // 網頁開啟時自動載入一次
+  // 初始載入
   loadStats();
   
-  // 設定每 30 秒自動靜默更新，保持數據準確
+  // 每 30 秒自動靜默更新
   setInterval(loadStats, 30000); 
 </script>
 </body>
