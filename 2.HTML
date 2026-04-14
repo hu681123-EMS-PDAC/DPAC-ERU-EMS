@@ -8,7 +8,7 @@
 <style>
   :root { 
     --bg: #000000; 
-    --card-bg: #111111; 
+    --card-bg: #121212; 
     --border: #333333;
     --blue: #00e5ff; 
     --green: #39ff14; 
@@ -43,36 +43,31 @@
     font-size: 32px; 
     font-weight: 900;
     margin: 20px 0; 
-    letter-spacing: 2px;
-    text-shadow: 0 0 15px rgba(0, 229, 255, 0.4);
+    text-shadow: 0 0 10px rgba(0, 229, 255, 0.4);
   }
 
   .section-title { 
     font-size: 20px; 
     font-weight: bold;
-    margin: 30px 0 15px; 
+    margin: 25px 0 15px; 
     border-left: 6px solid var(--blue); 
     padding-left: 12px; 
-    color: #e0e0e0;
   }
 
   .grid { 
     display: grid; 
     grid-template-columns: 1fr 1fr; 
-    gap: 15px; 
+    gap: 12px; 
   }
 
-  /* 卡片高對比設計 */
   .stat-card { 
     background: var(--card-bg); 
     border: 2px solid var(--border);
     border-radius: 16px; 
     padding: 22px; 
     text-align: center; 
-    box-shadow: 0 8px 20px rgba(0,0,0,0.9);
-    transition: 0.3s;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.8);
   }
-  .stat-card:hover { border-color: #555; }
 
   .stat-card.full { 
     grid-column: span 2; 
@@ -82,10 +77,10 @@
     padding: 22px 30px;
   }
 
-  .stat-title { font-size: 18px; color: #aaaaaa; font-weight: bold; }
-  .stat-value { font-size: 46px; font-weight: 900; line-height: 1.2; text-shadow: 0 0 10px rgba(255,255,255,0.2); }
+  .stat-title { font-size: 18px; color: #bbbbbb; font-weight: bold; }
+  .stat-value { font-size: 46px; font-weight: 900; line-height: 1.2; }
 
-  /* 霓虹高對比色彩 */
+  /* 色彩定義 */
   .c-blue { color: var(--blue); } 
   .c-green { color: var(--green); }
   .c-orange { color: var(--orange); } 
@@ -95,10 +90,9 @@
   .c-lime { color: var(--lime); } 
   .c-pink { color: var(--pink); }
 
-  /* 大按鈕設計 (中字體/大按壓區) */
   #refresh-btn { 
     width: 100%; 
-    margin-top: 40px; 
+    margin-top: 35px; 
     padding: 22px; 
     font-size: 22px; 
     font-weight: 900;
@@ -107,27 +101,18 @@
     border: none;
     border-radius: 15px;
     cursor: pointer;
-    transition: 0.1s;
-    box-shadow: 0 5px 15px rgba(0, 229, 255, 0.3);
   }
-  #refresh-btn:active { transform: scale(0.96); opacity: 0.8; }
-  #refresh-btn:disabled { background: #333; color: #777; cursor: not-allowed; box-shadow: none; }
+  #refresh-btn:disabled { background: #333; color: #777; }
 
   .update-time { 
     text-align: center; 
     margin-top: 20px; 
     color: #999; 
-    font-size: 18px;
+    font-size: 16px;
     font-weight: bold;
-    padding: 10px;
   }
 
-  .error-msg { 
-    color: #fff; 
-    background: var(--red); 
-    border-radius: 10px; 
-    box-shadow: 0 0 15px rgba(255, 49, 49, 0.6);
-  }
+  .error-msg { color: var(--red); background: rgba(255,49,49,0.1); padding: 5px; border-radius: 8px; }
 
 </style>
 </head>
@@ -138,7 +123,7 @@
 
   <h2>📊 現場動態戰報</h2>
 
-  <div class="section-title">總體數據</div>
+  <div class="section-title">📊 總體數據</div>
   <div class="grid">
     <div class="stat-card full">
       <div class="stat-title">總人數</div>
@@ -162,7 +147,7 @@
     </div>
   </div>
 
-  <div class="section-title">各站動態</div>
+  <div class="section-title">🏢 各站動態</div>
   <div class="grid">
     <div class="stat-card">
       <div class="stat-title">溪洲后天宮</div>
@@ -182,113 +167,88 @@
     </div>
   </div>
 
-  <button id="refresh-btn" onclick="loadStats(0)">🔄 手動更新戰報</button>
-  <div class="update-time" id="update-timer">系統初始化中...</div>
+  <button id="refresh-btn" onclick="loadStats(0)">🔄 手動更新數據</button>
+  <div class="update-time" id="update-timer">最後更新：等待中...</div>
 
 </div>
 
 <script>
-  // 🔗 您的專屬 API 網址 (請確保 GAS 已設定為 "所有人" 可存取)
-  const API = "https://script.google.com/macros/s/AKfycbxee8d3Kl0R4-PpG6xiZmQoDA_axhttY2VrSTqGc7IwokJrO5GmRTOajF275hioSZrX/exec";
+  // 🔗 您的 GAS API 網址 (請確保此網址正確)
+  const API = "https://script.google.com/macros/s/AKfycbyETvcKw2Fm43Efd4sw05Oj4KQHc2XSXQVBLezVaihuhfawJG8EQ2AqXrDU6pknupZL/exec";
 
-  // ✅ 防崩潰機制：強制轉換為安全數字
   function safe(v) {
     return (v === undefined || v === null || v === "" || isNaN(v)) ? 0 : Number(v);
   }
 
-  // ✅ 安全更新畫面 UI
-  function setSafe(id, v) {
+  function setVal(id, v) {
     const el = document.getElementById(id);
     if (el) el.innerText = safe(v);
   }
 
-  // ✅ 將數據映射到畫面上
   function render(s = {}) {
-    setSafe("total-count", s.total);
-    setSafe("in-count", s.in);
-    setSafe("out-count", s.out);
-    setSafe("pending-count", s.pending);
-    setSafe("station-count", s.stations);
-    setSafe("xizhou-count", s.xizhou);
-    setSafe("walking-count", s.walking);
-    setSafe("beiduan-count", s.beiduan); // 北站資料鎖死保護
-    setSafe("support-count", s.support);
+    setVal("total-count", s.total);
+    setVal("in-count", s.in);
+    setVal("out-count", s.out);
+    setVal("pending-count", s.pending);
+    setVal("station-count", s.stations);
+    setVal("xizhou-count", s.xizhou);
+    setVal("walking-count", s.walking);
+    setVal("beiduan-count", s.beiduan); // 🔥 北站核心數據
+    setVal("support-count", s.support);
   }
 
-  // ⏱️ 具備 Timeout 防卡死機制的連線請求
-  function fetchWithTimeout(url, timeout = 8000) {
-    return new Promise((resolve, reject) => {
-      const timer = setTimeout(() => reject(new Error("Timeout")), timeout);
-      // 加入 mode: 'cors' 確保跨網域請求正確執行
-      fetch(url, { method: "GET", mode: "cors", cache: "no-store" })
-        .then(res => { clearTimeout(timer); resolve(res); })
-        .catch(err => { clearTimeout(timer); reject(err); });
-    });
-  }
-
-  // 🚀 核心更新邏輯 (包含自動重試機制)
   async function loadStats(retryCount = 0) {
     const btn = document.getElementById("refresh-btn");
     const timer = document.getElementById("update-timer");
 
-    // UI 狀態切換
-    if (btn) {
-      btn.disabled = true;
-      btn.innerText = "⏳ 戰報更新中...";
-    }
-    if (timer) timer.classList.remove("error-msg");
+    btn.disabled = true;
+    btn.innerText = "⏳ 更新中...";
+    timer.classList.remove("error-msg");
 
     try {
-      // 加上隨機參數避免瀏覽器快取
-      const res = await fetchWithTimeout(`${API}?t=${Date.now()}`, 8000);
-      
-      if (!res.ok) throw new Error("HTTP 狀態錯誤 (請檢查後端網址)");
+      // 加入 Timeout 防止連線無限等待 (8秒)
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8000);
+
+      const res = await fetch(`${API}?t=${Date.now()}`, { 
+        cache: "no-store",
+        signal: controller.signal 
+      });
+      clearTimeout(timeoutId);
+
+      if (!res.ok) throw new Error("連線失敗");
 
       const data = await res.json();
-      
-      if (!data || typeof data !== "object") throw new Error("JSON 格式錯誤");
+      render(data?.stats || {});
 
-      const stats = data?.stats || {};
-      
-      // 更新畫面
-      render(stats);
-
-      if (timer) timer.innerText = "✅ 最後更新：" + new Date().toLocaleTimeString('zh-TW', { hour12: false });
+      timer.innerText = "✅ 最後更新：" + new Date().toLocaleTimeString('zh-TW', { hour12: false });
 
     } catch (err) {
-      console.warn("連線失敗原因:", err);
+      console.warn("連線出錯:", err);
       
-      // ❗ UI 保底防護：確保網頁架構不崩潰，全數歸零
-      if (retryCount === 0) render({}); 
-
-      if (timer) {
-        timer.innerText = `❌ 無法連線！請檢查 GAS 權限設定 ${retryCount < 3 ? '(自動重試中...)' : ''}`;
-        timer.classList.add("error-msg");
-      }
-
-      // 🔁 自動重試機制 (最多重試 3 次，間隔 3 秒)
       if (retryCount < 3) {
+        timer.innerText = `❌ 連線失敗，重試中 (${retryCount + 1}/3)...`;
         setTimeout(() => loadStats(retryCount + 1), 3000);
+      } else {
+        timer.innerText = "❌ 無法連線，請檢查 GAS 權限與 API 設定";
+        timer.classList.add("error-msg");
+        render({}); // 保底顯示 0
       }
-
     } finally {
-      // 恢復按鈕狀態
-      if (btn) {
+      if (retryCount >= 3 || timer.innerText.includes("✅")) {
         btn.disabled = false;
-        btn.innerText = "🔄 手動更新戰報";
+        btn.innerText = "🔄 手動更新數據";
       }
     }
   }
 
-  // 🚀 網頁載入時啟動，並設定每 30 秒自動更新一次
+  // 啟動與定時更新 (30秒一次)
   loadStats();
   setInterval(() => loadStats(0), 30000);
-
 </script>
 
 </body>
 </html>
-
 </script>
 
 </body>
