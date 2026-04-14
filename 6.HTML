@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>🎒 公裝領繳管理 (嚴格管制版)</title>
+<title>🎒 公裝領繳管理 (精簡防護版)</title>
 <style>
   :root { 
     --bg: #000000; --card: #151515; --border: #333333; 
@@ -15,11 +15,11 @@
     background: var(--bg); color: var(--text); 
     font-family: -apple-system, "Microsoft JhengHei", sans-serif; 
     margin: 0; padding: 12px; display: flex; justify-content: center;
-    font-size: 20px; /* 中大字體 */
+    font-size: 20px; /* 中大字體設定 */
   }
 
   .container { width: 100%; max-width: 480px; }
-  h1 { text-align: center; color: var(--blue); font-size: 26px; margin: 15px 0; font-weight: 900; letter-spacing: 1px;}
+  h1 { text-align: center; color: var(--blue); font-size: 26px; margin: 15px 0; font-weight: 900; letter-spacing: 1px; }
 
   /* 主要面板 */
   .panel { 
@@ -32,35 +32,31 @@
   select, input[type="text"] { 
     width: 100%; padding: 16px; font-size: 20px; font-weight: bold; 
     background: #000; color: #fff; border: 2px solid var(--border); border-radius: 12px; 
-    box-sizing: border-box; margin-bottom: 15px; outline: none; transition: 0.2s;
+    box-sizing: border-box; margin-bottom: 20px; outline: none;
   }
   select:focus { border-color: var(--blue); }
 
-  /* 狀態資訊區 */
+  /* 狀態顯示與管制提示 */
   .status-box {
     background: #0a0a0a; padding: 15px; border-radius: 12px; margin-bottom: 20px; 
-    border-left: 5px solid #444; font-size: 16px; display: none;
+    border-left: 5px solid #444; font-size: 17px; display: none;
   }
-  .status-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-weight: bold;}
-  
-  /* 管制警告 */
   #status-warn {
     color: var(--red); background: rgba(255,49,49,0.1); border: 1px solid var(--red);
-    padding: 10px; border-radius: 8px; font-size: 15px; font-weight: bold;
-    text-align: center; margin-top: 10px; display: none;
+    padding: 12px; border-radius: 10px; font-size: 16px; font-weight: bold;
+    text-align: center; display: none; margin-top: 10px;
   }
 
   /* 按鈕樣式 */
-  .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
   .btn { 
-    padding: 18px; font-size: 22px; font-weight: 900; border-radius: 12px; 
+    padding: 20px; font-size: 22px; font-weight: 900; border-radius: 12px; 
     border: none; cursor: pointer; text-align: center; color: #000; transition: 0.1s;
   }
   .btn-borrow { background: var(--blue); } 
   .btn-return { background: var(--orange); }
-  .btn-checkout { background: transparent; color: var(--red); border: 2px solid var(--red); grid-column: span 2; font-size: 18px; }
   .btn:active { transform: scale(0.95); opacity: 0.8; }
-  .btn:disabled { background: #1a1a1a !important; color: #444 !important; border: 1px solid #333 !important; cursor: not-allowed; opacity: 0.5; }
+  .btn:disabled { background: #222 !important; color: #555 !important; cursor: not-allowed; opacity: 0.5; }
 
   /* 品項新增區 */
   .add-box { display: flex; gap: 10px; margin-top: 5px; }
@@ -80,12 +76,6 @@
   .log-item { padding: 12px; border-bottom: 1px solid #1a1a1a; display: flex; justify-content: space-between; align-items: center; }
   .tag { padding: 2px 8px; border-radius: 6px; font-size: 12px; font-weight: bold; color: #000; margin-left: 8px; }
 
-  /* 重整按鈕 */
-  .refresh-btn { 
-    background: transparent; color: var(--text-dim); border: 1px solid #444; 
-    font-size: 14px; padding: 5px 10px; border-radius: 6px; cursor: pointer; float: right; margin-top: -35px;
-  }
-
   /* Toast 訊息 */
   #toast { 
     position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); width: 85%;
@@ -97,25 +87,22 @@
 <body onload="initApp()">
 
 <div class="container">
-  <h1>🎒 公裝領繳管制</h1>
+  <h1>🎒 公裝領繳管理</h1>
 
   <div class="panel">
-    <div style="position:relative;">
-      <span class="label">👤 人員 (工作表1 連動)</span>
-      <button class="refresh-btn" onclick="fetchNames()">🔄 重新整理</button>
-      <select id="user-name" onchange="validateStatus()">
-        <option value="">⏳ 快速讀取名單中...</option>
-      </select>
-    </div>
+    <span class="label">👤 人員 (站別 / 姓名)</span>
+    <select id="user-name" onchange="validateStatus()">
+      <option value="">⏳ 快速讀取名單中...</option>
+    </select>
 
-    <div id="status-box" class="status-box">
-      <div class="status-row">
+    <div id="status-display" class="status-box">
+      <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
         <span>報到狀態：</span><span id="st-checkin">--</span>
       </div>
-      <div class="status-row" style="margin-bottom:0;">
-        <span>持有裝備：</span><span id="st-holds" style="color:var(--orange)">無</span>
+      <div style="display:flex; justify-content:space-between;">
+        <span>目前持有：</span><span id="st-items" style="color:var(--orange)">無</span>
       </div>
-      <div id="status-warn">🛑 警告訊息</div>
+      <div id="status-warn">🛑 警告：該員尚未報到</div>
     </div>
 
     <div style="display:flex; gap:10px;">
@@ -137,13 +124,12 @@
       </div>
     </div>
 
-    <input type="text" id="note-input" placeholder="備註 (選填)...">
-
-    <div class="btn-grid">
+    <div class="btn-row">
       <button id="btn-borrow" class="btn btn-borrow" onclick="submit('equip_borrow')">領用</button>
       <button id="btn-return" class="btn btn-return" onclick="submit('equip_return')">繳回</button>
-      <button id="btn-checkout" class="btn btn-checkout" onclick="submit('checkout')">🚨 勤務結束 (報退)</button>
     </div>
+
+    <input type="text" id="note-input" placeholder="備註 (選填)..." style="margin-top:20px;">
 
     <div class="divider"></div>
     <div class="add-box">
@@ -161,24 +147,23 @@
 <div id="toast"></div>
 
 <script>
-  // 🔗 ⚠️ GAS API 網址 (維持您提供的網址不變)
+  // 🔗 ⚠️ 請換成您最新的 GAS API 網址
   const API_URL = "https://script.google.com/macros/s/AKfycbzV_j0z3spBQXoqjmsGNR_Qv5HUA6DjgXmC7ACIIXV0TODIIZjD8jaLusmxfpC5zL6-/exec";
 
   let recentLogs = [];
-  // 利用瀏覽器記憶體儲存每個人手上的裝備 { "張三": ["腰包", "AED"], ... }
-  let userInventory = JSON.parse(localStorage.getItem('gear_inventory')) || {};
+  // 用於暫存每個人手上的裝備 (重整網頁後會重新計算，若需跨裝置請連動雲端)
+  let userGears = JSON.parse(localStorage.getItem('user_gears')) || {};
 
   function initApp() {
     fetchNames();
     loadHistory();
   }
 
-  // A. 載入並排序名單 (站別排序)
+  // A. 載入名單
   async function fetchNames() {
-    const select = document.getElementById('user-name');
-    select.innerHTML = '<option value="">⏳ 連線雲端中...</option>';
     try {
       const res = await fetch(API_URL + "?action=get_names").then(r => r.json());
+      const select = document.getElementById('user-name');
       if (res.ok && res.names.length > 0) {
         const sorted = res.names.sort();
         select.innerHTML = '<option value="">-- 請選擇人員 --</option>';
@@ -190,73 +175,56 @@
         validateStatus();
       }
     } catch (e) {
-      select.innerHTML = '<option value="">❌ 連線超時，請點擊重新整理</option>';
+      document.getElementById('user-name').innerHTML = '<option value="">❌ 連線超時</option>';
     }
   }
 
-  // 萃取純姓名 (去除站別括號與狀態)
-  function getPureName(rawName) {
-    return rawName.replace(/\[.*?\]/g, '').replace(/\(已報到\)/g, '').trim();
-  }
-
-  // B. 強制管制邏輯 (三合一防護)
+  // B. 強制管制邏輯
   function validateStatus() {
-    const rawName = document.getElementById('user-name').value;
+    const rawVal = document.getElementById('user-name').value;
     const item = document.getElementById('item-select').value;
-    
-    const box = document.getElementById('status-box');
+    const box = document.getElementById('status-display');
     const warn = document.getElementById('status-warn');
     const btnB = document.getElementById('btn-borrow');
     const btnR = document.getElementById('btn-return');
-    const btnC = document.getElementById('btn-checkout');
 
-    if (!rawName) {
+    if (!rawVal) {
       box.style.display = "none";
-      btnB.disabled = btnR.disabled = btnC.disabled = true;
+      btnB.disabled = btnR.disabled = true;
       return;
     }
 
     box.style.display = "block";
-    warn.style.display = "none";
+    const isReady = rawVal.includes("已報到");
+    const pureName = rawVal.replace(/\[.*?\]/g, '').replace(/\(已報到\)/g, '').trim();
+    const currentHolds = userGears[pureName] || [];
 
-    const isReady = rawName.includes("已報到");
-    const pureName = getPureName(rawName);
-    const holds = userInventory[pureName] || [];
-
-    // 更新介面狀態顯示
+    // 更新顯示
     document.getElementById('st-checkin').innerHTML = isReady ? '<span style="color:var(--green)">🟢 已報到</span>' : '<span style="color:var(--red)">🔴 未報到</span>';
-    document.getElementById('st-holds').innerHTML = holds.length > 0 ? holds.join(", ") : "無";
+    document.getElementById('st-items').innerText = currentHolds.length > 0 ? currentHolds.join(", ") : "無";
 
-    // 預設按鈕全開，再依照邏輯鎖定
-    btnB.disabled = false; btnR.disabled = false; btnC.disabled = false;
-    let warnMsg = "";
-
-    // 邏輯 1 & 2：未報到不能領裝備 / 報退
+    // 邏輯 1：未報到禁止領用
     if (!isReady) {
-      btnB.disabled = true;
-      btnC.disabled = true;
-      warnMsg = "🛑 該員尚未報到，禁止操作";
-    } else {
-      // 邏輯 3：每項裝備限領一次
-      if (holds.includes(item)) {
-        btnB.disabled = true;
-        warnMsg = `🛑 已持有 ${item}，每項限領一次`;
-      }
-      // 邏輯 4：未繳回不能報退
-      if (holds.length > 0) {
-        btnC.disabled = true;
-        if (!warnMsg) warnMsg = "🛑 尚有裝備未繳回，禁止報退";
-      }
-    }
-
-    // 邏輯 5：身上沒東西不用繳回
-    if (holds.length === 0) {
-      btnR.disabled = true;
-    }
-
-    if (warnMsg) {
-      warn.innerText = warnMsg;
       warn.style.display = "block";
+      warn.innerText = "🛑 該員尚未報到，禁止領取";
+      btnB.disabled = true;
+      btnR.disabled = true;
+    } else {
+      warn.style.display = "none";
+      btnB.disabled = false;
+      btnR.disabled = false;
+
+      // 邏輯 2：每項裝備限領一次 (判斷目前選中的品項)
+      if (currentHolds.includes(item)) {
+        btnB.disabled = true;
+        warn.style.display = "block";
+        warn.innerText = `🛑 已領過 ${item}，不可重複領取`;
+      }
+      
+      // 邏輯 3：身上沒東西不能繳回
+      if (currentHolds.length === 0) {
+        btnR.disabled = true;
+      }
     }
   }
 
@@ -266,51 +234,41 @@
     const item = document.getElementById('item-select').value;
     const status = document.getElementById('status-select').value;
     const note = document.getElementById('note-input').value;
-    const pureName = getPureName(rawName);
+    const pureName = rawName.replace(/\[.*?\]/g, '').replace(/\(已報到\)/g, '').trim();
 
-    // 再次防呆檢驗
-    const holds = userInventory[pureName] || [];
-    if (act === 'equip_borrow' && holds.includes(item)) return showToast("重複領取，系統阻擋", "red", "#fff");
-    if (act === 'checkout' && holds.length > 0) return showToast("裝備未清，禁止報退", "red", "#fff");
-
-    showToast("⏳ 寫入雲端中...", "#222", "#fff");
-
-    // 報退時，借用裝備名稱欄位傳送動作
-    let sendItem = act === 'checkout' ? '報退離場' : item;
-    // 報退也是呼叫後端的 return 動作，以便寫入紀錄
-    let sendAct = act === 'checkout' ? 'equip_return' : act; 
+    showToast("⏳ 雲端同步中...", "#222", "#fff");
 
     try {
-      const query = `?action=${sendAct}&name=${encodeURIComponent(rawName)}&item=${encodeURIComponent(sendItem)}&status=${encodeURIComponent(status)}&note=${encodeURIComponent(note)}`;
+      const query = `?action=${act}&name=${encodeURIComponent(rawName)}&item=${encodeURIComponent(item)}&status=${encodeURIComponent(status)}&note=${encodeURIComponent(note)}`;
       const res = await fetch(API_URL + query).then(r => r.json());
       
       if (res.ok) {
-        // --- 成功後更新本地庫存 ---
+        // 更新本地庫存
         if (act === 'equip_borrow') {
-          holds.push(item);
-          userInventory[pureName] = holds;
-        } else if (act === 'equip_return') {
-          userInventory[pureName] = holds.filter(i => i !== item);
-        } else if (act === 'checkout') {
-           // 報退成功可選擇清除該員狀態
+          if(!userGears[pureName]) userGears[pureName] = [];
+          userGears[pureName].push(item);
+        } else {
+          if(userGears[pureName]) userGears[pureName] = userGears[pureName].filter(g => g !== item);
         }
-        localStorage.setItem('gear_inventory', JSON.stringify(userInventory));
+        localStorage.setItem('user_gears', JSON.stringify(userGears));
 
-        // 更新介面
-        const type = act === 'checkout' ? '報退' : (act === 'equip_borrow' ? '領用' : '繳回');
-        showToast(type + " 成功！", act==='equip_borrow'?"var(--blue)": (act==='checkout'?"#fff":"var(--orange)"), "#000");
-        updateLog(pureName, type, sendItem, status);
+        const type = (act === 'equip_borrow') ? '領用' : '繳回';
+        showToast(type + " 成功！", act==='equip_borrow'?"var(--blue)":"var(--orange)", "#000");
+        updateLog(pureName, type, item, status);
         document.getElementById('note-input').value = "";
-        validateStatus(); // 重新驗證按鈕狀態
+        validateStatus(); // 更新按鈕狀態
       }
     } catch (e) {
-      showToast("❌ 網路傳輸異常", "red", "#fff");
+      showToast("❌ 傳輸失敗", "red", "#fff");
     }
   }
 
-  // D. 動態紀錄與品項新增
+  // D. 其他輔助功能
   function updateLog(name, type, item, status) {
-    const log = { name, type, item, status, time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) };
+    const log = {
+      name, type, item, status,
+      time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})
+    };
     recentLogs.unshift(log);
     if(recentLogs.length > 15) recentLogs.pop();
     localStorage.setItem('local_logs', JSON.stringify(recentLogs));
@@ -324,7 +282,7 @@
       <div class="log-item">
         <div>
           <span style="font-weight:bold">${l.name}</span>
-          <span class="tag" style="background:${l.type==='領用'?'var(--blue)': (l.type==='報退'?'#fff':'var(--orange)')}">${l.type}</span>
+          <span class="tag" style="background:${l.type==='領用'?'var(--blue)':'var(--orange)'}">${l.type}</span>
         </div>
         <div style="text-align:right; font-size:14px; color:var(--text-dim)">
           ${l.item} (${l.status})<br>${l.time}
@@ -351,7 +309,6 @@
   function showToast(txt, bg, color) {
     const t = document.getElementById('toast');
     t.innerText = txt; t.style.background = bg; t.style.color = color; t.style.display = "block";
-    t.style.border = (bg === "#222") ? "none" : `1px solid ${color}`;
     if (bg !== "#222") setTimeout(() => t.style.display = "none", 3000);
   }
 </script>
