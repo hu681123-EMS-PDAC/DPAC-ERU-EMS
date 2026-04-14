@@ -4,242 +4,237 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>DPAC 現場動態戰報</title>
+
 <style>
-  /* 高對比霓虹色彩定義 */
-  :root { 
-    --bg: #000000; 
-    --card-bg: #121212; 
-    --blue: #00e5ff; 
-    --green: #39ff14; 
-    --orange: #ff9100; 
-    --purple: #bc13fe; 
-    --red: #ff3131; 
-    --cyan: #00f2ff;
-    --lime: #ccff00;
-    --pink: #ff00ff;
-    --text: #ffffff; 
-  }
-  
-  * { box-sizing: border-box; }
+:root { 
+  --bg: #000000; 
+  --card-bg: #121212; 
+  --blue: #00e5ff; 
+  --green: #39ff14; 
+  --orange: #ff9100; 
+  --purple: #bc13fe; 
+  --red: #ff3131; 
+  --cyan: #00f2ff;
+  --lime: #ccff00;
+  --pink: #ff00ff;
+  --text: #ffffff; 
+}
 
-  body { 
-    background: var(--bg); 
-    color: var(--text); 
-    font-family: -apple-system, "Microsoft JhengHei", "Segoe UI", sans-serif; 
-    padding: 15px; 
-    margin: 0; 
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    line-height: 1.5;
-  }
-  
-  .wrapper {
-    width: 100%;
-    max-width: 600px;
-  }
+* { box-sizing: border-box; }
 
-  /* 標題中大字體優化 */
-  h2 { 
-    text-align: center; 
-    color: var(--blue); 
-    font-size: 32px; 
-    margin: 15px 0 25px 0; 
-    font-weight: 900; 
-    letter-spacing: 3px;
-    text-shadow: 0 0 15px rgba(0, 229, 255, 0.4);
-  }
-  
-  .section-title { 
-    font-size: 18px; 
-    color: #aaaaaa; 
-    margin: 25px 0 12px 5px; 
-    border-left: 6px solid var(--blue); 
-    padding-left: 12px; 
-    font-weight: bold;
-    text-transform: uppercase;
-  }
+body { 
+  background: var(--bg); 
+  color: var(--text); 
+  font-family: -apple-system, "Microsoft JhengHei", "Segoe UI", sans-serif; 
+  padding: 15px; 
+  margin: 0; 
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.5;
+}
 
-  /* 穩定的雙欄架構 */
-  .grid { 
-    display: grid; 
-    grid-template-columns: 1fr 1fr; 
-    gap: 15px; 
-  }
-  
-  .stat-card { 
-    background: var(--card-bg); 
-    border-radius: 18px; 
-    padding: 22px 10px; 
-    text-align: center; 
-    border: 1px solid #333333; 
-    box-shadow: 0 6px 20px rgba(0,0,0,0.8);
-    transition: transform 0.1s, border-color 0.2s;
-  }
-  
-  .stat-card:active { 
-    transform: scale(0.97); 
-    border-color: var(--blue); 
-  }
+.wrapper {
+  width: 100%;
+  max-width: 600px;
+}
 
-  .stat-card.full { 
-    grid-column: span 2; 
-    display: flex; 
-    justify-content: space-between; 
-    align-items: center; 
-    padding: 25px 35px; 
-  }
+h2 { 
+  text-align: center; 
+  color: var(--blue); 
+  font-size: 32px; 
+  margin: 15px 0 25px 0; 
+  font-weight: 900; 
+  letter-spacing: 3px;
+  text-shadow: 0 0 15px rgba(0, 229, 255, 0.4);
+}
 
-  /* 字體放大與對比強化 */
-  .stat-title { font-size: 17px; color: #bbbbbb; margin-bottom: 8px; font-weight: bold; }
-  .stat-card.full .stat-title { margin-bottom: 0; font-size: 20px; }
-  .stat-value { font-size: 48px; font-weight: 900; font-family: 'Impact', 'Arial Black', sans-serif; line-height: 1; }
+.section-title { 
+  font-size: 18px; 
+  color: #cccccc; 
+  margin: 25px 0 12px 5px; 
+  border-left: 6px solid var(--blue); 
+  padding-left: 12px; 
+  font-weight: bold;
+}
 
-  /* 色彩分配 */
-  .c-blue { color: var(--blue); } 
-  .c-green { color: var(--green); }
-  .c-orange { color: var(--orange); } 
-  .c-red { color: var(--red); }
-  .c-purple { color: var(--purple); } 
-  .c-cyan { color: var(--cyan); }
-  .c-lime { color: var(--lime); } 
-  .c-pink { color: var(--pink); }
+.grid { 
+  display: grid; 
+  grid-template-columns: 1fr 1fr; 
+  gap: 15px; 
+}
 
-  /* 點擊按鈕優化 */
-  #refresh-btn { 
-    width: 100%; 
-    padding: 22px; 
-    margin-top: 35px; 
-    background: linear-gradient(145deg, #1a1a1a, #000); 
-    color: var(--text); 
-    border: 1px solid #444; 
-    border-radius: 16px; 
-    font-size: 22px; 
-    font-weight: 800; 
-    cursor: pointer; 
-    box-shadow: 0 8px 15px rgba(0,0,0,0.5);
-    transition: 0.2s;
-  }
-  
-  #refresh-btn:active { 
-    background: #333; 
-    border-color: var(--blue);
-  }
+.stat-card { 
+  background: var(--card-bg); 
+  border-radius: 18px; 
+  padding: 22px 10px; 
+  text-align: center; 
+  border: 1px solid #333; 
+  box-shadow: 0 6px 20px rgba(0,0,0,0.8);
+}
 
-  .update-time { 
-    text-align: center; 
-    font-size: 15px; 
-    color: #777777; 
-    margin: 25px 0; 
-    font-weight: bold;
-  }
+.stat-card.full { 
+  grid-column: span 2; 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center; 
+  padding: 25px 30px; 
+}
 
-  /* 小螢幕防破版 */
-  @media (max-width: 380px) {
-    .stat-value { font-size: 38px; }
-    h2 { font-size: 26px; }
-    .stat-card.full { padding: 20px; }
-  }
+.stat-title { font-size: 18px; color: #bbbbbb; margin-bottom: 8px; font-weight: bold; }
+.stat-card.full .stat-title { margin-bottom: 0; font-size: 20px; }
+
+.stat-value { 
+  font-size: 50px; 
+  font-weight: 900; 
+  font-family: 'Impact', 'Arial Black', sans-serif; 
+}
+
+/* 顏色 */
+.c-blue { color: var(--blue); } 
+.c-green { color: var(--green); }
+.c-orange { color: var(--orange); } 
+.c-red { color: var(--red); }
+.c-purple { color: var(--purple); } 
+.c-cyan { color: var(--cyan); }
+.c-lime { color: var(--lime); } 
+.c-pink { color: var(--pink); }
+
+#refresh-btn { 
+  width: 100%; 
+  padding: 22px; 
+  margin-top: 35px; 
+  background: #111; 
+  color: white; 
+  border: 1px solid #444; 
+  border-radius: 16px; 
+  font-size: 22px; 
+  font-weight: 800; 
+}
+
+.update-time { 
+  text-align: center; 
+  font-size: 16px; 
+  color: #888; 
+  margin: 25px 0; 
+  font-weight: bold;
+}
+
+.error-msg { 
+  color: var(--red); 
+}
+
 </style>
 </head>
+
 <body>
 
-  <div class="wrapper">
-    <h2>📊 現場動態戰報</h2>
+<div class="wrapper">
+<h2>📊 現場動態戰報</h2>
 
-    <div class="section-title">📊 總體數據概況</div>
-    <div class="grid">
-      <div class="stat-card full">
-        <div class="stat-title">總編制人數</div>
-        <div class="stat-value c-blue" id="total-count">-</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-title">🟢 站內執勤</div>
-        <div class="stat-value c-green" id="in-count">-</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-title">🏠 報退下哨</div>
-        <div class="stat-value c-orange" id="out-count">-</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-title">⚠️ 尚未報到</div>
-        <div class="stat-value c-red" id="pending-count">-</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-title">📍 啟用站點</div>
-        <div class="stat-value c-purple" id="station-count">-</div>
-      </div>
-    </div>
-
-    <div class="section-title">🏢 各單位執勤明細 (目前在站)</div>
-    <div class="grid">
-      <div class="stat-card">
-        <div class="stat-title">溪洲后天宮</div>
-        <div class="stat-value c-cyan" id="xizhou-count">-</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-title">步行隊</div>
-        <div class="stat-value c-lime" id="walking-count">-</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-title">西螺大橋北站</div>
-        <div class="stat-value c-orange" id="beiduan-count">-</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-title">支援組</div>
-        <div class="stat-value c-pink" id="support-count">-</div>
-      </div>
-    </div>
-
-    <button id="refresh-btn" onclick="loadStats()">🔄 手動更新數據</button>
-    <div class="update-time" id="update-timer">最後更新時間：-- : -- : --</div>
+<div class="section-title">📊 總體數據概況</div>
+<div class="grid">
+  <div class="stat-card full">
+    <div class="stat-title">總編制人數</div>
+    <div class="stat-value c-blue" id="total-count">0</div>
   </div>
+  <div class="stat-card">
+    <div class="stat-title">🟢 站內執勤</div>
+    <div class="stat-value c-green" id="in-count">0</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-title">🏠 報退下哨</div>
+    <div class="stat-value c-orange" id="out-count">0</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-title">⚠️ 尚未報到</div>
+    <div class="stat-value c-red" id="pending-count">0</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-title">📍 啟用站點</div>
+    <div class="stat-value c-purple" id="station-count">0</div>
+  </div>
+</div>
+
+<div class="section-title">🏢 各單位執勤明細</div>
+<div class="grid">
+  <div class="stat-card">
+    <div class="stat-title">溪洲后天宮</div>
+    <div class="stat-value c-cyan" id="xizhou-count">0</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-title">步行隊</div>
+    <div class="stat-value c-lime" id="walking-count">0</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-title">西螺大橋北站</div>
+    <div class="stat-value c-orange" id="beiduan-count">0</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-title">支援組</div>
+    <div class="stat-value c-pink" id="support-count">0</div>
+  </div>
+</div>
+
+<button id="refresh-btn" onclick="loadStats()">🔄 手動更新數據</button>
+<div class="update-time" id="update-timer">最後更新時間：--</div>
+
+</div>
 
 <script>
-  // ⚠️ 請確保這裡的 API 是您最新的 Google Apps Script 網址
-  const API = "https://script.google.com/macros/s/AKfycbxfNm-itCzLTg0rhKRM4OTAGPDIt6zfbppNxNem7gGHCVp0jsf4Igz7FDqLY3PFLdCG/exec";
-  
-  async function loadStats() {
-    const btn = document.getElementById("refresh-btn");
-    const timer = document.getElementById("update-timer");
-    
-    btn.innerText = "⏳ 同步雲端數據...";
-    btn.disabled = true;
+const API = "https://script.google.com/macros/s/AKfycbxfNm-itCzLTg0rhKRM4OTAGPDIt6zfbppNxNem7gGHCVp0jsf4Igz7FDqLY3PFLdCG/exec";
 
-    try {
-      // 加上 _t 參數防止瀏覽器快取舊資料
-      const res = await fetch(`${API}?action=load&_t=${Date.now()}`).then(r => r.json());
-      
-      if(res.ok) {
-        // 1. 總體概況更新 (使用 || 0 確保如果沒資料不會顯示 undefined 導致破版)
-        document.getElementById("total-count").innerText = res.stats.total || 0;
-        document.getElementById("in-count").innerText = res.stats.in || 0;
-        document.getElementById("out-count").innerText = res.stats.out || 0;
-        document.getElementById("pending-count").innerText = res.stats.pending || 0;
-        document.getElementById("station-count").innerText = res.stats.stations || 0;
+// 強化安全更新（保證數值）
+function safe(val){
+  return (val === undefined || val === null || val === "") ? 0 : val;
+}
 
-        // 2. 各單位明細更新 (完整保留 beiduan 賦值邏輯)
-        document.getElementById("xizhou-count").innerText = res.stats.xizhou || 0;
-        document.getElementById("walking-count").innerText = res.stats.walking || 0;
-        document.getElementById("beiduan-count").innerText = res.stats.beiduan || 0;
-        document.getElementById("support-count").innerText = res.stats.support || 0;
+function update(id, val){
+  const el = document.getElementById(id);
+  if(el) el.innerText = safe(val);
+}
 
-        timer.innerText = "最後更新時間：" + new Date().toLocaleTimeString('zh-TW', { hour12: false });
-      }
-    } catch(e) { 
-      console.error("更新失敗，請檢查網路狀態:", e);
-      timer.innerText = "⚠️ 連線失敗，請檢查網路或重試";
-    } finally {
-      btn.innerText = "🔄 手動更新數據";
-      btn.disabled = false;
-    }
+async function loadStats(){
+  const btn = document.getElementById("refresh-btn");
+  const timer = document.getElementById("update-timer");
+
+  btn.disabled = true;
+  btn.innerText = "⏳ 更新中...";
+
+  try{
+    const res = await fetch(API + "?t=" + Date.now(), {cache:"no-store"});
+    const data = await res.json();
+
+    const s = data.stats || {};
+
+    // ✅ 總體
+    update("total-count", s.total);
+    update("in-count", s.in);
+    update("out-count", s.out);
+    update("pending-count", s.pending);
+    update("station-count", s.stations);
+
+    // ✅ 各站（北站強制存在）
+    update("xizhou-count", s.xizhou);
+    update("walking-count", s.walking);
+    update("beiduan-count", s.beiduan ?? 0); // 🔥 關鍵保護
+    update("support-count", s.support);
+
+    timer.innerText = "✅ 更新：" + new Date().toLocaleTimeString();
+
+  }catch(e){
+    timer.innerText = "❌ 無法連線";
+    timer.classList.add("error-msg");
   }
 
-  // 網頁載入時自動執行一次
-  loadStats();
-  
-  // 每 30 秒自動靜默更新，保持戰報數據最新
-  setInterval(loadStats, 30000); 
+  btn.disabled = false;
+  btn.innerText = "🔄 手動更新數據";
+}
+
+// 自動更新
+loadStats();
+setInterval(loadStats, 30000);
 </script>
+
 </body>
 </html>
