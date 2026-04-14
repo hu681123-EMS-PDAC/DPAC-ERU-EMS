@@ -2,65 +2,70 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>📋 現場出勤名單</title>
 
 <style>
-:root { --bg: #000; --card-bg: #080808; --blue: #00e5ff; --text: #fff; --border: #444; }
-
-body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: "Microsoft JhengHei", sans-serif;
-  padding: 10px;
-  margin: 0;
+:root {
+  --bg:#000; --card:#0c0c0c; --blue:#00e5ff;
 }
 
-h2 {
-  color: var(--blue);
-  text-align: center;
-  margin-bottom: 10px;
-  font-size: 26px;
+body{
+  background:var(--bg);
+  color:#fff;
+  font-family:"Microsoft JhengHei";
+  padding:10px;
 }
 
-/* ⭐ 指揮區塊 */
-.section { margin-bottom:10px; padding:10px; border-radius:8px; font-size:16px; }
-.in-box { border:1px solid #00ff88; background:rgba(0,255,136,0.08); }
-.out-box { border:1px solid #ffb300; background:rgba(255,179,0,0.08); }
-.pending-box { border:1px solid #ff3b3b; background:rgba(255,0,0,0.08); }
+/* 標題 */
+h2{
+  text-align:center;
+  color:var(--blue);
+  font-size:26px;
+}
+
+/* ⭐ 區塊 */
+.section{
+  margin-bottom:10px;
+  padding:10px;
+  border-radius:10px;
+  font-size:16px;
+}
+
+.in-box{ border:1px solid #00ff88; background:rgba(0,255,136,0.08); }
+.out-box{ border:1px solid #ffb300; background:rgba(255,179,0,0.08); }
+.pending-box{
+  border:2px solid #ff0000;
+  background:rgba(255,0,0,0.1);
+  animation: blink 1s infinite;
+}
+
+/* 🚨 閃爍紅燈 */
+@keyframes blink{
+  0%{ box-shadow:0 0 5px red; }
+  50%{ box-shadow:0 0 20px red; }
+  100%{ box-shadow:0 0 5px red; }
+}
 
 /* 搜尋 */
-.search-box {
-  width: 100%;
-  padding: 14px;
-  background: #111;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  color: white;
-  font-size: 18px;
-  margin-bottom: 15px;
+.search-box{
+  width:100%;
+  padding:14px;
+  font-size:18px;
+  margin-bottom:10px;
+  background:#111;
+  border:1px solid #444;
+  color:#fff;
 }
 
 /* 表格 */
-.table-wrapper { overflow-x: auto; border-radius: 8px; border: 1px solid var(--border); }
-table { width: 100%; border-collapse: collapse; text-align: center; font-size: 16px; }
+table{ width:100%; border-collapse:collapse; font-size:16px;}
+th{ background:#1a1a1a; color:#00e5ff;}
+th,td{ padding:12px; border-bottom:1px solid #222; text-align:center;}
 
-th { background: #1a1a1a; color: var(--blue); padding: 12px; }
-td { padding: 12px; border-bottom: 1px solid #1a1a1a; background: var(--card-bg); }
-
-/* 狀態顏色 */
-.status-in { color: #00ff88; font-weight: bold; }
-.status-out { color: #ffb300; font-weight: bold; }
-.status-pending { color: #ff3b3b; font-weight: bold; }
-
-.attr-tag {
-  background: #222; color: #00e5ff; padding: 2px 6px;
-  border-radius: 4px; font-size: 12px;
-}
-
-.time-col { font-family: monospace; font-size: 12px; color: #aaa; }
-
-#loading { text-align: center; color: #aaa; padding: 20px; font-size: 16px; }
+.status-in{ color:#00ff88; font-weight:bold;}
+.status-out{ color:#ffb300; font-weight:bold;}
+.status-pending{ color:#ff3b3b; font-weight:bold;}
 </style>
 </head>
 
@@ -68,124 +73,103 @@ td { padding: 12px; border-bottom: 1px solid #1a1a1a; background: var(--card-bg)
 
 <h2>📋 現場出勤名單</h2>
 
-<!-- ⭐ 新增指揮區 -->
+<!-- ⭐ 指揮區 -->
 <div id="inBox" class="section in-box"></div>
 <div id="outBox" class="section out-box"></div>
 <div id="pendingBox" class="section pending-box"></div>
 
-<input type="text" id="search-input" class="search-box"
-placeholder="🔍 搜尋姓名、站別或屬性..." onkeyup="filterTable()">
+<input id="search-input" class="search-box" placeholder="🔍 搜尋..." onkeyup="renderTable()">
 
-<div id="loading">⏳ 同步資料中...</div>
-
-<div class="table-wrapper">
-<table id="data-table" style="display:none;">
+<table>
 <thead>
 <tr>
-<th>站別</th>
-<th>姓名</th>
-<th>屬性</th>
-<th>狀態</th>
-<th>時間</th>
+<th>站別</th><th>姓名</th><th>屬性</th><th>狀態</th><th>時間</th>
 </tr>
 </thead>
 <tbody id="table-body"></tbody>
 </table>
-</div>
 
 <script>
-const API = "https://script.google.com/macros/s/AKfycbwFMuR1LuYeMZyK7D7Ym1n7-4sZ97ThD_5v52j_zsxIvpScfgAoEx-DAWLJB_d8Vmbf/exec";
+const API="https://script.google.com/macros/s/AKfycbwFMuR1LuYeMZyK7D7Ym1n7-4sZ97ThD_5v52j_zsxIvpScfgAoEx-DAWLJB_d8Vmbf/exec";
+let allData=[];
 
-let allData = [];
+/* ⭐ 狀態判斷（修正BUG） */
+function getType(s){
+  s=(s||"").trim();
+  if(s==="報到") return "in";
+  if(s==="報退") return "out";
+  return "pending";
+}
 
 /* 排序 */
 function sortData(data){
   return data.sort((a,b)=>{
-    const rank = r =>
-      (r.status||"").includes("報到") ? 0 :
-      (r.status||"").includes("報退") ? 1 : 2;
+    const rank = r => getType(r.status)==="in"?0:
+                       getType(r.status)==="out"?1:2;
 
-    let d = rank(a)-rank(b);
+    let d=rank(a)-rank(b);
     if(d) return d;
 
-    if((a.station||'')!=(b.station||'')) return (a.station||'').localeCompare(b.station||'','zh-Hant');
-    if((a.attr||'')!=(b.attr||'')) return (a.attr||'').localeCompare(b.attr||'','zh-Hant');
-    return (a.name||'').localeCompare(b.name||'','zh-Hant');
+    if(a.station!==b.station) return (a.station||"").localeCompare(b.station||"",'zh-Hant');
+    if(a.attr!==b.attr) return (a.attr||"").localeCompare(b.attr||"",'zh-Hant');
+    return (a.name||"").localeCompare(b.name||"",'zh-Hant');
   });
 }
 
-/* ⭐ 區塊 */
+/* 區塊 */
 function renderSections(data){
-  let inList=[], outList=[], pendingList=[];
+  let inL=[],outL=[],penL=[];
 
   data.forEach(r=>{
-    let txt = `${r.station}-${r.name}(${r.attr})`;
-    if((r.status||"").includes("報到")) inList.push(txt);
-    else if((r.status||"").includes("報退")) outList.push(txt);
-    else pendingList.push(txt);
+    let txt=`${r.station}-${r.name}(${r.attr})`;
+    let t=getType(r.status);
+
+    if(t==="in") inL.push(txt);
+    else if(t==="out") outL.push(txt);
+    else penL.push(txt);
   });
 
-  document.getElementById("inBox").innerHTML = `🟢 報到 (${inList.length})<br>${inList.join("<br>")}`;
-  document.getElementById("outBox").innerHTML = `🟡 報退 (${outList.length})<br>${outList.join("<br>")}`;
-  document.getElementById("pendingBox").innerHTML = `🔴 未報到 (${pendingList.length})<br>${pendingList.join("<br>")}`;
+  document.getElementById("inBox").innerHTML=`🟢 報到 (${inL.length})<br>${inL.join("<br>")}`;
+  document.getElementById("outBox").innerHTML=`🟡 報退 (${outL.length})<br>${outL.join("<br>")}`;
+  document.getElementById("pendingBox").innerHTML=`🔴 未報到 (${penL.length})<br>${penL.join("<br>")}`;
 }
 
-/* 時間格式（原保留） */
-function formatTimeDisplay(rawTime) {
-  if (!rawTime) return '-';
-  try {
-    const d = new Date(rawTime);
-    if (!isNaN(d)) {
-      if (d.getFullYear() === 1899) return d.toTimeString().split(' ')[0];
-      return d.toLocaleString();
-    }
-  } catch(e) {}
-  return rawTime;
-}
-
-/* 渲染 */
+/* 表格 */
 function renderTable(){
-  const tbody = document.getElementById("table-body");
-  const q = document.getElementById("search-input").value.toLowerCase();
-
-  const data = sortData(allData);
+  const q=document.getElementById("search-input").value.toLowerCase();
+  const data=sortData(allData);
 
   renderSections(data);
 
-  tbody.innerHTML = data
-    .filter(r =>
-      (r.station||"").toLowerCase().includes(q) ||
-      (r.name||"").toLowerCase().includes(q) ||
-      (r.attr||"").toLowerCase().includes(q)
-    )
-    .map(r=>`
-      <tr>
-        <td>${r.station}</td>
-        <td style="font-weight:bold;font-size:18px;">${r.name}</td>
-        <td><span class="attr-tag">${r.attr}</span></td>
-        <td class="${
-          (r.status||"").includes("報到") ? "status-in" :
-          (r.status||"").includes("報退") ? "status-out" : "status-pending"
-        }">${r.status || '未報到'}</td>
-        <td class="time-col">${formatTimeDisplay(r.time)}</td>
-      </tr>
-    `).join("");
+  document.getElementById("table-body").innerHTML=data
+  .filter(r=>
+    (r.name||"").toLowerCase().includes(q)||
+    (r.station||"").toLowerCase().includes(q)||
+    (r.attr||"").toLowerCase().includes(q)
+  )
+  .map(r=>{
+    let t=getType(r.status);
+    let cls = t==="in"?"status-in":t==="out"?"status-out":"status-pending";
+
+    return `<tr>
+      <td>${r.station}</td>
+      <td style="font-weight:bold;font-size:18px;">${r.name}</td>
+      <td>${r.attr}</td>
+      <td class="${cls}">${r.status||"未報到"}</td>
+      <td>${r.time||"-"}</td>
+    </tr>`;
+  }).join("");
 }
 
-function filterTable(){ renderTable(); }
-
+/* 載入 */
 async function loadList(){
   try{
-    const res = await fetch(API+"?action=load&_t="+Date.now()).then(r=>r.json());
+    const res=await fetch(API+"?action=load&_t="+Date.now()).then(r=>r.json());
     if(res.ok){
-      allData = res.data;
+      allData=res.data;
       renderTable();
-      document.getElementById("loading").style.display="none";
-      document.getElementById("data-table").style.display="table";
     }
-  }catch(e){
-    document.getElementById("loading").innerText="❌ 無法連線";
-  }
+  }catch(e){console.log("error")}
 }
 
 setInterval(loadList,30000);
