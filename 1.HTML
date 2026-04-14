@@ -20,7 +20,7 @@
   }
   .label { font-size: 22px; font-weight: bold; color: var(--blue); margin-bottom: 12px; display: block; }
   
-  /* 20px 中字體 UI */
+  /* 20px 中字體控制 */
   select { 
     width: 100%; padding: 18px; font-size: 20px; font-weight: bold; 
     background: #1a1a1a; color: #fff; border: 2px solid #555; border-radius: 12px; margin-bottom: 15px;
@@ -34,7 +34,7 @@
   .btn-out { background: var(--orange); }
   .btn:active { transform: scale(0.96); opacity: 0.8; }
 
-  /* 列表排版 */
+  /* 列表排版：高對比 */
   .table-box { width: 100%; border-radius: 15px; overflow: hidden; border: 2px solid var(--border); }
   table { width: 100%; border-collapse: collapse; background: #000; table-layout: fixed; }
   th { background: #1a1a1a; color: var(--blue); padding: 12px 5px; font-size: 18px; border-bottom: 2px solid var(--blue); }
@@ -68,7 +68,7 @@
   </div>
 
   <div class="panel">
-    <span class="label">👥 批次作業 </span>
+    <span class="label">👥 批次作業</span>
     <div class="btn-row" style="margin-bottom:15px;">
       <button class="btn btn-in" onclick="doSubmit('checkin', 'multi')">批次報到</button>
       <button class="btn btn-out" onclick="doSubmit('checkout', 'multi')">批次報退</button>
@@ -92,7 +92,7 @@
 
 <script>
   // 🔗 ⚠️ 請替換為您「建立新版本」後的最新 API 網址
-  const API = "https://script.google.com/macros/s/AKfycbyVmL4j4YLOOZsTU82sjKTq6DD4mgiPXzh-_bUn1Q9TeCEvgqNKduBvRrrHUVXfAcyD/exec"; 
+  const API = "https://script.google.com/macros/s/AKfycbwrS-bLPvopI6AbBN9qQvYiGtqMt8XMAiua_fjFCjYoM7FOLND-y2XK4gOv4utHClQZ/exec"; 
 
   let listData = [];
 
