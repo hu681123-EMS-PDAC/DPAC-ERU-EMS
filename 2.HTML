@@ -8,7 +8,7 @@
 <style>
   :root { 
     --bg: #000000; 
-    --card-bg: #151515; 
+    --card-bg: #111111; 
     --border: #333333;
     --blue: #00e5ff; 
     --green: #39ff14; 
@@ -44,15 +44,16 @@
     font-weight: 900;
     margin: 20px 0; 
     letter-spacing: 2px;
-    text-shadow: 0 0 10px rgba(0, 229, 255, 0.3);
+    text-shadow: 0 0 15px rgba(0, 229, 255, 0.4);
   }
 
   .section-title { 
     font-size: 20px; 
     font-weight: bold;
-    margin: 25px 0 15px; 
+    margin: 30px 0 15px; 
     border-left: 6px solid var(--blue); 
     padding-left: 12px; 
+    color: #e0e0e0;
   }
 
   .grid { 
@@ -61,26 +62,30 @@
     gap: 15px; 
   }
 
+  /* 卡片高對比設計 */
   .stat-card { 
     background: var(--card-bg); 
     border: 2px solid var(--border);
     border-radius: 16px; 
     padding: 22px; 
     text-align: center; 
-    box-shadow: 0 5px 15px rgba(0,0,0,0.8);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.9);
+    transition: 0.3s;
   }
+  .stat-card:hover { border-color: #555; }
 
   .stat-card.full { 
     grid-column: span 2; 
     display: flex; 
     justify-content: space-between; 
     align-items: center;
+    padding: 22px 30px;
   }
 
-  .stat-title { font-size: 18px; color: #bbbbbb; font-weight: bold; }
-  .stat-value { font-size: 46px; font-weight: 900; line-height: 1.2; }
+  .stat-title { font-size: 18px; color: #aaaaaa; font-weight: bold; }
+  .stat-value { font-size: 46px; font-weight: 900; line-height: 1.2; text-shadow: 0 0 10px rgba(255,255,255,0.2); }
 
-  /* 霓虹色彩配置 */
+  /* 霓虹高對比色彩 */
   .c-blue { color: var(--blue); } 
   .c-green { color: var(--green); }
   .c-orange { color: var(--orange); } 
@@ -90,10 +95,10 @@
   .c-lime { color: var(--lime); } 
   .c-pink { color: var(--pink); }
 
-  /* 大按鈕設計 */
+  /* 大按鈕設計 (中字體/大按壓區) */
   #refresh-btn { 
     width: 100%; 
-    margin-top: 35px; 
+    margin-top: 40px; 
     padding: 22px; 
     font-size: 22px; 
     font-weight: 900;
@@ -102,20 +107,27 @@
     border: none;
     border-radius: 15px;
     cursor: pointer;
-    transition: 0.2s;
+    transition: 0.1s;
+    box-shadow: 0 5px 15px rgba(0, 229, 255, 0.3);
   }
   #refresh-btn:active { transform: scale(0.96); opacity: 0.8; }
-  #refresh-btn:disabled { background: #333; color: #777; cursor: not-allowed; }
+  #refresh-btn:disabled { background: #333; color: #777; cursor: not-allowed; box-shadow: none; }
 
   .update-time { 
     text-align: center; 
     margin-top: 20px; 
     color: #999; 
-    font-size: 16px;
+    font-size: 18px;
     font-weight: bold;
+    padding: 10px;
   }
 
-  .error-msg { color: var(--red); background: rgba(255,49,49,0.1); padding: 5px 10px; border-radius: 8px; }
+  .error-msg { 
+    color: #fff; 
+    background: var(--red); 
+    border-radius: 10px; 
+    box-shadow: 0 0 15px rgba(255, 49, 49, 0.6);
+  }
 
 </style>
 </head>
@@ -176,21 +188,21 @@
 </div>
 
 <script>
-  // 🔗 ✅ 唯一 API 網址 (請確保 GAS 部署權限正確)
-  const API = "https://script.google.com/macros/s/AKfycbyQr9Gzeq-bPpkLd7nJOTnd6sSISrmL_DgvDgs_oiAnd7KPjlt6qhA7YHEAbc4GUTsj/exec";
+  // 🔗 您的專屬 API 網址 (請確保 GAS 已設定為 "所有人" 可存取)
+  const API = "https://script.google.com/macros/s/AKfycbxee8d3Kl0R4-PpG6xiZmQoDA_axhttY2VrSTqGc7IwokJrO5GmRTOajF275hioSZrX/exec";
 
-  // ✅ 安全數值轉換 (防止出現 NaN 或 undefined)
+  // ✅ 防崩潰機制：強制轉換為安全數字
   function safe(v) {
     return (v === undefined || v === null || v === "" || isNaN(v)) ? 0 : Number(v);
   }
 
-  // ✅ 安全更新畫面
+  // ✅ 安全更新畫面 UI
   function setSafe(id, v) {
     const el = document.getElementById(id);
     if (el) el.innerText = safe(v);
   }
 
-  // ✅ 套用數據到畫面
+  // ✅ 將數據映射到畫面上
   function render(s = {}) {
     setSafe("total-count", s.total);
     setSafe("in-count", s.in);
@@ -199,25 +211,27 @@
     setSafe("station-count", s.stations);
     setSafe("xizhou-count", s.xizhou);
     setSafe("walking-count", s.walking);
-    setSafe("beiduan-count", s.beiduan); // 🔥 北站鎖死保護
+    setSafe("beiduan-count", s.beiduan); // 北站資料鎖死保護
     setSafe("support-count", s.support);
   }
 
-  // ⏱️ 具備 Timeout 功能的 fetch (防止網路卡死)
+  // ⏱️ 具備 Timeout 防卡死機制的連線請求
   function fetchWithTimeout(url, timeout = 8000) {
     return new Promise((resolve, reject) => {
       const timer = setTimeout(() => reject(new Error("Timeout")), timeout);
-      fetch(url, { cache: "no-store" })
+      // 加入 mode: 'cors' 確保跨網域請求正確執行
+      fetch(url, { method: "GET", mode: "cors", cache: "no-store" })
         .then(res => { clearTimeout(timer); resolve(res); })
         .catch(err => { clearTimeout(timer); reject(err); });
     });
   }
 
-  // 🚀 主核心函式 (具備自動重試功能)
+  // 🚀 核心更新邏輯 (包含自動重試機制)
   async function loadStats(retryCount = 0) {
     const btn = document.getElementById("refresh-btn");
     const timer = document.getElementById("update-timer");
 
+    // UI 狀態切換
     if (btn) {
       btn.disabled = true;
       btn.innerText = "⏳ 戰報更新中...";
@@ -225,10 +239,15 @@
     if (timer) timer.classList.remove("error-msg");
 
     try {
+      // 加上隨機參數避免瀏覽器快取
       const res = await fetchWithTimeout(`${API}?t=${Date.now()}`, 8000);
-      if (!res.ok) throw new Error("HTTP 狀態錯誤");
+      
+      if (!res.ok) throw new Error("HTTP 狀態錯誤 (請檢查後端網址)");
 
       const data = await res.json();
+      
+      if (!data || typeof data !== "object") throw new Error("JSON 格式錯誤");
+
       const stats = data?.stats || {};
       
       // 更新畫面
@@ -237,22 +256,23 @@
       if (timer) timer.innerText = "✅ 最後更新：" + new Date().toLocaleTimeString('zh-TW', { hour12: false });
 
     } catch (err) {
-      console.warn("連線失敗:", err);
+      console.warn("連線失敗原因:", err);
       
-      // ❗ 保底防護 (即使壞掉也顯示 0，不破壞 UI)
+      // ❗ UI 保底防護：確保網頁架構不崩潰，全數歸零
       if (retryCount === 0) render({}); 
 
       if (timer) {
-        timer.innerText = `❌ 無法連線，請檢查GAS權限API ${retryCount < 3 ? '(重試中...)' : ''}`;
+        timer.innerText = `❌ 無法連線！請檢查 GAS 權限設定 ${retryCount < 3 ? '(自動重試中...)' : ''}`;
         timer.classList.add("error-msg");
       }
 
-      // 🔁 自動重試機制 (最多重試 3 次)
+      // 🔁 自動重試機制 (最多重試 3 次，間隔 3 秒)
       if (retryCount < 3) {
         setTimeout(() => loadStats(retryCount + 1), 3000);
       }
 
     } finally {
+      // 恢復按鈕狀態
       if (btn) {
         btn.disabled = false;
         btn.innerText = "🔄 手動更新戰報";
@@ -260,9 +280,14 @@
     }
   }
 
-  // 🚀 啟動與定時更新 (每 30 秒)
+  // 🚀 網頁載入時啟動，並設定每 30 秒自動更新一次
   loadStats();
   setInterval(() => loadStats(0), 30000);
+
+</script>
+
+</body>
+</html>
 
 </script>
 
