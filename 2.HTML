@@ -8,7 +8,7 @@
 <style>
   :root { 
     --bg: #000000; 
-    --card-bg: #121212; 
+    --card-bg: #151515; 
     --border: #333333;
     --blue: #00e5ff; 
     --green: #39ff14; 
@@ -33,6 +33,7 @@
     flex-direction: column;
     align-items: center;
     padding-bottom: 50px;
+    font-size: 18px; /* 基礎中字體 */
   }
 
   .wrapper { max-width: 600px; width: 100%; }
@@ -57,7 +58,7 @@
   .grid { 
     display: grid; 
     grid-template-columns: 1fr 1fr; 
-    gap: 12px; 
+    gap: 15px; 
   }
 
   .stat-card { 
@@ -66,7 +67,7 @@
     border-radius: 16px; 
     padding: 22px; 
     text-align: center; 
-    box-shadow: 0 4px 15px rgba(0,0,0,0.8);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.8);
   }
 
   .stat-card.full { 
@@ -101,8 +102,10 @@
     border: none;
     border-radius: 15px;
     cursor: pointer;
+    transition: 0.2s;
   }
-  #refresh-btn:disabled { background: #333; color: #777; }
+  #refresh-btn:active { transform: scale(0.96); }
+  #refresh-btn:disabled { background: #333; color: #777; cursor: not-allowed; }
 
   .update-time { 
     text-align: center; 
@@ -112,7 +115,13 @@
     font-weight: bold;
   }
 
-  .error-msg { color: var(--red); background: rgba(255,49,49,0.1); padding: 5px; border-radius: 8px; }
+  .error-msg { 
+    color: #fff; 
+    background: var(--red); 
+    padding: 8px; 
+    border-radius: 8px; 
+    box-shadow: 0 0 10px rgba(255,49,49,0.5);
+  }
 
 </style>
 </head>
@@ -173,42 +182,63 @@
 </div>
 
 <script>
-  // 🔗 您的 GAS API 網址 (請確保此網址正確)
+  // 🔗 您的 GAS API 網址
   const API = "https://script.google.com/macros/s/AKfycbyETvcKw2Fm43Efd4sw05Oj4KQHc2XSXQVBLezVaihuhfawJG8EQ2AqXrDU6pknupZL/exec";
 
+  // ✅ 安全數值轉換
   function safe(v) {
     return (v === undefined || v === null || v === "" || isNaN(v)) ? 0 : Number(v);
   }
 
-  function setVal(id, v) {
+  // ✅ 更新 UI 元素
+  function setUI(id, v) {
     const el = document.getElementById(id);
     if (el) el.innerText = safe(v);
   }
 
-  function render(s = {}) {
-    setVal("total-count", s.total);
-    setVal("in-count", s.in);
-    setVal("out-count", s.out);
-    setVal("pending-count", s.pending);
-    setVal("station-count", s.stations);
-    setVal("xizhou-count", s.xizhou);
-    setVal("walking-count", s.walking);
-    setVal("beiduan-count", s.beiduan); // 🔥 北站核心數據
-    setVal("support-count", s.support);
+  // ✅ 數據規範化（確保北站等核心資料不遺失）
+  function normalize(stats = {}) {
+    return {
+      total: stats.total,
+      in: stats.in,
+      out: stats.out,
+      pending: stats.pending,
+      stations: stats.stations,
+      xizhou: stats.xizhou,
+      walking: stats.walking,
+      beiduan: stats.beiduan, // 🔥 北站鎖死保護
+      support: stats.support
+    };
   }
 
+  // ✅ 套用畫面渲染
+  function render(s) {
+    const data = normalize(s);
+    setUI("total-count", data.total);
+    setUI("in-count", data.in);
+    setUI("out-count", data.out);
+    setUI("pending-count", data.pending);
+    setUI("station-count", data.stations);
+    setUI("xizhou-count", data.xizhou);
+    setUI("walking-count", data.walking);
+    setUI("beiduan-count", data.beiduan);
+    setUI("support-count", data.support);
+  }
+
+  // 🚀 主更新函式 (具備超時與自動重試)
   async function loadStats(retryCount = 0) {
     const btn = document.getElementById("refresh-btn");
     const timer = document.getElementById("update-timer");
 
-    btn.disabled = true;
-    btn.innerText = "⏳ 更新中...";
-    timer.classList.remove("error-msg");
+    if (btn) {
+      btn.disabled = true;
+      btn.innerText = "⏳ 更新中...";
+    }
+    if (timer) timer.classList.remove("error-msg");
 
     try {
-      // 加入 Timeout 防止連線無限等待 (8秒)
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 8000);
+      const timeoutId = setTimeout(() => controller.abort(), 8000); // 8秒超時
 
       const res = await fetch(`${API}?t=${Date.now()}`, { 
         cache: "no-store",
@@ -216,39 +246,43 @@
       });
       clearTimeout(timeoutId);
 
-      if (!res.ok) throw new Error("連線失敗");
+      if (!res.ok) throw new Error("網路請求失敗");
 
       const data = await res.json();
-      render(data?.stats || {});
+      
+      if (!data || !data.stats) throw new Error("資料格式異常");
 
-      timer.innerText = "✅ 最後更新：" + new Date().toLocaleTimeString('zh-TW', { hour12: false });
+      render(data.stats);
+
+      if (timer) {
+        timer.innerText = "✅ 最後更新：" + new Date().toLocaleTimeString('zh-TW', { hour12: false });
+      }
 
     } catch (err) {
-      console.warn("連線出錯:", err);
+      console.warn("API Error:", err);
       
       if (retryCount < 3) {
-        timer.innerText = `❌ 連線失敗，重試中 (${retryCount + 1}/3)...`;
+        if (timer) timer.innerText = `❌ 重試中 (${retryCount + 1}/3)...`;
         setTimeout(() => loadStats(retryCount + 1), 3000);
       } else {
-        timer.innerText = "❌ 無法連線，請檢查 GAS 權限與 API 設定";
-        timer.classList.add("error-msg");
+        if (timer) {
+          timer.innerText = "❌ 無法連線，請檢查 GAS 權限與 API 設定";
+          timer.classList.add("error-msg");
+        }
         render({}); // 保底顯示 0
       }
     } finally {
-      if (retryCount >= 3 || timer.innerText.includes("✅")) {
+      if (btn && (retryCount >= 3 || !btn.disabled)) {
         btn.disabled = false;
         btn.innerText = "🔄 手動更新數據";
       }
     }
   }
 
-  // 啟動與定時更新 (30秒一次)
+  // 初始載入與定時更新
   loadStats();
   setInterval(() => loadStats(0), 30000);
-</script>
 
-</body>
-</html>
 </script>
 
 </body>
