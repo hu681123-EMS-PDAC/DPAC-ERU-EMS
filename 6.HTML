@@ -3,64 +3,59 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>🎒 公裝領繳管理 (穩定強化版)</title>
+<title>🎒 公裝領繳管理系統</title>
 <style>
   :root { 
-    --bg: #000000; --card: #151515; --border: #333333; 
+    --bg: #000000; --card: #161616; --border: #333333; 
     --blue: #00e5ff; --orange: #ff9100; --red: #ff3131; --green: #39ff14;
-    --text: #ffffff; --text-dim: #999999;
+    --text: #ffffff; --text-dim: #aaaaaa;
   }
 
   body { 
     background: var(--bg); color: var(--text); 
     font-family: -apple-system, "Microsoft JhengHei", sans-serif; 
     margin: 0; padding: 12px; display: flex; justify-content: center;
-    font-size: 20px; /* 中大字體基準 */
+    font-size: 20px; /* 全域中大字體 */
   }
 
   .container { width: 100%; max-width: 480px; }
-  h1 { text-align: center; color: var(--blue); font-size: 26px; margin: 15px 0; font-weight: 900; letter-spacing: 1px; }
+  h1 { text-align: center; color: var(--blue); font-size: 28px; margin: 15px 0; font-weight: 900; letter-spacing: 2px; }
 
+  /* 主要操作區 */
   .panel { 
-    background: var(--card); border: 2px solid var(--border); border-radius: 20px; 
-    padding: 22px; box-shadow: 0 10px 40px rgba(0,0,0,1); margin-bottom: 20px;
+    background: var(--card); border: 2px solid var(--border); border-radius: 24px; 
+    padding: 24px; box-shadow: 0 10px 50px rgba(0,0,0,1); margin-bottom: 20px;
   }
 
-  .label { font-size: 18px; font-weight: bold; color: var(--blue); margin-bottom: 8px; display: block; }
+  .label { font-size: 18px; font-weight: bold; color: var(--blue); margin-bottom: 10px; display: block; }
   
   select, input[type="text"] { 
     width: 100%; padding: 16px; font-size: 20px; font-weight: bold; 
-    background: #000; color: #fff; border: 2px solid var(--border); border-radius: 12px; 
-    box-sizing: border-box; margin-bottom: 20px; outline: none;
+    background: #000; color: #fff; border: 2px solid var(--border); border-radius: 14px; 
+    box-sizing: border-box; margin-bottom: 22px; outline: none; transition: 0.2s;
   }
-  select:focus { border-color: var(--blue); }
+  select:focus { border-color: var(--blue); box-shadow: 0 0 10px rgba(0,229,255,0.3); }
 
+  /* 狀態提醒 */
   #status-warn {
     color: var(--red); background: rgba(255,49,49,0.15); border: 1px solid var(--red);
-    padding: 12px; border-radius: 10px; font-size: 16px; font-weight: bold;
-    text-align: center; margin-bottom: 20px; display: none;
+    padding: 14px; border-radius: 12px; font-size: 16px; font-weight: bold;
+    text-align: center; margin-bottom: 22px; display: none;
   }
 
-  .btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+  /* 按鈕組 */
+  .btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
   .btn { 
-    padding: 20px; font-size: 22px; font-weight: 900; border-radius: 12px; 
+    padding: 20px; font-size: 24px; font-weight: 900; border-radius: 14px; 
     border: none; cursor: pointer; text-align: center; color: #000; transition: 0.1s;
   }
   .btn-borrow { background: var(--blue); } 
   .btn-return { background: var(--orange); }
-  .btn:active { transform: scale(0.95); opacity: 0.8; }
+  .btn:active { transform: scale(0.96); opacity: 0.9; }
   .btn:disabled { background: #222 !important; color: #555 !important; cursor: not-allowed; }
 
+  /* 品項新增與備註 */
   .divider { height: 1px; background: #333; margin: 25px 0 15px 0; }
-  .list-title { font-size: 16px; color: var(--text-dim); margin-bottom: 10px; font-weight: bold; }
-  
-  .history-box { 
-    background: #0a0a0a; border-radius: 15px; border: 1px solid #222; 
-    max-height: 280px; overflow-y: auto; font-size: 16px;
-  }
-  .log-item { padding: 14px; border-bottom: 1px solid #1a1a1a; display: flex; justify-content: space-between; align-items: center; }
-  .tag { padding: 2px 8px; border-radius: 6px; font-size: 12px; font-weight: bold; color: #000; margin-left: 8px; }
-
   .add-box { display: flex; gap: 10px; margin-top: 5px; }
   .add-box input { margin-bottom: 0; padding: 12px; font-size: 16px; }
   .btn-add { 
@@ -68,10 +63,20 @@
     border-radius: 10px; padding: 0 15px; font-size: 14px; font-weight: bold; cursor: pointer;
   }
 
+  /* 歷史動態紀錄 */
+  .list-title { font-size: 16px; color: var(--text-dim); margin-bottom: 12px; font-weight: bold; letter-spacing: 1px; }
+  .history-box { 
+    background: #080808; border-radius: 18px; border: 1px solid #222; 
+    max-height: 300px; overflow-y: auto; font-size: 16px;
+  }
+  .log-item { padding: 15px; border-bottom: 1px solid #1a1a1a; display: flex; justify-content: space-between; align-items: center; }
+  .tag { padding: 3px 10px; border-radius: 7px; font-size: 12px; font-weight: bold; color: #000; margin-left: 8px; }
+
+  /* 浮動提示 */
   #toast { 
-    position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); width: 85%;
-    padding: 18px; border-radius: 15px; font-size: 18px; font-weight: bold; text-align: center;
-    z-index: 1000; display: none; box-shadow: 0 5px 20px rgba(0,0,0,1);
+    position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%); width: 85%;
+    padding: 20px; border-radius: 18px; font-size: 18px; font-weight: bold; text-align: center;
+    z-index: 1000; display: none; box-shadow: 0 8px 30px rgba(0,0,0,1);
   }
 </style>
 </head>
@@ -82,8 +87,8 @@
 
   <div class="panel">
     <span class="label">👤 人員 (站別 / 姓名 / 屬性)</span>
-    <select id="user-name" onchange="validateStatus()">
-      <option value="">⏳ 名單及時讀取中...</option>
+    <select id="user-name" onchange="handleUserChange()">
+      <option value="">⏳ 正在連線讀取名單...</option>
     </select>
 
     <div id="status-warn">🛑 該員尚未報到，禁止領取裝備</div>
@@ -112,40 +117,41 @@
       <button id="btn-return" class="btn btn-return" onclick="submit('equip_return')">繳回</button>
     </div>
 
-    <input type="text" id="note-input" placeholder="備註 (選填)..." style="margin-top:20px;">
+    <input type="text" id="note-input" placeholder="備註事項 (選填)..." style="margin-top:22px;">
 
     <div class="divider"></div>
     <div class="add-box">
-      <input type="text" id="new-item" placeholder="新增裝備名稱...">
+      <input type="text" id="new-item" placeholder="快速新增品項...">
       <button class="btn-add" onclick="addItem()">新增</button>
     </div>
   </div>
 
   <div class="list-title">📋 最新作業動態</div>
   <div class="history-box" id="history-list">
-    <div style="padding:20px; text-align:center; color:#444;">尚無動態紀錄</div>
+    <div style="padding:25px; text-align:center; color:#333;">目前尚無操作紀錄</div>
   </div>
 </div>
 
 <div id="toast"></div>
 
 <script>
-  // 🔗 請務必確認 API 網址正確
-  const API_URL = "https://script.google.com/macros/s/AKfycbwvj6K6YWOnCS6fQmCPzcePGqrqdJZZ_telB7Jc3Zl5YJKiFHfiIpaboRKNK2mTqjh0/exec";
+  // 🔗 請確認此網址正確無誤
+  const API_URL = "https://script.google.com/macros/s/AKfycbzV_j0z3spBQXoqjmsGNR_Qv5HUA6DjgXmC7ACIIXV0TODIIZjD8jaLusmxfpC5zL6-/exec";
 
   let recentLogs = [];
 
   function initApp() {
     fetchNames();
-    loadHistory();
+    loadLocalHistory();
   }
 
-  // A. 載入名單並排序
+  // A. 讀取與自動排序名單
   async function fetchNames() {
+    const select = document.getElementById('user-name');
     try {
       const res = await fetch(API_URL + "?action=get_names").then(r => r.json());
-      const select = document.getElementById('user-name');
       if (res.ok && res.names.length > 0) {
+        // 自動依照 [站別] 排序
         const sorted = res.names.sort();
         select.innerHTML = '<option value="">-- 請選擇人員 --</option>';
         sorted.forEach(n => {
@@ -156,23 +162,29 @@
         validateStatus();
       }
     } catch (e) {
-      document.getElementById('user-name').innerHTML = '<option value="">❌ 連線超時，請重整</option>';
+      select.innerHTML = '<option value="" style="color:var(--red)">❌ 連線超時，按此重整</option>';
+      select.onclick = () => { select.onclick = null; fetchNames(); };
     }
   }
 
-  // B. 管制邏輯
+  // B. 報到狀態管制
+  function handleUserChange() {
+    validateStatus();
+  }
+
   function validateStatus() {
     const val = document.getElementById('user-name').value;
     const warn = document.getElementById('status-warn');
     const btnB = document.getElementById('btn-borrow');
     const btnR = document.getElementById('btn-return');
 
-    if (!val) {
+    if (!val || val.includes("連線超時")) {
       warn.style.display = "none";
       btnB.disabled = btnR.disabled = true;
       return;
     }
 
+    // 關鍵字檢測：確認包含「已報到」
     const isReady = val.includes("已報到");
     if (!isReady) {
       warn.style.display = "block";
@@ -183,14 +195,14 @@
     }
   }
 
-  // C. 提交資料 (核心修正：解析純姓名與站別)
+  // C. 提交資料與資料解構
   async function submit(act) {
     const fullString = document.getElementById('user-name').value;
     const item = document.getElementById('item-select').value;
     const status = document.getElementById('status-select').value;
     const note = document.getElementById('note-input').value;
 
-    // 解析格式: [站別] 姓名 (屬性) [狀態]
+    // 正規表達式解析: [站別] 姓名 (屬性) [狀態]
     const regex = /^\[(.*?)\] (.*?) \((.*?)\) \[(.*?)\]$/;
     const match = fullString.match(regex);
     
@@ -204,39 +216,38 @@
       attribute = match[3];
     }
 
-    showToast("⏳ 雲端同步中...", "#222", "#fff");
+    showToast("⏳ 同步寫入中...", "#222", "#fff");
 
     try {
-      // 傳送到後端：name=純姓名, station=站別
       const query = `?action=${act}&name=${encodeURIComponent(pureName)}&item=${encodeURIComponent(item)}&status=${encodeURIComponent(status)}&station=${encodeURIComponent(station)}&note=${encodeURIComponent(note)}`;
       const res = await fetch(API_URL + query).then(r => r.json());
       
       if (res.ok) {
-        const type = (act === 'equip_borrow') ? '領用' : '繳回';
-        showToast(type + " 成功！", act==='equip_borrow'?"var(--blue)":"var(--orange)", "#000");
+        const typeLabel = (act === 'equip_borrow') ? '領用' : '繳回';
+        showToast(typeLabel + " 成功！", act==='equip_borrow'?"var(--blue)":"var(--orange)", "#000");
         
-        // 更新本地動態顯示 (包含完整資訊)
-        updateLog(station, pureName, attribute, type, item, status);
-        
+        // 更新 UI 動態
+        updateLogView(station, pureName, attribute, typeLabel, item, status);
         document.getElementById('note-input').value = "";
-        // 及時更新名單狀態 (與快速報到系統連動)
+        
+        // 即時重新整理名單，確屬性與狀態同步最新
         fetchNames(); 
       }
     } catch (e) {
-      showToast("❌ 傳輸失敗", "red", "#fff");
+      showToast("❌ 寫入失敗，請檢查網路", "var(--red)", "#fff");
     }
   }
 
-  // D. 動態紀錄與品項新增
-  function updateLog(station, name, attr, type, item, status) {
+  // D. 動態顯示與本地儲存
+  function updateLogView(station, name, attr, type, item, status) {
     const log = {
       display: `[${station}] ${name} (${attr})`,
       type, item, status,
       time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})
     };
     recentLogs.unshift(log);
-    if(recentLogs.length > 15) recentLogs.pop();
-    localStorage.setItem('local_logs_v2', JSON.stringify(recentLogs));
+    if(recentLogs.length > 20) recentLogs.pop();
+    localStorage.setItem('equip_logs_cache', JSON.stringify(recentLogs));
     renderLogs();
   }
 
@@ -256,8 +267,8 @@
     `).join('');
   }
 
-  function loadHistory() {
-    const cache = localStorage.getItem('local_logs_v2');
+  function loadLocalHistory() {
+    const cache = localStorage.getItem('equip_logs_cache');
     if (cache) {
       recentLogs = JSON.parse(cache);
       renderLogs();
