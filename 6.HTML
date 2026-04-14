@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>🎒 公裝領繳管理系統</title>
+<title>🎒 公裝領繳管理 (精簡版)</title>
 <style>
   :root { 
     --bg: #000000; --card: #151515; --border: #333333; 
@@ -15,12 +15,13 @@
     background: var(--bg); color: var(--text); 
     font-family: -apple-system, "Microsoft JhengHei", sans-serif; 
     margin: 0; padding: 12px; display: flex; justify-content: center;
-    font-size: 20px; /* 全局基準字體 */
+    font-size: 20px; /* 中大字體 */
   }
 
   .container { width: 100%; max-width: 480px; }
-  h1 { text-align: center; color: var(--blue); font-size: 26px; margin: 15px 0; font-weight: 900; letter-spacing: 1px; }
+  h1 { text-align: center; color: var(--blue); font-size: 26px; margin: 15px 0; font-weight: 900; }
 
+  /* 主要面板 */
   .panel { 
     background: var(--card); border: 2px solid var(--border); border-radius: 20px; 
     padding: 22px; box-shadow: 0 10px 40px rgba(0,0,0,1); margin-bottom: 20px;
@@ -31,19 +32,19 @@
   select, input[type="text"] { 
     width: 100%; padding: 16px; font-size: 20px; font-weight: bold; 
     background: #000; color: #fff; border: 2px solid var(--border); border-radius: 12px; 
-    box-sizing: border-box; margin-bottom: 15px; outline: none;
+    box-sizing: border-box; margin-bottom: 20px; outline: none;
   }
   select:focus { border-color: var(--blue); }
 
-  /* 狀態卡片 */
-  .status-card {
-    background: #0a0a0a; border: 1px solid #222; border-radius: 12px;
-    padding: 15px; margin-bottom: 20px; display: none; text-align: center;
+  /* 管制提示 */
+  #status-warn {
+    color: var(--red); background: rgba(255,49,49,0.1); border: 1px solid var(--red);
+    padding: 12px; border-radius: 10px; font-size: 16px; font-weight: bold;
+    text-align: center; margin-bottom: 20px; display: none;
   }
-  .check-info { font-weight: bold; margin-bottom: 5px; display: block; }
 
-  /* 按鈕設定 */
-  .btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  /* 按鈕樣式 */
+  .btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
   .btn { 
     padding: 20px; font-size: 22px; font-weight: 900; border-radius: 12px; 
     border: none; cursor: pointer; text-align: center; color: #000; transition: 0.1s;
@@ -51,20 +52,27 @@
   .btn-borrow { background: var(--blue); } 
   .btn-return { background: var(--orange); }
   .btn:active { transform: scale(0.95); opacity: 0.8; }
-  .btn:disabled { background: #1a1a1a !important; color: #444 !important; border: 1px solid #222 !important; cursor: not-allowed; }
+  .btn:disabled { background: #222 !important; color: #555 !important; cursor: not-allowed; }
 
+  /* 品項新增區 */
+  .add-box { display: flex; gap: 10px; margin-top: 5px; }
+  .add-box input { margin-bottom: 0; padding: 12px; font-size: 16px; }
+  .btn-add { 
+    background: #2a2a2a; color: var(--green); border: 1px solid var(--green); 
+    border-radius: 10px; padding: 0 15px; font-size: 14px; font-weight: bold; cursor: pointer;
+  }
+
+  /* 最新動態區 */
   .divider { height: 1px; background: #333; margin: 25px 0 15px 0; }
   .list-title { font-size: 16px; color: var(--text-dim); margin-bottom: 10px; font-weight: bold; }
-  
-  /* 歷史動態紀錄 */
   .history-box { 
     background: #0a0a0a; border-radius: 15px; border: 1px solid #222; 
     max-height: 250px; overflow-y: auto; font-size: 16px;
   }
-  .log-item { padding: 14px; border-bottom: 1px solid #1a1a1a; display: flex; justify-content: space-between; align-items: center; }
+  .log-item { padding: 12px; border-bottom: 1px solid #1a1a1a; display: flex; justify-content: space-between; align-items: center; }
   .tag { padding: 2px 8px; border-radius: 6px; font-size: 12px; font-weight: bold; color: #000; margin-left: 8px; }
 
-  /* 提示視窗 */
+  /* Toast 訊息 */
   #toast { 
     position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); width: 85%;
     padding: 18px; border-radius: 15px; font-size: 18px; font-weight: bold; text-align: center;
@@ -75,17 +83,15 @@
 <body onload="initApp()">
 
 <div class="container">
-  <h1>🎒 裝備領繳系統</h1>
+  <h1>🎒 公裝領繳管理</h1>
 
   <div class="panel">
-    <span class="label">👤 人員 (站別 / 姓名 / 屬性)</span>
-    <select id="user-name" onchange="checkAccess()">
-      <option value="">⏳ 正在連線讀取名單...</option>
+    <span class="label">👤 人員 (站別 / 姓名)</span>
+    <select id="user-name" onchange="validateStatus()">
+      <option value="">⏳ 快速讀取名單中...</option>
     </select>
 
-    <div id="status-card" class="status-card">
-      <span id="st-checkin" class="check-info"></span>
-    </div>
+    <div id="status-warn">🛑 該員尚未報到，禁止領取裝備</div>
 
     <div style="display:flex; gap:10px;">
       <div style="flex:1.5;">
@@ -106,16 +112,22 @@
       </div>
     </div>
 
-    <input type="text" id="note-input" placeholder="備註說明 (選填)...">
-
     <div class="btn-row">
-      <button id="btn-borrow" class="btn btn-borrow" onclick="doAction('equip_borrow')">領用</button>
-      <button id="btn-return" class="btn btn-return" onclick="doAction('equip_return')">繳回</button>
+      <button id="btn-borrow" class="btn btn-borrow" onclick="submit('equip_borrow')">領用</button>
+      <button id="btn-return" class="btn btn-return" onclick="submit('equip_return')">繳回</button>
+    </div>
+
+    <input type="text" id="note-input" placeholder="備註 (選填)..." style="margin-top:20px;">
+
+    <div class="divider"></div>
+    <div class="add-box">
+      <input type="text" id="new-item" placeholder="新增裝備名稱...">
+      <button class="btn-add" onclick="addItem()">新增</button>
     </div>
   </div>
 
   <div class="list-title">📋 最新作業動態</div>
-  <div class="history-box" id="log-list">
+  <div class="history-box" id="history-list">
     <div style="padding:20px; text-align:center; color:#444;">尚無動態紀錄</div>
   </div>
 </div>
@@ -123,113 +135,102 @@
 <div id="toast"></div>
 
 <script>
+  // 🔗 ⚠️ 請換成您最新的 GAS API 網址
+  const API_URL = "https://script.google.com/macros/s/AKfycbzV_j0z3spBQXoqjmsGNR_Qv5HUA6DjgXmC7ACIIXV0TODIIZjD8jaLusmxfpC5zL6-/exec";
+
   let recentLogs = [];
 
   function initApp() {
-    fetchData();
+    fetchNames();
     loadHistory();
   }
 
-  // A. 抓取名單 (含超時重整功能)
-  function fetchData() {
-    const sel = document.getElementById('user-name');
-    sel.innerHTML = '<option value="">⏳ 載入中，請稍候...</option>';
-    
-    // 超時計時器 (10秒)
-    const timeoutTimer = setTimeout(() => {
-      sel.innerHTML = '<option value="">❌ 連線超時，按此重整</option>';
-      sel.onclick = function() { fetchData(); this.onclick = null; };
-    }, 10000);
-
-    google.script.run
-      .withSuccessHandler(res => {
-        clearTimeout(timeoutTimer);
-        if (res.ok) {
-          sel.onclick = null;
-          sel.innerHTML = '<option value="">-- 請選擇人員 --</option>';
-          res.names.forEach(n => {
-            let opt = document.createElement('option');
-            opt.value = opt.innerText = n;
-            sel.appendChild(opt);
-          });
-          checkAccess();
-        }
-      })
-      .withFailureHandler(err => {
-        clearTimeout(timeoutTimer);
-        sel.innerHTML = '<option value="">❌ 連線超時，按此重整</option>';
-        sel.onclick = function() { fetchData(); this.onclick = null; };
-      })
-      .getNames();
+  // A. 載入並排序名單 (站別排序)
+  async function fetchNames() {
+    try {
+      const res = await fetch(API_URL + "?action=get_names").then(r => r.json());
+      const select = document.getElementById('user-name');
+      if (res.ok && res.names.length > 0) {
+        // 站別排序
+        const sorted = res.names.sort();
+        select.innerHTML = '<option value="">-- 請選擇人員 --</option>';
+        sorted.forEach(n => {
+          let opt = document.createElement('option');
+          opt.value = opt.innerText = n;
+          select.appendChild(opt);
+        });
+        validateStatus();
+      }
+    } catch (e) {
+      document.getElementById('user-name').innerHTML = '<option value="">❌ 連線超時</option>';
+    }
   }
 
-  // B. 強制管制邏輯 (報到才可領用)
-  function checkAccess() {
+  // B. 強制管制邏輯：未報到不能領裝
+  function validateStatus() {
     const val = document.getElementById('user-name').value;
-    const card = document.getElementById('status-card');
-    const stText = document.getElementById('st-checkin');
+    const warn = document.getElementById('status-warn');
     const btnB = document.getElementById('btn-borrow');
     const btnR = document.getElementById('btn-return');
 
-    if (!val || val.includes("⏳") || val.includes("❌")) {
-      card.style.display = "none";
+    if (!val) {
+      warn.style.display = "none";
       btnB.disabled = btnR.disabled = true;
       return;
     }
 
-    card.style.display = "block";
-    const isReady = val.includes("[已報到]");
-
-    if (isReady) {
-      stText.innerHTML = '<span style="color:var(--green)">🟢 該員已報到</span>';
-      btnB.disabled = btnR.disabled = false;
+    // 關鍵字檢測：名單中需含「已報到」
+    const isReady = val.includes("已報到");
+    if (!isReady) {
+      warn.style.display = "block";
+      btnB.disabled = true;
+      btnR.disabled = true; // 管制：未報到者連繳回權限都鎖定
     } else {
-      stText.innerHTML = '<span style="color:var(--red)">🛑 該員未報到 (禁止領用)</span>';
-      btnB.disabled = true; 
-      btnR.disabled = false; // 繳回不限制報到狀態
+      warn.style.display = "none";
+      btnB.disabled = false;
+      btnR.disabled = false;
     }
   }
 
-  // C. 提交動作
-  function doAction(act) {
-    const rawVal = document.getElementById('user-name').value;
+  // C. 提交資料
+  async function submit(act) {
+    const name = document.getElementById('user-name').value;
     const item = document.getElementById('item-select').value;
     const status = document.getElementById('status-select').value;
     const note = document.getElementById('note-input').value;
 
-    if (!rawVal) return;
-
-    // 解析出純姓名與站別
-    const stationMatch = rawVal.match(/\[(.*?)\]/);
-    const station = stationMatch ? stationMatch[1] : "未定";
-    const nameMatch = rawVal.match(/\] (.*?) \(/);
-    const pureName = nameMatch ? nameMatch[1] : rawVal.split(' ')[1];
-
     showToast("⏳ 同步中...", "#222", "#fff");
 
-    const params = { action: act, name: pureName, station: station, item: item, status: status, note: note };
-
-    google.script.run.withSuccessHandler(res => {
+    try {
+      const query = `?action=${act}&name=${encodeURIComponent(name)}&item=${encodeURIComponent(item)}&status=${encodeURIComponent(status)}&note=${encodeURIComponent(note)}`;
+      const res = await fetch(API_URL + query).then(r => r.json());
+      
       if (res.ok) {
-        const typeLabel = (act === 'equip_borrow') ? '領用' : '繳回';
-        showToast(typeLabel + " 成功！", act==='equip_borrow'?"var(--blue)":"var(--orange)", "#000");
-        addLog(pureName, typeLabel, item, status);
+        const type = (act === 'equip_borrow') ? '領用' : '繳回';
+        showToast(type + " 成功！", act==='equip_borrow'?"var(--blue)":"var(--orange)", "#000");
+        updateLog(name, type, item, status);
         document.getElementById('note-input').value = "";
       }
-    }).processAction(params);
+    } catch (e) {
+      showToast("❌ 傳輸失敗", "red", "#fff");
+    }
   }
 
-  // D. 歷史紀錄與持久化
-  function addLog(name, type, item, status) {
-    const log = { name, type, item, status, time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) };
+  // D. 動態紀錄與品項新增
+  function updateLog(name, type, item, status) {
+    const log = {
+      name: name.split('] ')[1] || name,
+      type, item, status,
+      time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})
+    };
     recentLogs.unshift(log);
     if(recentLogs.length > 15) recentLogs.pop();
-    localStorage.setItem('ems_gear_logs', JSON.stringify(recentLogs));
+    localStorage.setItem('local_logs', JSON.stringify(recentLogs));
     renderLogs();
   }
 
   function renderLogs() {
-    const box = document.getElementById('log-list');
+    const box = document.getElementById('history-list');
     if (recentLogs.length === 0) return;
     box.innerHTML = recentLogs.map(l => `
       <div class="log-item">
@@ -245,13 +246,28 @@
   }
 
   function loadHistory() {
-    const cache = localStorage.getItem('ems_gear_logs');
-    if (cache) { recentLogs = JSON.parse(cache); renderLogs(); }
+    const cache = localStorage.getItem('local_logs');
+    if (cache) {
+      recentLogs = JSON.parse(cache);
+      renderLogs();
+    }
+  }
+
+  function addItem() {
+    const v = document.getElementById('new-item').value.trim();
+    if (!v) return;
+    const s = document.getElementById('item-select');
+    const o = document.createElement('option');
+    o.value = o.innerText = v;
+    s.appendChild(o);
+    s.value = v;
+    document.getElementById('new-item').value = "";
   }
 
   function showToast(txt, bg, color) {
     const t = document.getElementById('toast');
     t.innerText = txt; t.style.background = bg; t.style.color = color; t.style.display = "block";
+    t.style.border = (bg === "#222") ? "none" : `1px solid ${color}`;
     if (bg !== "#222") setTimeout(() => t.style.display = "none", 3000);
   }
 </script>
