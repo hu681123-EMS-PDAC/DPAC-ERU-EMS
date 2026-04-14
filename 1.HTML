@@ -42,14 +42,14 @@
   th { background: #1a1a1a; color: var(--blue); padding: 12px 5px; font-size: 18px; text-align: center; border-bottom: 2px solid var(--blue); }
   td { padding: 18px 5px; border-bottom: 1px solid #222; font-size: 20px; text-align: center; vertical-align: middle; }
   
-  /* 勾選框放大，極速操作 */
+  /* 勾選框放大 2.5倍，極速操作 */
   input[type="checkbox"] { transform: scale(2.5); cursor: pointer; accent-color: var(--blue); margin: 0; }
 
   /* 狀態標籤 */
-  .st-wait { color: #888; font-size: 18px; }
+  .st-wait { color: #aaaaaa; font-size: 18px; }
   .st-in { color: var(--green); font-weight: 900; }
-  .st-out { color: var(--orange); font-weight: 900; }
-  .sub-info { display: block; font-size: 14px; color: #aaa; margin-top: 4px; }
+  .st-out { color: var(--orange); font-weight: 900; text-decoration: line-through; color: #888; }
+  .sub-info { display: block; font-size: 14px; color: #888; margin-top: 4px; }
 
   /* 訊息提示 */
   #toast { 
@@ -101,8 +101,8 @@
   <div id="toast"></div>
 
 <script>
-  // 🔗 ⚠️ 請將引號內替換為您「建立新版本」後的最新部署網址
-  const API = "https://script.google.com/macros/s/AKfycbyqX6SunzkwZ2n0EGUSNsGzLP0sfiOQHODSxtqq-LJ12x3b0VsDY-cCBC17H4Ndn4ou/exec";
+  // 🔗 ⚠️ 請務必將下方引號內替換為您「建立新版本」後的最新部署網址
+  const API = "https://script.google.com/macros/s/AKfycbzlDDeBtEg_1YfKeMl_ygK0mT-4dlnadaCEB4VE4HLtzsV1DzvMrUwC5St_KzjyGk1x/exec";
 
   let listData = [];
 
@@ -113,14 +113,16 @@
       if (res.ok) {
         listData = res.data;
         
-        // 【排序規則】：站別 -> 姓名 -> 屬性 -> 狀態
+        // 【嚴格排序規則】：1. 狀態(未報到優先) -> 2. 站別 -> 3. 姓名 -> 4. 屬性
         listData.sort((a, b) => {
+          const w = { "未報到": 0, "已報到": 1, "已報退": 2 };
+          let wa = w[a.status] !== undefined ? w[a.status] : 0;
+          let wb = w[b.status] !== undefined ? w[b.status] : 0;
+          
+          if (wa !== wb) return wa - wb; // 狀態不同時，優先依照狀態排序(未報到在最上面)
           if (a.station !== b.station) return a.station.localeCompare(b.station, 'zh-Hant');
           if (a.name !== b.name) return a.name.localeCompare(b.name, 'zh-Hant');
-          if (a.attr !== b.attr) return a.attr.localeCompare(b.attr, 'zh-Hant');
-          
-          const w = { "未報到": 0, "": 0, "已報到": 1, "已報退": 2 };
-          return (w[a.status] || 0) - (w[b.status] || 0);
+          return a.attr.localeCompare(b.attr, 'zh-Hant');
         });
 
         render();
@@ -146,7 +148,7 @@
             <span style="font-size:16px; color:#888;">${m.attr}</span>
           </td>
           <td>
-            <span class="${stClass}">${m.status || '未報到'}</span>
+            <span class="${stClass}">${m.status}</span>
             <span class="sub-info">${m.time}</span>
           </td>
         </tr>
@@ -172,7 +174,7 @@
       const res = await fetch(`${API}?action=${act}&name=${encodeURIComponent(names)}&_t=${Date.now()}`).then(r => r.json());
       
       // 判斷是否包含「裝備未還」的拒絕訊息
-      if (res.msg.includes("拒絕報退")) {
+      if (res.msg.includes("拒絕報退") || res.msg.includes("裝備未還")) {
         showToast(res.msg, "var(--red)", "#fff"); // 顯示紅色警告
       } else if (res.ok) {
         showToast(res.msg, act === 'checkin' ? "var(--green)" : "var(--orange)", "#000");
@@ -199,4 +201,4 @@
   setInterval(load, 45000); // 45 秒背景同步
 </script>
 </body>
-</html>
+</html>tml>
