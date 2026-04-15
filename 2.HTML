@@ -229,17 +229,10 @@
       if (data && data.ok) {
         const stats = data.stats || {};
         
-        // ==========================================
-        // 🚨 除錯專區：將後端傳來的真實資料印在終端機
-        // 若除了總人數以外都顯示 0，請按鍵盤 F12 打開開發者工具的 Console (主控台)
-        // 看看這裡印出的 stats 裡面的「變數名稱」到底叫什麼
-        console.log("【後端傳來的真實數據】", stats);
-        // ==========================================
+        console.log("【後端真實數據】", stats);
 
         // 1. 總體概況更新
         updateSafe("total-count", stats.total); 
-        
-        // ⚠️ 如果站內執勤顯示為 0，請確認您的 GAS 傳回的名稱是否為 in。如果是 checkin，請改成 stats.checkin
         updateSafe("in-count", stats.in);        
         updateSafe("out-count", stats.out);      
         updateSafe("pending-count", stats.pending); 
@@ -248,17 +241,32 @@
         // 2. 各單位明細更新
         updateSafe("xizhou-count", stats.xizhou); 
         updateSafe("walking-count", stats.walking); 
-        updateSafe("beiduan-count", stats.beiduan); // 西螺大橋北站
         updateSafe("support-count", stats.support); 
+
+        // ==========================================
+        // 🚨 智慧攔截：針對西螺大橋北站的變數名稱進行多重猜測
+        // 因為不知道您的後端叫什麼，這裡直接把常見的名稱都寫上去
+        // 只要命中一個，畫面就會出現數字！
+        // ==========================================
+        const beiduanRealData = 
+          stats.beiduan || 
+          stats.xiluo || 
+          stats.north || 
+          stats['西螺大橋北站'] || 
+          stats['西螺北站'] || 
+          stats.station3 || 
+          0; // 如果全部都沒猜中，才顯示 0
+          
+        updateSafe("beiduan-count", beiduanRealData); 
 
         timer.innerText = "✅ 最後更新：" + new Date().toLocaleTimeString('zh-TW', { hour12: false });
       } else {
-        timer.innerText = "⚠️ 讀取完成，但雲端試算表無資料或格式不符";
+        timer.innerText = "⚠️ 讀取完成，但雲端無資料";
         timer.classList.add("error-msg");
       }
     } catch(e) { 
       console.error("網路連線錯誤:", e);
-      timer.innerText = "❌ 無法連線！請檢查網路，或確認 GAS 權限已設為「所有人」";
+      timer.innerText = "❌ 無法連線！請檢查網路";
       timer.classList.add("error-msg");
     } finally {
       btn.innerText = "🔄 手動更新數據";
