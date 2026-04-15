@@ -3,24 +3,25 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>⚡ DPAC 快速作業系統</title>
+<title>⚡ DPAC 報到系統</title>
 <style>
   :root { 
-    --bg: #000; --card: #111; --blue: #00d2ff; --green: #39ff14; 
-    --orange: #ff9f00; --red: #ff3131; --text: #fff; --border: #333;
+    --bg: #000000; --card: #111111; --blue: #00e5ff; --green: #39ff14; 
+    --orange: #ff9100; --red: #ff3131; --text: #ffffff; --border: #333333;
   }
   body { 
-    background: var(--bg); color: var(--text); font-family: "Microsoft JhengHei", sans-serif; 
+    background: var(--bg); color: var(--text); font-family: -apple-system, "Microsoft JhengHei", sans-serif; 
     margin: 0; padding: 15px; padding-bottom: 100px;
   }
-  h1 { text-align: center; color: var(--blue); font-size: 28px; margin: 15px 0; letter-spacing: 2px; }
+  h1 { text-align: center; color: var(--blue); font-size: 28px; margin: 15px 0; letter-spacing: 2px; font-weight: 900; }
+  
   .panel { 
     background: var(--card); border: 2px solid var(--border); border-radius: 20px; 
-    padding: 20px; margin-bottom: 25px; box-shadow: 0 0 15px rgba(0, 210, 255, 0.1);
+    padding: 20px; margin-bottom: 25px; box-shadow: 0 5px 15px rgba(0, 229, 255, 0.1);
   }
   .label { font-size: 22px; font-weight: bold; color: var(--blue); margin-bottom: 12px; display: block; }
   
-  /* 20px 中字體控制 */
+  /* 中大字體控制 */
   select { 
     width: 100%; padding: 18px; font-size: 20px; font-weight: bold; 
     background: #1a1a1a; color: #fff; border: 2px solid #555; border-radius: 12px; margin-bottom: 15px;
@@ -28,13 +29,13 @@
   .btn-row { display: flex; gap: 12px; }
   .btn { 
     flex: 1; padding: 20px; font-size: 22px; font-weight: 900; border-radius: 15px; 
-    border: none; cursor: pointer; text-align: center; color: #000;
+    border: none; cursor: pointer; text-align: center; color: #000; transition: 0.1s;
   }
   .btn-in { background: var(--green); }
   .btn-out { background: var(--orange); }
   .btn:active { transform: scale(0.96); opacity: 0.8; }
 
-  /* 列表排版：高對比 */
+  /* 表格排版：高對比 */
   .table-box { width: 100%; border-radius: 15px; overflow: hidden; border: 2px solid var(--border); }
   table { width: 100%; border-collapse: collapse; background: #000; table-layout: fixed; }
   th { background: #1a1a1a; color: var(--blue); padding: 12px 5px; font-size: 18px; border-bottom: 2px solid var(--blue); }
@@ -42,21 +43,29 @@
   
   input[type="checkbox"] { transform: scale(2.5); cursor: pointer; accent-color: var(--blue); }
 
-  .st-wait { color: #fff; background: #444; padding: 2px 8px; border-radius: 6px; font-size: 18px; font-weight: bold; }
-  .st-in { color: var(--green); font-weight: 900; }
-  .st-out { color: #555; text-decoration: line-through; }
-  .sub-info { display: block; font-size: 14px; color: #888; margin-top: 4px; }
+  /* 狀態標籤 */
+  .st-wait { color: #fff; background: #555; padding: 4px 8px; border-radius: 8px; font-size: 18px; font-weight: bold; }
+  .st-in { color: var(--green); font-weight: 900; font-size: 20px; }
+  .st-out { color: #777; text-decoration: line-through; font-weight: bold; }
+  .sub-info { display: block; font-size: 14px; color: #888; margin-top: 6px; }
+
+  /* 屬性顏色 */
+  .attr-nurse { color: #ff00ff; } /* 護理師：桃紅 */
+  .attr-emt2 { color: #00e5ff; }  /* EMT-2：青藍 */
+  .attr-emt1 { color: #39ff14; }  /* EMT-1：螢光綠 */
+  .attr-bls { color: #ffffff; }   /* BLS：白色 */
+  .attr-other { color: #aaaaaa; } /* 其他：灰色 */
 
   #toast { 
     position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); width: 85%;
     padding: 20px; border-radius: 15px; font-size: 20px; font-weight: bold; text-align: center;
-    z-index: 1000; display: none; box-shadow: 0 0 30px rgba(0,0,0,1); border: 2px solid #fff;
+    z-index: 1000; display: none; box-shadow: 0 0 30px rgba(0,0,0,0.9); border: 2px solid #fff;
   }
 </style>
 </head>
 <body onload="load()">
 
-  <h1>⚡ DPAC 快速作業系統</h1>
+  <h1>⚡ DPAC 報到系統</h1>
 
   <div class="panel">
     <span class="label">👤 單人快速處理</span>
@@ -77,7 +86,7 @@
       <table>
         <thead>
           <tr>
-            <th style="width:15%"><input type="checkbox" onchange="toggleAll(this)" style="transform:scale(2)"></th>
+            <th style="width:15%"><input type="checkbox" onchange="toggleAll(this)"></th>
             <th style="width:25%">站別</th>
             <th style="width:30%">姓名(屬性)</th>
             <th style="width:30%">狀態</th>
@@ -91,72 +100,126 @@
   <div id="toast"></div>
 
 <script>
-  // 🔗 ⚠️ 請替換為您「建立新版本」後的最新 API 網址
+  // 🔗 ⚠️ 確保此網址為您的最新 GAS API 部署網址
   const API = "https://script.google.com/macros/s/AKfycbwrS-bLPvopI6AbBN9qQvYiGtqMt8XMAiua_fjFCjYoM7FOLND-y2XK4gOv4utHClQZ/exec"; 
 
   let listData = [];
+
+  // ⭐ 屬性權重 (數字越小排序越前面)
+  function getAttrRank(a) {
+    a = (a || "").toUpperCase();
+    if (a.includes("護理師")) return 1;
+    if (a.includes("EMT-2") || a.includes("EMT2")) return 2;
+    if (a.includes("EMT-1") || a.includes("EMT1")) return 3;
+    if (a.includes("BLS")) return 4;
+    if (a.includes("防災士")) return 5;
+    return 99; // 其他
+  }
+
+  // ⭐ 屬性專屬顏色
+  function getAttrClass(a) {
+    a = (a || "").toUpperCase();
+    if (a.includes("護理師")) return "attr-nurse";
+    if (a.includes("EMT-2") || a.includes("EMT2")) return "attr-emt2";
+    if (a.includes("EMT-1") || a.includes("EMT1")) return "attr-emt1";
+    if (a.includes("BLS")) return "attr-bls";
+    return "attr-other";
+  }
 
   async function load() {
     try {
       const res = await fetch(`${API}?action=load&_t=${Date.now()}`).then(r => r.json());
       if (res.ok) {
         listData = res.data;
-        // 【嚴格排序】：未報到(0) > 已報到(1) > 已報退(2)
+        
+        // ⭐ 多層嚴格排序：狀態 > 站別 > 專業屬性 > 姓名
         listData.sort((a, b) => {
           const w = { "未報到": 0, "已報到": 1, "已報退": 2 };
+          // 1. 先比狀態
           if (w[a.status] !== w[b.status]) return w[a.status] - w[b.status];
+          // 2. 再比站別
           if (a.station !== b.station) return a.station.localeCompare(b.station, 'zh-Hant');
+          // 3. 再比專業屬性(醫護優先)
+          const rankDiff = getAttrRank(a.attr) - getAttrRank(b.attr);
+          if (rankDiff !== 0) return rankDiff;
+          // 4. 最後比姓名
           return a.name.localeCompare(b.name, 'zh-Hant');
         });
         render();
       }
-    } catch (e) { showToast("❌ 連線失敗", "var(--red)"); }
+    } catch (e) { showToast("❌ 連線失敗，請檢查網路", "var(--red)"); }
   }
 
   function render() {
+    // 渲染單人選單
     const sel = document.getElementById('sel-one');
-    sel.innerHTML = '<option value="">-- 選擇人員 --</option>' + 
+    sel.innerHTML = '<option value="">-- 請選擇人員 --</option>' + 
       listData.map(m => `<option value="${m.name}">[${m.station}] ${m.name}</option>`).join("");
 
+    // 渲染批次表格
     const body = document.getElementById('list-body');
     body.innerHTML = listData.map(m => {
       let stClass = m.status === "已報到" ? "st-in" : (m.status === "已報退" ? "st-out" : "st-wait");
+      let attrClass = getAttrClass(m.attr);
       return `
         <tr>
           <td><input type="checkbox" class="cb-item" value="${m.name}"></td>
-          <td style="font-weight:bold; color:var(--blue);">${m.station}</td>
-          <td><b>${m.name}</b><br><small style="color:#888">${m.attr}</small></td>
-          <td><span class="${stClass}">${m.status}</span><span class="sub-info">${m.time}</span></td>
+          <td style="font-weight:bold; color:var(--blue); font-size: 18px;">${m.station}</td>
+          <td><b>${m.name}</b><br><small class="${attrClass}" style="font-weight:bold;">${m.attr}</small></td>
+          <td><span class="${stClass}">${m.status}</span><span class="sub-info">${m.time || ""}</span></td>
         </tr>
       `;
     }).join("");
   }
 
   async function doSubmit(act, type) {
-    let names = (type === 'one') ? document.getElementById('sel-one').value : 
-      Array.from(document.querySelectorAll('.cb-item:checked')).map(c => c.value).join(",");
+    let namesArray = [];
+    if (type === 'one') {
+      const val = document.getElementById('sel-one').value;
+      if (val) namesArray.push(val);
+    } else {
+      namesArray = Array.from(document.querySelectorAll('.cb-item:checked')).map(c => c.value);
+    }
     
-    if (!names) return alert("⚠️ 請先選擇/勾選人員");
+    if (namesArray.length === 0) return alert("⚠️ 請先選擇或勾選人員");
+
+    // 🚨 終極防呆：落實未報到不能報退！
+    if (act === 'checkout') {
+      // 找出被選中，但狀態還是「未報到」的人員
+      const invalidUsers = listData.filter(m => namesArray.includes(m.name) && m.status === "未報到");
+      if (invalidUsers.length > 0) {
+        const invalidNames = invalidUsers.map(u => u.name).join(", ");
+        return showToast(`❌ 錯誤：\n【${invalidNames}】\n尚未報到，無法報退！`, "var(--red)", "#fff");
+      }
+    }
+
+    const namesStr = namesArray.join(",");
     showToast("⏳ 雲端同步驗證中...", "#222");
 
     try {
-      const res = await fetch(`${API}?action=${act}&name=${encodeURIComponent(names)}&_t=${Date.now()}`).then(r => r.json());
+      const res = await fetch(`${API}?action=${act}&name=${encodeURIComponent(namesStr)}&_t=${Date.now()}`).then(r => r.json());
       
       if (res.hasBlock) {
-        showToast(res.msg, "var(--red)", "#fff"); // 強制紅色警告
+        showToast(res.msg, "var(--red)", "#fff"); 
       } else if (res.ok) {
         showToast(res.msg, act === 'checkin' ? "var(--green)" : "var(--orange)", "#000");
       }
+      // 成功後重新讀取最新狀態
       load();
-    } catch (e) { showToast("❌ 通訊異常", "var(--red)"); }
+    } catch (e) { showToast("❌ 通訊異常或超時", "var(--red)"); }
   }
 
+  // 批次全選控制
   function toggleAll(src) { document.querySelectorAll('.cb-item').forEach(c => c.checked = src.checked); }
 
+  // 提示框控制
   function showToast(txt, bg, color = "#fff") {
     const t = document.getElementById('toast');
-    t.innerText = txt; t.style.background = bg; t.style.color = color; t.style.display = "block";
-    if (bg !== "#222") setTimeout(() => t.style.display = "none", 5000);
+    t.innerText = txt; 
+    t.style.background = bg; 
+    t.style.color = color; 
+    t.style.display = "block";
+    if (bg !== "#222") setTimeout(() => t.style.display = "none", 4000);
   }
 </script>
 </body>
