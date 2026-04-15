@@ -2,170 +2,229 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>📋 現場出勤名單</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>📋 現場出勤名單 (分組強化版)</title>
 
 <style>
 :root {
-  --bg:#000; --card:#0c0c0c; --blue:#00e5ff;
+  --bg: #000000;
+  --card: #111111;
+  --blue: #00e5ff;
+  --green: #39ff14;
+  --orange: #ff9100;
+  --red: #ff3131;
+  --text: #ffffff;
 }
 
-body{
-  background:var(--bg);
-  color:#fff;
-  font-family:"Microsoft JhengHei";
-  padding:10px;
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, "Microsoft JhengHei", sans-serif;
+  padding: 12px;
+  line-height: 1.5;
 }
 
-h2{ text-align:center; color:var(--blue); font-size:26px; }
+h2 { text-align: center; color: var(--blue); font-size: 28px; margin: 10px 0; letter-spacing: 2px; }
 
-.section{
-  margin-bottom:10px;
-  padding:10px;
-  border-radius:10px;
-  font-size:16px;
+/* ⭐ 狀態區塊 */
+.section {
+  margin-bottom: 15px;
+  padding: 15px;
+  border-radius: 12px;
+  font-size: 18px; /* 中大字體 */
 }
 
-.in-box{ border:1px solid #00ff88; background:rgba(0,255,136,0.08); }
-.out-box{ border:1px solid #ffb300; background:rgba(255,179,0,0.08); }
-.pending-box{
-  border:2px solid #ff0000;
-  background:rgba(255,0,0,0.1);
-  animation: blink 1s infinite;
+.in-box { border: 2px solid var(--green); background: rgba(57, 255, 20, 0.05); }
+.out-box { border: 2px solid var(--orange); background: rgba(255, 145, 0, 0.05); }
+.pending-box { 
+  border: 2px solid var(--red); 
+  background: rgba(255, 49, 49, 0.1); 
+  animation: blink 1.5s infinite; 
 }
 
-@keyframes blink{
-  0%{ box-shadow:0 0 5px red; }
-  50%{ box-shadow:0 0 20px red; }
-  100%{ box-shadow:0 0 5px red; }
+@keyframes blink {
+  0% { box-shadow: 0 0 5px rgba(255, 49, 49, 0.2); }
+  50% { box-shadow: 0 0 15px rgba(255, 49, 49, 0.5); }
+  100% { box-shadow: 0 0 5px rgba(255, 49, 49, 0.2); }
 }
 
-.search-box{
-  width:100%;
-  padding:14px;
-  font-size:18px;
-  margin-bottom:10px;
-  background:#111;
-  border:1px solid #444;
-  color:#fff;
+/* 內部站別分組樣式 */
+.group-title {
+  color: #aaa;
+  font-size: 16px;
+  font-weight: bold;
+  border-bottom: 1px solid #333;
+  margin: 10px 0 5px 0;
+  padding-bottom: 2px;
 }
 
-table{ width:100%; border-collapse:collapse; font-size:16px;}
-th{ background:#1a1a1a; color:var(--blue);}
-th,td{ padding:12px; border-bottom:1px solid #222; text-align:center;}
+.person-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 0;
+  border-bottom: 1px multisolid #222;
+}
 
-.status-in{ color:#00ff88; font-weight:bold;}
-.status-out{ color:#ffb300; font-weight:bold;}
-.status-pending{ color:#ff3b3b; font-weight:bold;}
+.person-info { font-weight: 500; }
+.person-attr { color: #888; font-size: 15px; }
+
+/* 搜尋與表格 */
+.search-box {
+  width: 100%;
+  padding: 15px;
+  font-size: 18px;
+  margin-bottom: 15px;
+  background: #151515;
+  border: 1px solid #444;
+  color: #fff;
+  border-radius: 8px;
+  box-sizing: border-box;
+}
+
+table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+th { background: #1a1a1a; color: var(--blue); padding: 12px; font-size: 16px; text-align: center; }
+td { padding: 12px; border-bottom: 1px solid #222; text-align: center; font-size: 16px; }
+
+.status-in { color: var(--green); font-weight: bold; }
+.status-out { color: var(--orange); font-weight: bold; }
+.status-pending { color: var(--red); font-weight: bold; }
+
+.section-header {
+  font-size: 20px;
+  font-weight: 900;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+}
 </style>
 </head>
 
 <body>
 
-<h2>📋 DPAC 現場出勤名單</h2>
+<h2>📋 DPCA 現場出勤名單</h2>
 
 <div id="inBox" class="section in-box"></div>
 <div id="outBox" class="section out-box"></div>
 <div id="pendingBox" class="section pending-box"></div>
 
-<input id="search-input" class="search-box" placeholder="🔍 搜尋站別、姓名..." onkeyup="renderTable()">
+<input id="search-input" class="search-box" placeholder="🔍 搜尋站別、姓名、屬性..." onkeyup="renderTable()">
 
 <table>
-<thead>
-<tr>
-<th>站別</th><th>姓名</th><th>屬性</th><th>狀態</th><th>時間</th>
-</tr>
-</thead>
-<tbody id="table-body"></tbody>
+  <thead>
+    <tr>
+      <th>站別</th><th>姓名</th><th>屬性</th><th>狀態</th>
+    </tr>
+  </thead>
+  <tbody id="table-body"></tbody>
 </table>
 
 <script>
-const API="https://script.google.com/macros/s/AKfycbwFMuR1LuYeMZyK7D7Ym1n7-4sZ97ThD_5v52j_zsxIvpScfgAoEx-DAWLJB_d8Vmbf/exec";
-let allData=[];
+const API = "https://script.google.com/macros/s/AKfycbwFMuR1LuYeMZyK7D7Ym1n7-4sZ97ThD_5v52j_zsxIvpScfgAoEx-DAWLJB_d8Vmbf/exec";
+let allData = [];
 
-/* ⭐ 狀態判斷 (修正重點：包含「已」字) */
-function getType(s){
-  s=(s||"").trim();
-  if(s === "已報到" || s === "報到") return "in";
-  if(s === "已報退" || s === "報退") return "out";
+/* ⭐ 狀態判斷 */
+function getType(s) {
+  s = (s || "").trim();
+  if (s === "已報到" || s === "報到") return "in";
+  if (s === "已報退" || s === "報退") return "out";
   return "pending";
 }
 
-/* 排序邏輯 */
-function sortData(data){
-  return data.sort((a,b)=>{
-    const rank = r => {
-      let t = getType(r.status);
-      if(t === "in") return 0;
-      if(t === "out") return 1;
-      return 2;
-    };
-
-    let d = rank(a) - rank(rank(b)); // 優先按狀態排序
-    if(d) return d;
-
-    // 同狀態下按站別與姓名排序
-    return (a.station||"").localeCompare(b.station||"",'zh-Hant') || 
-           (a.name||"").localeCompare(b.name||"",'zh-Hant');
+/* ⭐ 排序邏輯：站別 > 姓名 > 屬性 */
+function sortData(data) {
+  return [...data].sort((a, b) => {
+    return (a.station || "").localeCompare(b.station || "", 'zh-Hant') ||
+           (a.name || "").localeCompare(b.name || "", 'zh-Hant') ||
+           (a.attr || "").localeCompare(b.attr || "", 'zh-Hant');
   });
 }
 
-/* 更新上方統計區 */
-function renderSections(data){
-  let inL=[], outL=[], penL=[];
+/* ⭐ 渲染分組區塊 (核心修正) */
+function renderSections(data) {
+  const sections = {
+    in: { id: "inBox", title: "🟢 已報到", color: "var(--green)" },
+    out: { id: "outBox", title: "🟡 已報退", color: "var(--orange)" },
+    pending: { id: "pendingBox", title: "🔴 未報到", color: "var(--red)" }
+  };
 
-  data.forEach(r=>{
-    let txt=`${r.station}-${r.name}(${r.attr})`;
-    let t=getType(r.status);
+  // 分組邏輯
+  const grouped = { in: {}, out: {}, pending: {} };
 
-    if(t==="in") inL.push(txt);
-    else if(t==="out") outL.push(txt);
-    else penL.push(txt);
+  data.forEach(r => {
+    const type = getType(r.status);
+    const station = r.station || "未分類站別";
+    if (!grouped[type][station]) grouped[type][station] = [];
+    grouped[type][station].push(r);
   });
 
-  document.getElementById("inBox").innerHTML=`🟢 已報到 (${inL.length})<br>${inL.join("、")}`;
-  document.getElementById("outBox").innerHTML=`🟡 已報退 (${outL.length})<br>${outL.join("、")}`;
-  document.getElementById("pendingBox").innerHTML=`🔴 未報到 (${penL.length})<br>${penL.join("、")}`;
+  // 產出 HTML
+  Object.keys(sections).forEach(type => {
+    const config = sections[type];
+    const stationData = grouped[type];
+    const stationNames = Object.keys(stationData).sort((a, b) => a.localeCompare(b, 'zh-Hant'));
+    
+    let totalCount = 0;
+    let html = '';
+
+    stationNames.forEach(stName => {
+      html += `<div class="group-title">${stName}</div>`;
+      const people = stationData[stName].sort((a, b) => (a.name || "").localeCompare(b.name || "", 'zh-Hant'));
+      people.forEach(p => {
+        totalCount++;
+        html += `
+          <div class="person-row">
+            <div class="person-info">${p.name}</div>
+            <div class="person-attr">(${p.attr || '無屬性'})</div>
+          </div>`;
+      });
+    });
+
+    document.getElementById(config.id).innerHTML = `
+      <div class="section-header" style="color:${config.color}">
+        <span>${config.title}</span>
+        <span>${totalCount} 人</span>
+      </div>
+      ${totalCount > 0 ? html : '<div style="color:#444; font-size:14px;">暫無資料</div>'}
+    `;
+  });
 }
 
-/* 更新表格內容 */
-function renderTable(){
+/* ⭐ 渲染表格 */
+function renderTable() {
   const q = document.getElementById("search-input").value.toLowerCase();
   const sorted = sortData(allData);
 
   renderSections(sorted);
 
   const filtered = sorted.filter(r => 
-    (r.name||"").toLowerCase().includes(q) ||
-    (r.station||"").toLowerCase().includes(q) ||
-    (r.attr||"").toLowerCase().includes(q)
+    (r.name || "").toLowerCase().includes(q) ||
+    (r.station || "").toLowerCase().includes(q) ||
+    (r.attr || "").toLowerCase().includes(q)
   );
 
   document.getElementById("table-body").innerHTML = filtered.map(r => {
-    let t = getType(r.status);
-    let cls = t === "in" ? "status-in" : (t === "out" ? "status-out" : "status-pending");
-    let statusText = r.status || "未報到";
-
-    return `<tr>
-      <td>${r.station}</td>
-      <td style="font-weight:bold;font-size:18px;">${r.name}</td>
-      <td>${r.attr}</td>
-      <td class="${cls}">${statusText}</td>
-      <td>${r.time || "-"}</td>
-    </tr>`;
+    const type = getType(r.status);
+    const cls = type === "in" ? "status-in" : (type === "out" ? "status-out" : "status-pending");
+    return `
+      <tr>
+        <td>${r.station}</td>
+        <td style="font-weight:bold; font-size:18px;">${r.name}</td>
+        <td>${r.attr}</td>
+        <td class="${cls}">${r.status || "未報到"}</td>
+      </tr>`;
   }).join("");
 }
 
 /* 載入數據 */
-async function loadList(){
-  try{
+async function loadList() {
+  try {
     const res = await fetch(API + "?action=load&_t=" + Date.now()).then(r => r.json());
-    if(res.ok){
+    if (res.ok) {
       allData = res.data;
       renderTable();
     }
-  } catch(e) { 
-    console.log("連線錯誤"); 
+  } catch (e) {
+    console.error("Data Load Failed");
   }
 }
 
