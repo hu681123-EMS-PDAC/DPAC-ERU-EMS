@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>DPAC 現場動態</title>
+<title>DPAC 現場動態戰報</title>
 <style>
   :root { 
-    --bg: #000; --card: #111; --border: #333;
+    --bg: #000; --card: #121212; --border: #333;
     --cyan: #00e5ff; --green: #39ff14; --orange: #ff9100; 
     --red: #ff3131; --purple: #bc13fe; --pink: #ff00ff; --lime: #ccff00;
   }
@@ -17,107 +17,110 @@
     display: flex; flex-direction: column; align-items: center;
   }
 
-  .container { width: 100%; max-width: 500px; }
+  .wrapper { width: 100%; max-width: 500px; }
   
   h2 { 
-    text-align: center; color: var(--cyan); font-size: 32px; font-weight: 900;
-    margin: 10px 0 20px 0; letter-spacing: 2px; text-shadow: 0 0 10px rgba(0,229,255,0.5);
+    text-align: center; color: var(--cyan); font-size: 30px; font-weight: 900;
+    margin: 15px 0 25px 0; letter-spacing: 2px; text-shadow: 0 0 10px rgba(0,229,255,0.5);
   }
 
-  .label { font-size: 18px; color: #aaa; margin: 20px 0 10px 5px; border-left: 5px solid var(--cyan); padding-left: 10px; font-weight: bold; }
+  .section-label { 
+    font-size: 18px; color: #888; margin: 25px 0 12px 5px; 
+    border-left: 5px solid var(--cyan); padding-left: 12px; font-weight: bold;
+  }
 
-  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
 
   .card { 
-    background: var(--card); border: 1px solid var(--border); border-radius: 15px;
-    padding: 20px 10px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    background: var(--card); border: 1px solid var(--border); border-radius: 18px;
+    padding: 22px 10px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.8);
   }
 
-  .card.full { grid-column: span 2; display: flex; justify-content: space-between; align-items: center; padding: 20px 30px; }
+  .card.full { grid-column: span 2; display: flex; justify-content: space-between; align-items: center; padding: 22px 35px; }
 
-  .title { font-size: 16px; color: #999; margin-bottom: 5px; font-weight: bold; }
-  .value { font-size: 46px; font-weight: 900; font-family: 'Arial Black', sans-serif; line-height: 1; }
+  .card-title { font-size: 17px; color: #bbb; margin-bottom: 8px; font-weight: bold; }
+  .card-value { font-size: 48px; font-weight: 900; font-family: 'Arial Black', sans-serif; line-height: 1; }
 
-  /* 色彩控制 */
   .c-cyan { color: var(--cyan); } .c-green { color: var(--green); }
   .c-orange { color: var(--orange); } .c-red { color: var(--red); }
   .c-purple { color: var(--purple); } .c-lime { color: var(--lime); } .c-pink { color: var(--pink); }
 
-  #btn { 
-    width: 100%; padding: 20px; margin-top: 30px; border-radius: 12px;
-    background: #222; color: #fff; border: 1px solid #444; font-size: 20px; font-weight: 800;
+  #refresh-btn { 
+    width: 100%; padding: 22px; margin-top: 35px; border-radius: 16px;
+    background: #1a1a1a; color: #fff; border: 1px solid #444; font-size: 22px; font-weight: 800;
     cursor: pointer; transition: 0.2s;
   }
-  #btn:active { background: #333; transform: scale(0.98); border-color: var(--cyan); }
+  #refresh-btn:active { background: #333; border-color: var(--cyan); }
 
-  .time { text-align: center; font-size: 14px; color: #555; margin-top: 20px; font-weight: bold; }
+  .status-info { text-align: center; font-size: 15px; color: #666; margin-top: 25px; font-weight: bold; }
 </style>
 </head>
 <body>
 
-<div class="container">
-  <h2>📊 現場動態</h2>
+<div class="wrapper">
+  <h2>📊 DPCA大甲媽祖現場動態</h2>
 
-  <div class="label">OVERALL 數據統計</div>
+  <div class="section-label">系統總結數據</div>
   <div class="grid">
     <div class="card full">
-      <div class="title">總編制人數</div>
-      <div class="value c-cyan" id="total-count">-</div>
+      <div class="card-title">總編制人數</div>
+      <div class="card-value c-cyan" id="total-count">-</div>
     </div>
     <div class="card">
-      <div class="title">🟢 站內執勤</div>
-      <div class="value c-green" id="in-count">-</div>
+      <div class="card-title">🟢 站內執勤</div>
+      <div class="card-value c-green" id="in-count">-</div>
     </div>
     <div class="card">
-      <div class="title">🏠 報退下哨</div>
-      <div class="value c-orange" id="out-count">-</div>
+      <div class="card-title">🏠 報退下哨</div>
+      <div class="card-value c-orange" id="out-count">-</div>
     </div>
     <div class="card">
-      <div class="title">⚠️ 尚未報到</div>
-      <div class="value c-red" id="pending-count">-</div>
+      <div class="card-title">⚠️ 尚未報到</div>
+      <div class="card-value c-red" id="pending-count">-</div>
     </div>
     <div class="card">
-      <div class="title">📍 啟用站點</div>
-      <div class="value c-purple" id="station-count">-</div>
+      <div class="card-title">📍 啟用站點</div>
+      <div class="card-value c-purple" id="station-count">-</div>
     </div>
   </div>
 
-  <div class="label">UNITS 單位明細 (在站)</div>
+  <div class="section-label">各點即時人力</div>
   <div class="grid">
     <div class="card">
-      <div class="title">溪洲后天宮</div>
-      <div class="value c-cyan" id="xizhou-count">-</div>
+      <div class="card-title">溪洲后天宮</div>
+      <div class="card-value c-cyan" id="xizhou-count">-</div>
     </div>
     <div class="card">
-      <div class="title">步行隊</div>
-      <div class="value c-lime" id="walking-count">-</div>
+      <div class="card-title">步行隊</div>
+      <div class="card-value c-lime" id="walking-count">-</div>
     </div>
     <div class="card">
-      <div class="title">西螺大橋北站</div>
-      <div class="value c-orange" id="beiduan-count">-</div>
+      <div class="card-title">西螺大橋北站</div>
+      <div class="card-value c-orange" id="beiduan-count">-</div>
     </div>
     <div class="card">
-      <div class="title">支援組</div>
-      <div class="value c-pink" id="support-count">-</div>
+      <div class="card-title">支援組</div>
+      <div class="card-value c-pink" id="support-count">-</div>
     </div>
   </div>
 
-  <button id="btn" onclick="fetchData()">🔄 刷新即時戰報</button>
-  <div class="time" id="update-time">最後同步：尚未更新</div>
+  <button id="refresh-btn" onclick="syncData()">🔄 刷新數據</button>
+  <div class="status-info" id="msg">最後同步：尚未連線</div>
 </div>
 
 <script>
-  // ⚠️ 請替換為您部署後的 GAS 網址
-  const URL = "https://script.google.com/macros/s/AKfycbzly1r_RHMX3P5p13_Dg5k7ESVEI2V768fpwlamarKVypzItA2ir31CbkGjKJWccia-/exec";
+  // ⚠️ 請換成您重新部署後的新網址
+  const GAS_URL = "https://script.google.com/macros/s/AKfycby_gu3y8u1rkkABrtXHiZ2Zhwdx5sxYKftNB7SX_Rx01rmCFfXvN0TNH1fs8X19fe0E/exec";
 
-  async function fetchData() {
-    const btn = document.getElementById('btn');
-    btn.innerText = "⚡ 同步中...";
+  async function syncData() {
+    const btn = document.getElementById('refresh-btn');
+    const msg = document.getElementById('msg');
+    btn.innerText = "⏳ 數據同步中...";
     btn.disabled = true;
 
     try {
-      const response = await fetch(`${URL}?action=load&t=${Date.now()}`);
-      const data = await response.json();
+      const res = await fetch(`${GAS_URL}?t=${Date.now()}`);
+      const data = await res.json();
       
       if (data && data.stats) {
         const s = data.stats;
@@ -132,18 +135,18 @@
         document.getElementById('beiduan-count').innerText = s.beiduan || 0;
         document.getElementById('support-count').innerText = s.support || 0;
 
-        document.getElementById('update-time').innerText = "✅ 最後同步：" + new Date().toLocaleTimeString();
+        msg.innerText = "✅ 同步成功：" + new Date().toLocaleTimeString();
       }
-    } catch (err) {
-      document.getElementById('update-time').innerText = "❌ 同步失敗，請檢查網路";
+    } catch (e) {
+      msg.innerText = "❌ 連線失敗，請檢查網路或 API 權限";
     } finally {
-      btn.innerText = "🔄 刷新即時戰報";
+      btn.innerText = "🔄 刷新數據";
       btn.disabled = false;
     }
   }
 
-  fetchData();
-  setInterval(fetchData, 30000); // 30秒自動刷新
+  syncData();
+  setInterval(syncData, 30000); // 30秒自動刷新一次
 </script>
 </body>
 </html>
