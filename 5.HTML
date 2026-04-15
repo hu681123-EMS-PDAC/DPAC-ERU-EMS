@@ -5,56 +5,120 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>⚠️ 尚未報到清單</title>
 <style>
-  :root { --bg: #000; --card-bg: #110505; --red: #ff3131; --orange: #ff9f00; --text: #fff; --border: #4a1a1a; }
-  body { background: var(--bg); color: var(--text); font-family: sans-serif; padding: 15px; margin: 0; }
+  :root { 
+    --bg: #000; --card-bg: #0f0505; --red: #ff3131; --orange: #ff9100; 
+    --blue: #00e5ff; --text: #ffffff; --border: #4a1a1a; 
+  }
+  body { 
+    background: var(--bg); color: var(--text); 
+    font-family: -apple-system, "Microsoft JhengHei", sans-serif; 
+    padding: 15px; margin: 0; 
+  }
   
-  .header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid var(--red); padding-bottom: 10px; }
-  h2 { color: var(--red); font-size: 28px; margin: 0; text-shadow: 0 0 10px rgba(255, 49, 49, 0.5); }
-  .counter { font-size: 18px; color: var(--orange); margin-top: 5px; font-weight: bold; }
+  .header { text-align: center; margin-bottom: 20px; border-bottom: 3px solid var(--red); padding-bottom: 12px; }
+  h2 { color: var(--red); font-size: 30px; margin: 0; text-shadow: 0 0 15px rgba(255, 49, 49, 0.6); font-weight: 900; }
+  .counter { font-size: 20px; color: var(--orange); margin-top: 8px; font-weight: bold; }
 
-  .search-box { width: 100%; padding: 15px; background: #222; border: 1px solid var(--border); border-radius: 10px; color: white; font-size: 18px; margin-bottom: 15px; box-sizing: border-box; outline: none; }
-  .search-box:focus { border-color: var(--red); box-shadow: 0 0 10px rgba(255, 49, 49, 0.3); }
+  .search-box { 
+    width: 100%; padding: 18px; background: #151515; border: 2px solid var(--border); 
+    border-radius: 12px; color: white; font-size: 20px; margin-bottom: 20px; 
+    box-sizing: border-box; outline: none; 
+  }
+  .search-box:focus { border-color: var(--red); box-shadow: 0 0 15px rgba(255, 49, 49, 0.4); }
 
-  .list-container { display: flex; flex-direction: column; gap: 10px; }
-  .member-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 15px; display: flex; justify-content: space-between; align-items: center; }
-  .info-left { display: flex; flex-direction: column; }
-  .station-tag { font-size: 12px; color: #888; text-transform: uppercase; margin-bottom: 4px; }
-  .name-text { font-size: 22px; font-weight: bold; color: #fff; }
-  .phone-link { font-size: 14px; color: var(--red); text-decoration: none; margin-top: 5px; }
+  .list-container { display: flex; flex-direction: column; gap: 12px; }
   
-  #loading { text-align: center; color: #888; padding: 40px; font-size: 20px; }
-  #empty-msg { text-align: center; color: #39ff14; padding: 40px; font-size: 24px; display: none; font-weight: bold; }
+  /* ⭐ 會員卡片優化：一行一人 */
+  .member-card { 
+    background: var(--card-bg); border: 2px solid var(--border); border-radius: 15px; 
+    padding: 16px; display: flex; justify-content: space-between; align-items: center;
+    box-shadow: 0 4px 10px rgba(255, 0, 0, 0.1);
+  }
+  
+  .info-left { display: flex; flex-direction: column; gap: 4px; }
+  .station-tag { font-size: 14px; color: var(--blue); font-weight: bold; letter-spacing: 1px; }
+  .name-row { display: flex; align-items: center; gap: 10px; }
+  .name-text { font-size: 24px; font-weight: 900; color: #fff; }
+  .attr-tag { font-size: 16px; font-weight: bold; }
+  
+  /* 屬性色彩與圖示 */
+  .attr-nurse { color: #ff00ff; } /* 護理師 */
+  .attr-emt2 { color: #00e5ff; }  /* EMT-2 */
+  .attr-emt1 { color: #39ff14; }  /* EMT-1 */
+  .attr-bls { color: #ffffff; }   /* BLS */
+  .attr-specialist { color: #ffeb3b; } /* 防災士 */
+
+  .phone-btn { 
+    display: inline-block; background: #222; border: 1px solid var(--red);
+    color: var(--red); text-decoration: none; padding: 8px 12px; border-radius: 8px;
+    font-size: 16px; font-weight: bold; margin-top: 8px; text-align: center;
+  }
+
+  #loading { text-align: center; color: #888; padding: 50px; font-size: 22px; font-weight: bold; }
+  #empty-msg { text-align: center; color: #39ff14; padding: 60px; font-size: 28px; display: none; font-weight: 900; line-height: 1.5; }
 </style>
 </head>
 <body>
 
   <div class="header">
-    <h2>⚠️ 尚未報到人員</h2>
+    <h2>⚠️ DPCA 尚未報到人員</h2>
     <div class="counter">剩餘 <span id="count-num">0</span> 人未到</div>
   </div>
 
   <input type="text" id="search-input" class="search-box" placeholder="🔍 搜尋站別或姓名..." onkeyup="filterList()">
   
-  <div id="loading">⏳ 正在掃描名單...</div>
-  <div id="empty-msg">🎉 太棒了！全員報到完成！</div>
+  <div id="loading">⏳ 正在掃描雲端名單...</div>
+  <div id="empty-msg">🎉 太棒了！<br>全員報到完成！</div>
   
   <div id="list-container" class="list-container"></div>
 
 <script>
+  // 🔗 請確保網址為您最新部署的 GAS API
   const API = "https://script.google.com/macros/s/AKfycbxKJGoKVQcMbuv6TV_Gka38ijUf8-NitIfpX4lzK3XIwea0ERsmFLDENw3CKGJgkw/exec";
   let pendingData = [];
+
+  // ⭐ 屬性排名與圖示定義 (與作業系統同步)
+  const ATTR_CONFIG = {
+    "護理師": { rank: 1, icon: "🩺", class: "attr-nurse" },
+    "EMT-2": { rank: 2, icon: "🚑", class: "attr-emt2" },
+    "EMT2": { rank: 2, icon: "🚑", class: "attr-emt2" },
+    "EMT-1": { rank: 3, icon: "🩹", class: "attr-emt1" },
+    "EMT1": { rank: 3, icon: "🩹", class: "attr-emt1" },
+    "BLS": { rank: 4, icon: "⛑️", class: "attr-bls" },
+    "防災士": { rank: 5, icon: "🛡️", class: "attr-specialist" }
+  };
+
+  function getAttrInfo(attr) {
+    attr = (attr || "").toUpperCase();
+    for (let key in ATTR_CONFIG) {
+      if (attr.includes(key)) return ATTR_CONFIG[key];
+    }
+    return { rank: 99, icon: "👤", class: "" };
+  }
 
   async function loadPending() {
     try {
       const res = await fetch(API + "?action=load&_t=" + Date.now()).then(r=>r.json());
       if(res.ok) {
-        // 過濾出「尚未報到」的人員
-        pendingData = res.data.filter(m => m.status === "未報到" || m.status === "");
+        // 1. 過濾出「尚未報到」的人員
+        let rawPending = res.data.filter(m => m.status === "未報到" || m.status === "" || !m.status);
+        
+        // 2. 執行嚴格排序：站別 > 專業等級 > 姓名
+        rawPending.sort((a, b) => {
+          const stCompare = (a.station || "").localeCompare(b.station || "", 'zh-Hant');
+          if (stCompare !== 0) return stCompare;
+          const rankA = getAttrInfo(a.attr).rank;
+          const rankB = getAttrInfo(b.attr).rank;
+          if (rankA !== rankB) return rankA - rankB;
+          return (a.name || "").localeCompare(b.name || "", 'zh-Hant');
+        });
+
+        pendingData = rawPending;
         renderList();
         document.getElementById("loading").style.display = "none";
       }
     } catch(e) { 
-      document.getElementById("loading").innerText = "❌ 載入失敗，請檢查網路"; 
+      document.getElementById("loading").innerText = "❌ 載入失敗，請檢查網路連接"; 
     }
   }
 
@@ -66,7 +130,8 @@
     
     // 執行搜尋過濾
     const filtered = pendingData.filter(m => 
-      m.station.toLowerCase().includes(query) || m.name.toLowerCase().includes(query)
+      (m.station || "").toLowerCase().includes(query) || 
+      (m.name || "").toLowerCase().includes(query)
     );
 
     countNum.innerText = filtered.length;
@@ -76,23 +141,31 @@
       container.innerHTML = "";
     } else {
       emptyMsg.style.display = "none";
-      container.innerHTML = filtered.map(m => `
-        <div class="member-card">
-          <div class="info-left">
-            <span class="station-tag">${m.station}</span>
-            <span class="name-text">${m.name}</span>
-            ${m.phone ? `<a href="tel:${m.phone}" class="phone-link">📞 撥打電話: ${m.phone}</a>` : ''}
+      container.innerHTML = filtered.map(m => {
+        const info = getAttrInfo(m.attr);
+        return `
+          <div class="member-card">
+            <div class="info-left">
+              <span class="station-tag">${m.station}</span>
+              <div class="name-row">
+                <span class="name-text">${m.name}</span>
+                <span class="attr-tag ${info.class}">${info.icon} ${m.attr || ''}</span>
+              </div>
+              ${m.phone ? `<a href="tel:${m.phone}" class="phone-btn">📞 撥打緊急電話: ${m.phone}</a>` : ''}
+            </div>
+            <div style="color: var(--red); font-size: 32px; font-weight: bold;">🚫</div>
           </div>
-          <div style="color: #444; font-size: 24px;">🚫</div>
-        </div>
-      `).join("");
+        `;
+      }).join("");
     }
   }
 
   function filterList() { renderList(); }
   
-  // 每 60 秒自動重新整理一次，保持數據最新
+  // 初始化載入
   loadPending();
+  
+  // 每 60 秒自動重新整理
   setInterval(loadPending, 60000);
 </script>
 </body>
