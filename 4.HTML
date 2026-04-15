@@ -17,14 +17,8 @@ body{
   padding:10px;
 }
 
-/* 標題 */
-h2{
-  text-align:center;
-  color:var(--blue);
-  font-size:26px;
-}
+h2{ text-align:center; color:var(--blue); font-size:26px; }
 
-/* ⭐ 區塊 */
 .section{
   margin-bottom:10px;
   padding:10px;
@@ -40,14 +34,12 @@ h2{
   animation: blink 1s infinite;
 }
 
-/* 🚨 閃爍紅燈 */
 @keyframes blink{
   0%{ box-shadow:0 0 5px red; }
   50%{ box-shadow:0 0 20px red; }
   100%{ box-shadow:0 0 5px red; }
 }
 
-/* 搜尋 */
 .search-box{
   width:100%;
   padding:14px;
@@ -58,9 +50,8 @@ h2{
   color:#fff;
 }
 
-/* 表格 */
 table{ width:100%; border-collapse:collapse; font-size:16px;}
-th{ background:#1a1a1a; color:#00e5ff;}
+th{ background:#1a1a1a; color:var(--blue);}
 th,td{ padding:12px; border-bottom:1px solid #222; text-align:center;}
 
 .status-in{ color:#00ff88; font-weight:bold;}
@@ -73,12 +64,11 @@ th,td{ padding:12px; border-bottom:1px solid #222; text-align:center;}
 
 <h2>📋 現場出勤名單</h2>
 
-<!-- ⭐ 指揮區 -->
 <div id="inBox" class="section in-box"></div>
 <div id="outBox" class="section out-box"></div>
 <div id="pendingBox" class="section pending-box"></div>
 
-<input id="search-input" class="search-box" placeholder="🔍 搜尋..." onkeyup="renderTable()">
+<input id="search-input" class="search-box" placeholder="🔍 搜尋站別、姓名..." onkeyup="renderTable()">
 
 <table>
 <thead>
@@ -93,32 +83,36 @@ th,td{ padding:12px; border-bottom:1px solid #222; text-align:center;}
 const API="https://script.google.com/macros/s/AKfycbwFMuR1LuYeMZyK7D7Ym1n7-4sZ97ThD_5v52j_zsxIvpScfgAoEx-DAWLJB_d8Vmbf/exec";
 let allData=[];
 
-/* ⭐ 狀態判斷（修正BUG） */
+/* ⭐ 狀態判斷 (修正重點：包含「已」字) */
 function getType(s){
   s=(s||"").trim();
-  if(s==="報到") return "in";
-  if(s==="報退") return "out";
+  if(s === "已報到" || s === "報到") return "in";
+  if(s === "已報退" || s === "報退") return "out";
   return "pending";
 }
 
-/* 排序 */
+/* 排序邏輯 */
 function sortData(data){
   return data.sort((a,b)=>{
-    const rank = r => getType(r.status)==="in"?0:
-                       getType(r.status)==="out"?1:2;
+    const rank = r => {
+      let t = getType(r.status);
+      if(t === "in") return 0;
+      if(t === "out") return 1;
+      return 2;
+    };
 
-    let d=rank(a)-rank(b);
+    let d = rank(a) - rank(rank(b)); // 優先按狀態排序
     if(d) return d;
 
-    if(a.station!==b.station) return (a.station||"").localeCompare(b.station||"",'zh-Hant');
-    if(a.attr!==b.attr) return (a.attr||"").localeCompare(b.attr||"",'zh-Hant');
-    return (a.name||"").localeCompare(b.name||"",'zh-Hant');
+    // 同狀態下按站別與姓名排序
+    return (a.station||"").localeCompare(b.station||"",'zh-Hant') || 
+           (a.name||"").localeCompare(b.name||"",'zh-Hant');
   });
 }
 
-/* 區塊 */
+/* 更新上方統計區 */
 function renderSections(data){
-  let inL=[],outL=[],penL=[];
+  let inL=[], outL=[], penL=[];
 
   data.forEach(r=>{
     let txt=`${r.station}-${r.name}(${r.attr})`;
@@ -129,50 +123,54 @@ function renderSections(data){
     else penL.push(txt);
   });
 
-  document.getElementById("inBox").innerHTML=`🟢 報到 (${inL.length})<br>${inL.join("<br>")}`;
-  document.getElementById("outBox").innerHTML=`🟡 報退 (${outL.length})<br>${outL.join("<br>")}`;
-  document.getElementById("pendingBox").innerHTML=`🔴 未報到 (${penL.length})<br>${penL.join("<br>")}`;
+  document.getElementById("inBox").innerHTML=`🟢 已報到 (${inL.length})<br>${inL.join("、")}`;
+  document.getElementById("outBox").innerHTML=`🟡 已報退 (${outL.length})<br>${outL.join("、")}`;
+  document.getElementById("pendingBox").innerHTML=`🔴 未報到 (${penL.length})<br>${penL.join("、")}`;
 }
 
-/* 表格 */
+/* 更新表格內容 */
 function renderTable(){
-  const q=document.getElementById("search-input").value.toLowerCase();
-  const data=sortData(allData);
+  const q = document.getElementById("search-input").value.toLowerCase();
+  const sorted = sortData(allData);
 
-  renderSections(data);
+  renderSections(sorted);
 
-  document.getElementById("table-body").innerHTML=data
-  .filter(r=>
-    (r.name||"").toLowerCase().includes(q)||
-    (r.station||"").toLowerCase().includes(q)||
+  const filtered = sorted.filter(r => 
+    (r.name||"").toLowerCase().includes(q) ||
+    (r.station||"").toLowerCase().includes(q) ||
     (r.attr||"").toLowerCase().includes(q)
-  )
-  .map(r=>{
-    let t=getType(r.status);
-    let cls = t==="in"?"status-in":t==="out"?"status-out":"status-pending";
+  );
+
+  document.getElementById("table-body").innerHTML = filtered.map(r => {
+    let t = getType(r.status);
+    let cls = t === "in" ? "status-in" : (t === "out" ? "status-out" : "status-pending");
+    let statusText = r.status || "未報到";
 
     return `<tr>
       <td>${r.station}</td>
       <td style="font-weight:bold;font-size:18px;">${r.name}</td>
       <td>${r.attr}</td>
-      <td class="${cls}">${r.status||"未報到"}</td>
-      <td>${r.time||"-"}</td>
+      <td class="${cls}">${statusText}</td>
+      <td>${r.time || "-"}</td>
     </tr>`;
   }).join("");
 }
 
-/* 載入 */
+/* 載入數據 */
 async function loadList(){
   try{
-    const res=await fetch(API+"?action=load&_t="+Date.now()).then(r=>r.json());
+    const res = await fetch(API + "?action=load&_t=" + Date.now()).then(r => r.json());
     if(res.ok){
-      allData=res.data;
+      allData = res.data;
       renderTable();
     }
-  }catch(e){console.log("error")}
+  } catch(e) { 
+    console.log("連線錯誤"); 
+  }
 }
 
-setInterval(loadList,30000);
+// 每 30 秒自動更新
+setInterval(loadList, 30000);
 loadList();
 </script>
 
