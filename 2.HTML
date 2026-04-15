@@ -5,277 +5,145 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>DPAC 現場動態戰報</title>
 <style>
-  /* 🌈 高對比霓虹色彩定義 */
   :root { 
-    --bg: #000000; 
-    --card-bg: #121212; 
-    --blue: #00e5ff; 
-    --green: #39ff14; 
-    --orange: #ff9100; 
-    --purple: #bc13fe; 
-    --red: #ff3131; 
-    --cyan: #00f2ff;
-    --lime: #ccff00;
-    --pink: #ff00ff;
-    --text: #ffffff; 
+    --bg: #000; --card: #111; --border: #333;
+    --cyan: #00e5ff; --green: #39ff14; --orange: #ff9100; 
+    --red: #ff3131; --purple: #bc13fe; --pink: #ff00ff; --lime: #ccff00;
   }
   
-  * { box-sizing: border-box; }
-
   body { 
-    background: var(--bg); 
-    color: var(--text); 
-    font-family: -apple-system, "Microsoft JhengHei", "Segoe UI", sans-serif; 
-    padding: 15px; 
-    margin: 0; 
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    line-height: 1.5;
-  }
-  
-  .wrapper {
-    width: 100%;
-    max-width: 600px;
+    background: var(--bg); color: #fff; margin: 0; padding: 15px;
+    font-family: -apple-system, "Microsoft JhengHei", sans-serif;
+    display: flex; flex-direction: column; align-items: center;
   }
 
-  /* 📌 標題中大字體 */
+  .container { width: 100%; max-width: 500px; }
+  
   h2 { 
-    text-align: center; 
-    color: var(--blue); 
-    font-size: 32px; 
-    margin: 15px 0 25px 0; 
-    font-weight: 900; 
-    letter-spacing: 3px;
-    text-shadow: 0 0 15px rgba(0, 229, 255, 0.4);
-  }
-  
-  .section-title { 
-    font-size: 18px; 
-    color: #cccccc; 
-    margin: 25px 0 12px 5px; 
-    border-left: 6px solid var(--blue); 
-    padding-left: 12px; 
-    font-weight: bold;
-    text-transform: uppercase;
+    text-align: center; color: var(--cyan); font-size: 32px; font-weight: 900;
+    margin: 10px 0 20px 0; letter-spacing: 2px; text-shadow: 0 0 10px rgba(0,229,255,0.5);
   }
 
-  /* 🧱 穩定的雙欄架構 */
-  .grid { 
-    display: grid; 
-    grid-template-columns: 1fr 1fr; 
-    gap: 15px; 
-  }
-  
-  .stat-card { 
-    background: var(--card-bg); 
-    border-radius: 18px; 
-    padding: 22px 10px; 
-    text-align: center; 
-    border: 1px solid #333333; 
-    box-shadow: 0 6px 20px rgba(0,0,0,0.8);
-    transition: transform 0.1s, border-color 0.2s;
-  }
-  
-  .stat-card:active { 
-    transform: scale(0.97); 
-    border-color: var(--blue); 
+  .label { font-size: 18px; color: #aaa; margin: 20px 0 10px 5px; border-left: 5px solid var(--cyan); padding-left: 10px; font-weight: bold; }
+
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  .card { 
+    background: var(--card); border: 1px solid var(--border); border-radius: 15px;
+    padding: 20px 10px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.5);
   }
 
-  .stat-card.full { 
-    grid-column: span 2; 
-    display: flex; 
-    justify-content: space-between; 
-    align-items: center; 
-    padding: 25px 35px; 
-  }
+  .card.full { grid-column: span 2; display: flex; justify-content: space-between; align-items: center; padding: 20px 30px; }
 
-  /* 🔠 字體放大與對比強化 */
-  .stat-title { font-size: 17px; color: #bbbbbb; margin-bottom: 8px; font-weight: bold; }
-  .stat-card.full .stat-title { margin-bottom: 0; font-size: 20px; }
-  .stat-value { font-size: 48px; font-weight: 900; font-family: 'Impact', 'Arial Black', sans-serif; line-height: 1; }
+  .title { font-size: 16px; color: #999; margin-bottom: 5px; font-weight: bold; }
+  .value { font-size: 46px; font-weight: 900; font-family: 'Arial Black', sans-serif; line-height: 1; }
 
-  /* 🎨 色彩分配 */
-  .c-blue { color: var(--blue); } 
-  .c-green { color: var(--green); }
-  .c-orange { color: var(--orange); } 
-  .c-red { color: var(--red); }
-  .c-purple { color: var(--purple); } 
-  .c-cyan { color: var(--cyan); }
-  .c-lime { color: var(--lime); } 
-  .c-pink { color: var(--pink); }
+  /* 色彩控制 */
+  .c-cyan { color: var(--cyan); } .c-green { color: var(--green); }
+  .c-orange { color: var(--orange); } .c-red { color: var(--red); }
+  .c-purple { color: var(--purple); } .c-lime { color: var(--lime); } .c-pink { color: var(--pink); }
 
-  /* 🖱️ 按鈕優化 */
-  #refresh-btn { 
-    width: 100%; 
-    padding: 22px; 
-    margin-top: 35px; 
-    background: linear-gradient(145deg, #1a1a1a, #000); 
-    color: var(--text); 
-    border: 1px solid #444; 
-    border-radius: 16px; 
-    font-size: 22px; 
-    font-weight: 800; 
-    cursor: pointer; 
-    box-shadow: 0 8px 15px rgba(0,0,0,0.5);
-    transition: 0.2s;
+  #btn { 
+    width: 100%; padding: 20px; margin-top: 30px; border-radius: 12px;
+    background: #222; color: #fff; border: 1px solid #444; font-size: 20px; font-weight: 800;
+    cursor: pointer; transition: 0.2s;
   }
-  
-  #refresh-btn:active { 
-    background: #333; 
-    border-color: var(--blue);
-  }
-  
-  #refresh-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
+  #btn:active { background: #333; transform: scale(0.98); border-color: var(--cyan); }
 
-  /* 🕒 狀態訊息提示 */
-  .update-time { 
-    text-align: center; 
-    font-size: 16px; 
-    color: #888888; 
-    margin: 25px 0; 
-    font-weight: bold;
-    padding: 10px;
-    border-radius: 8px;
-  }
-  .error-msg { color: var(--red); background: rgba(255,49,49,0.1); border: 1px solid var(--red); }
-
-  @media (max-width: 380px) {
-    .stat-value { font-size: 40px; }
-    h2 { font-size: 26px; }
-    .stat-card.full { padding: 20px; }
-  }
+  .time { text-align: center; font-size: 14px; color: #555; margin-top: 20px; font-weight: bold; }
 </style>
 </head>
 <body>
 
-  <div class="wrapper">
-    <h2>📊 現場動態戰報</h2>
+<div class="container">
+  <h2>📊 現場動態戰報</h2>
 
-    <div class="section-title">📊 總體數據概況</div>
-    <div class="grid">
-      <div class="stat-card full">
-        <div class="stat-title">總編制人數</div>
-        <div class="stat-value c-blue" id="total-count">-</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-title">🟢 站內執勤</div>
-        <div class="stat-value c-green" id="in-count">-</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-title">🏠 報退下哨</div>
-        <div class="stat-value c-orange" id="out-count">-</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-title">⚠️ 尚未報到</div>
-        <div class="stat-value c-red" id="pending-count">-</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-title">📍 啟用站點</div>
-        <div class="stat-value c-purple" id="station-count">-</div>
-      </div>
+  <div class="label">OVERALL 數據統計</div>
+  <div class="grid">
+    <div class="card full">
+      <div class="title">總編制人數</div>
+      <div class="value c-cyan" id="total-count">-</div>
     </div>
-
-    <div class="section-title">🏢 各單位執勤明細 (目前在站)</div>
-    <div class="grid">
-      <div class="stat-card">
-        <div class="stat-title">溪洲后天宮</div>
-        <div class="stat-value c-cyan" id="xizhou-count">-</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-title">步行隊</div>
-        <div class="stat-value c-lime" id="walking-count">-</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-title">西螺大橋北站</div>
-        <div class="stat-value c-orange" id="beiduan-count">-</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-title">支援組</div>
-        <div class="stat-value c-pink" id="support-count">-</div>
-      </div>
+    <div class="card">
+      <div class="title">🟢 站內執勤</div>
+      <div class="value c-green" id="in-count">-</div>
     </div>
-
-    <button id="refresh-btn" onclick="loadStats()">🔄 手動更新數據</button>
-    <div class="update-time" id="update-timer">最後更新時間：-- : -- : --</div>
+    <div class="card">
+      <div class="title">🏠 報退下哨</div>
+      <div class="value c-orange" id="out-count">-</div>
+    </div>
+    <div class="card">
+      <div class="title">⚠️ 尚未報到</div>
+      <div class="value c-red" id="pending-count">-</div>
+    </div>
+    <div class="card">
+      <div class="title">📍 啟用站點</div>
+      <div class="value c-purple" id="station-count">-</div>
+    </div>
   </div>
 
-<script>
-  const API = "https://script.google.com/macros/s/AKfycbzH6hGY9XVJuwKE1mgPxDGg-4pFkosMDXT8WRWQmQVIxrJ76hSiINKOjJm92K7_jgXf/exec";
-  
-  // 安全更新畫面函數 (無資料自動補 0)
-  function updateSafe(elementId, value) {
-    const el = document.getElementById(elementId);
-    if (el) {
-      el.innerText = (value !== undefined && value !== null && value !== "") ? value : 0;
-    }
-  }
+  <div class="label">UNITS 單位明細 (在站)</div>
+  <div class="grid">
+    <div class="card">
+      <div class="title">溪洲后天宮</div>
+      <div class="value c-cyan" id="xizhou-count">-</div>
+    </div>
+    <div class="card">
+      <div class="title">步行隊</div>
+      <div class="value c-lime" id="walking-count">-</div>
+    </div>
+    <div class="card">
+      <div class="title">西螺大橋北站</div>
+      <div class="value c-orange" id="beiduan-count">-</div>
+    </div>
+    <div class="card">
+      <div class="title">支援組</div>
+      <div class="value c-pink" id="support-count">-</div>
+    </div>
+  </div>
 
-  async function loadStats() {
-    const btn = document.getElementById("refresh-btn");
-    const timer = document.getElementById("update-timer");
-    
-    btn.innerText = "⏳ 正在拉取雲端數據...";
+  <button id="btn" onclick="fetchData()">🔄 刷新即時戰報</button>
+  <div class="time" id="update-time">最後同步：尚未更新</div>
+</div>
+
+<script>
+  // ⚠️ 請替換為您部署後的 GAS 網址
+  const URL = "https://script.google.com/macros/s/AKfycbzH6hGY9XVJuwKE1mgPxDGg-4pFkosMDXT8WRWQmQVIxrJ76hSiINKOjJm92K7_jgXf/exec";
+
+  async function fetchData() {
+    const btn = document.getElementById('btn');
+    btn.innerText = "⚡ 同步中...";
     btn.disabled = true;
-    timer.classList.remove("error-msg");
 
     try {
-      const response = await fetch(`${API}?action=load&_t=${Date.now()}`, { cache: "no-store" });
+      const response = await fetch(`${URL}?action=load&t=${Date.now()}`);
       const data = await response.json();
       
-      if (data && data.ok) {
-        const stats = data.stats || {};
-        
-        console.log("【後端真實數據】", stats);
+      if (data && data.stats) {
+        const s = data.stats;
+        document.getElementById('total-count').innerText = s.total || 0;
+        document.getElementById('in-count').innerText = s.in || 0;
+        document.getElementById('out-count').innerText = s.out || 0;
+        document.getElementById('pending-count').innerText = s.pending || 0;
+        document.getElementById('station-count').innerText = s.stations || 0;
 
-        // 1. 總體概況更新
-        updateSafe("total-count", stats.total); 
-        updateSafe("in-count", stats.in);        
-        updateSafe("out-count", stats.out);      
-        updateSafe("pending-count", stats.pending); 
-        updateSafe("station-count", stats.stations); 
+        document.getElementById('xizhou-count').innerText = s.xizhou || 0;
+        document.getElementById('walking-count').innerText = s.walking || 0;
+        document.getElementById('beiduan-count').innerText = s.beiduan || 0;
+        document.getElementById('support-count').innerText = s.support || 0;
 
-        // 2. 各單位明細更新
-        updateSafe("xizhou-count", stats.xizhou); 
-        updateSafe("walking-count", stats.walking); 
-        updateSafe("support-count", stats.support); 
-
-        // ==========================================
-        // 🚨 智慧攔截：針對西螺大橋北站的變數名稱進行多重猜測
-        // 因為不知道您的後端叫什麼，這裡直接把常見的名稱都寫上去
-        // 只要命中一個，畫面就會出現數字！
-        // ==========================================
-        const beiduanRealData = 
-          stats.beiduan || 
-          stats.xiluo || 
-          stats.north || 
-          stats['西螺大橋北站'] || 
-          stats['西螺北站'] || 
-          stats.station3 || 
-          0; // 如果全部都沒猜中，才顯示 0
-          
-        updateSafe("beiduan-count", beiduanRealData); 
-
-        timer.innerText = "✅ 最後更新：" + new Date().toLocaleTimeString('zh-TW', { hour12: false });
-      } else {
-        timer.innerText = "⚠️ 讀取完成，但雲端無資料";
-        timer.classList.add("error-msg");
+        document.getElementById('update-time').innerText = "✅ 最後同步：" + new Date().toLocaleTimeString();
       }
-    } catch(e) { 
-      console.error("網路連線錯誤:", e);
-      timer.innerText = "❌ 無法連線！請檢查網路";
-      timer.classList.add("error-msg");
+    } catch (err) {
+      document.getElementById('update-time').innerText = "❌ 同步失敗，請檢查網路";
     } finally {
-      btn.innerText = "🔄 手動更新數據";
+      btn.innerText = "🔄 刷新即時戰報";
       btn.disabled = false;
     }
   }
 
-  loadStats();
-  setInterval(loadStats, 30000); 
+  fetchData();
+  setInterval(fetchData, 30000); // 30秒自動刷新
 </script>
 </body>
 </html>
