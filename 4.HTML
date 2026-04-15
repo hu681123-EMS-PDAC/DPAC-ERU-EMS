@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>📋 現場出勤名單 (分組強化版)</title>
+<title>📋 現場出勤名單 (醫護優先排序版)</title>
 
 <style>
 :root {
@@ -24,14 +24,14 @@ body {
   line-height: 1.5;
 }
 
-h2 { text-align: center; color: var(--blue); font-size: 28px; margin: 10px 0; letter-spacing: 2px; }
+h2 { text-align: center; color: var(--blue); font-size: 28px; margin: 10px 0; letter-spacing: 2px; font-weight: 900; }
 
 /* ⭐ 狀態區塊 */
 .section {
   margin-bottom: 15px;
   padding: 15px;
   border-radius: 12px;
-  font-size: 18px; /* 中大字體 */
+  font-size: 19px; /* 中大字體 */
 }
 
 .in-box { border: 2px solid var(--green); background: rgba(57, 255, 20, 0.05); }
@@ -50,23 +50,30 @@ h2 { text-align: center; color: var(--blue); font-size: 28px; margin: 10px 0; le
 
 /* 內部站別分組樣式 */
 .group-title {
-  color: #aaa;
+  color: #00e5ff;
   font-size: 16px;
   font-weight: bold;
   border-bottom: 1px solid #333;
-  margin: 10px 0 5px 0;
+  margin: 12px 0 6px 0;
   padding-bottom: 2px;
 }
 
 .person-row {
   display: flex;
   justify-content: space-between;
-  padding: 4px 0;
-  border-bottom: 1px multisolid #222;
+  padding: 6px 0;
+  border-bottom: 1px solid #1a1a1a;
 }
 
-.person-info { font-weight: 500; }
-.person-attr { color: #888; font-size: 15px; }
+.person-info { font-weight: 600; color: #fff; }
+.person-attr { font-weight: bold; font-size: 16px; }
+
+/* 特殊職級顏色 */
+.attr-nurse { color: #ff00ff; } /* 護理師：桃紅 */
+.attr-emt2 { color: #00e5ff; }  /* EMT-2：青藍 */
+.attr-emt1 { color: #39ff14; }  /* EMT-1：螢光綠 */
+.attr-bls { color: #ffffff; }   /* BLS：白色 */
+.attr-other { color: #888888; } /* 其他：灰色 */
 
 /* 搜尋與表格 */
 .search-box {
@@ -82,7 +89,7 @@ h2 { text-align: center; color: var(--blue); font-size: 28px; margin: 10px 0; le
 }
 
 table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-th { background: #1a1a1a; color: var(--blue); padding: 12px; font-size: 16px; text-align: center; }
+th { background: #1a1a1a; color: var(--blue); padding: 12px; font-size: 16px; }
 td { padding: 12px; border-bottom: 1px solid #222; text-align: center; font-size: 16px; }
 
 .status-in { color: var(--green); font-weight: bold; }
@@ -90,9 +97,9 @@ td { padding: 12px; border-bottom: 1px solid #222; text-align: center; font-size
 .status-pending { color: var(--red); font-weight: bold; }
 
 .section-header {
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 900;
-  margin-bottom: 10px;
+  margin-bottom: 5px;
   display: flex;
   justify-content: space-between;
 }
@@ -122,6 +129,27 @@ td { padding: 12px; border-bottom: 1px solid #222; text-align: center; font-size
 const API = "https://script.google.com/macros/s/AKfycbwFMuR1LuYeMZyK7D7Ym1n7-4sZ97ThD_5v52j_zsxIvpScfgAoEx-DAWLJB_d8Vmbf/exec";
 let allData = [];
 
+/* ⭐ 屬性權重定義 (數字愈小愈前面) */
+function getAttrRank(a) {
+  a = (a || "").toUpperCase();
+  if (a.includes("護理師")) return 1;
+  if (a.includes("EMT-2") || a.includes("EMT2")) return 2;
+  if (a.includes("EMT-1") || a.includes("EMT1")) return 3;
+  if (a.includes("BLS")) return 4;
+  if (a.includes("防災士")) return 5;
+  return 99; // 其他
+}
+
+/* 取得屬性對應樣式 */
+function getAttrClass(a) {
+  a = (a || "").toUpperCase();
+  if (a.includes("護理師")) return "attr-nurse";
+  if (a.includes("EMT-2") || a.includes("EMT2")) return "attr-emt2";
+  if (a.includes("EMT-1") || a.includes("EMT1")) return "attr-emt1";
+  if (a.includes("BLS")) return "attr-bls";
+  return "attr-other";
+}
+
 /* ⭐ 狀態判斷 */
 function getType(s) {
   s = (s || "").trim();
@@ -130,16 +158,16 @@ function getType(s) {
   return "pending";
 }
 
-/* ⭐ 排序邏輯：站別 > 姓名 > 屬性 */
-function sortData(data) {
+/* ⭐ 核心排序邏輯：站別 > 屬性權重 > 姓名 */
+function sortMaster(data) {
   return [...data].sort((a, b) => {
     return (a.station || "").localeCompare(b.station || "", 'zh-Hant') ||
-           (a.name || "").localeCompare(b.name || "", 'zh-Hant') ||
-           (a.attr || "").localeCompare(b.attr || "", 'zh-Hant');
+           getAttrRank(a.attr) - getAttrRank(b.attr) ||
+           (a.name || "").localeCompare(b.name || "", 'zh-Hant');
   });
 }
 
-/* ⭐ 渲染分組區塊 (核心修正) */
+/* ⭐ 渲染分組區塊 */
 function renderSections(data) {
   const sections = {
     in: { id: "inBox", title: "🟢 已報到", color: "var(--green)" },
@@ -147,17 +175,15 @@ function renderSections(data) {
     pending: { id: "pendingBox", title: "🔴 未報到", color: "var(--red)" }
   };
 
-  // 分組邏輯
   const grouped = { in: {}, out: {}, pending: {} };
 
   data.forEach(r => {
     const type = getType(r.status);
-    const station = r.station || "未分類站別";
+    const station = r.station || "未分類";
     if (!grouped[type][station]) grouped[type][station] = [];
     grouped[type][station].push(r);
   });
 
-  // 產出 HTML
   Object.keys(sections).forEach(type => {
     const config = sections[type];
     const stationData = grouped[type];
@@ -168,13 +194,16 @@ function renderSections(data) {
 
     stationNames.forEach(stName => {
       html += `<div class="group-title">${stName}</div>`;
-      const people = stationData[stName].sort((a, b) => (a.name || "").localeCompare(b.name || "", 'zh-Hant'));
+      // 站內依照「職級屬性」排序
+      const people = stationData[stName].sort((a, b) => getAttrRank(a.attr) - getAttrRank(b.attr) || (a.name || "").localeCompare(b.name || "", 'zh-Hant'));
+      
       people.forEach(p => {
         totalCount++;
+        const attrCls = getAttrClass(p.attr);
         html += `
           <div class="person-row">
             <div class="person-info">${p.name}</div>
-            <div class="person-attr">(${p.attr || '無屬性'})</div>
+            <div class="person-attr ${attrCls}">${p.attr || ''}</div>
           </div>`;
       });
     });
@@ -184,7 +213,7 @@ function renderSections(data) {
         <span>${config.title}</span>
         <span>${totalCount} 人</span>
       </div>
-      ${totalCount > 0 ? html : '<div style="color:#444; font-size:14px;">暫無資料</div>'}
+      ${totalCount > 0 ? html : '<div style="color:#444; font-size:15px; margin-top:5px;">無人員</div>'}
     `;
   });
 }
@@ -192,7 +221,7 @@ function renderSections(data) {
 /* ⭐ 渲染表格 */
 function renderTable() {
   const q = document.getElementById("search-input").value.toLowerCase();
-  const sorted = sortData(allData);
+  const sorted = sortMaster(allData);
 
   renderSections(sorted);
 
@@ -205,11 +234,12 @@ function renderTable() {
   document.getElementById("table-body").innerHTML = filtered.map(r => {
     const type = getType(r.status);
     const cls = type === "in" ? "status-in" : (type === "out" ? "status-out" : "status-pending");
+    const attrCls = getAttrClass(r.attr);
     return `
       <tr>
         <td>${r.station}</td>
         <td style="font-weight:bold; font-size:18px;">${r.name}</td>
-        <td>${r.attr}</td>
+        <td class="${attrCls}">${r.attr || ''}</td>
         <td class="${cls}">${r.status || "未報到"}</td>
       </tr>`;
   }).join("");
@@ -224,7 +254,7 @@ async function loadList() {
       renderTable();
     }
   } catch (e) {
-    console.error("Data Load Failed");
+    console.error("Fetch Error");
   }
 }
 
