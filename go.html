@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DPAC 指揮中心排班系統</title>
+
+<style>
+body{
+  margin:0;
+  font-family:Arial;
+  background:#06121f;
+  color:#fff;
+}
+
+header{
+  background:#0b2a4a;
+  padding:15px;
+  text-align:center;
+  font-size:24px;
+  font-weight:bold;
+}
+
+.container{
+  display:flex;
+}
+
+.left, .right{
+  padding:15px;
+}
+
+.left{ width:35%; background:#081a2f;}
+.right{ width:65%; }
+
+.panel{
+  background:#102b46;
+  padding:10px;
+  border-radius:10px;
+  margin-bottom:10px;
+}
+
+.member{
+  background:#1e4d7a;
+  padding:6px;
+  margin:4px;
+  display:inline-block;
+  border-radius:5px;
+  cursor:pointer;
+}
+
+.group{
+  border:1px solid #00d4ff;
+  padding:10px;
+  border-radius:10px;
+  margin-bottom:10px;
+}
+
+input,select,button{
+  margin:5px;
+  padding:6px;
+  border-radius:5px;
+  border:none;
+}
+
+button{
+  background:#00c3ff;
+  color:#000;
+  font-weight:bold;
+  cursor:pointer;
+}
+</style>
+</head>
+
+<body>
+
+<header>🚑 DPAC 指揮中心排班系統</header>
+
+<div class="container">
+
+<!-- 左邊 -->
+<div class="left">
+
+<div class="panel">
+模式：
+<select id="mode">
+  <option value="team">一般出勤（3-5人）</option>
+  <option value="solo">機巡（單人）</option>
+</select>
+
+<br>
+
+站別：
+<select id="station"></select>
+
+<br>
+
+<button onclick="loadData()">🔄 載入人員</button>
+
+<div id="staff"></div>
+
+</div>
+
+</div>
+
+<!-- 右邊 -->
+<div class="right">
+
+<div class="panel">
+<button onclick="createGroup()">➕ 新增組別</button>
+<button onclick="submit()">🚀 送出排班</button>
+</div>
+
+<div id="groups"></div>
+
+</div>
+
+</div>
+
+<script>
+
+const API_URL = "https://script.google.com/macros/s/AKfycbzg_ICJ3tmew3aMJ-bEfcBM3AKiigGXbypJR0ZG0ynfWaUwycchcRWtbItdBQFKg0Ec/exec";
+
+let staffData = [];
+let groups = [];
+
+// ✅ 全域函式（重點）
+window.loadData = function(){
+
+  fetch(API_URL)
+  .then(res=>res.json())
+  .then(data=>{
+
+    // 只抓報到
+    staffData = data.filter(p=>p.狀態==="報到");
+
+    let stations = [...new Set(staffData.map(p=>p.站別))];
+
+    document.getElementById("station").innerHTML =
+      stations.map(s=>`<option>${s}</option>`).join("");
+
+    renderStaff();
+
+  })
+  .catch(err=>{
+    alert("載入失敗："+err);
+  });
+};
+
+// 顯示人員
+function renderStaff(){
+
+  let st = document.getElementById("station").value;
+
+  let list = staffData.filter(p=>p.站別===st);
+
+  document.getElementById("staff").innerHTML =
+    list.map(p=>
+      `<div class="member" onclick="addToGroup('${p.姓名}')">${p.姓名}</div>`
+    ).join("");
+}
+
+document.getElementById("station").onchange = renderStaff;
+
+
+// 建立組別
+function createGroup(){
+
+  if(groups.length>=5){
+    alert("最多5組");
+    return;
+  }
+
+  groups.push({
+    members:[],
+    leader:"",
+    time:"",
+    place:"",
+    returnTime:""
+  });
+
+  renderGroups();
+}
+
+
+// 加入組
+function addToGroup(name){
+
+  let g = groups[groups.length-1];
+  if(!g){
+    alert("請先新增組別");
+    return;
+  }
+
+  let mode = document.getElementById("mode").value;
+
+  if(mode==="team" && g.members.length>=5){
+    alert("最多5人");
+    return;
+  }
+
+  if(mode==="solo" && g.members.length>=1){
+    alert("機巡只能1人");
+    return;
+  }
+
+  if(!g.members.includes(name)){
+    g.members.push(name);
+  }
+
+  renderGroups();
+}
+
+
+// 顯示組
+function renderGroups(){
+
+  let html = "";
+
+  groups.forEach((g,i)=>{
+
+    html += `
+    <div class="group">
+
+    <b>第${i+1}組</b><br>
+
+    成員：${g.members.join(",")}<br>
+
+    出站：
+    <input type="time" onchange="groups[${i}].time=this.value">
+
+    地點：
+    <input onchange="groups[${i}].place=this.value">
+
+    領用代表：
+    <select onchange="groups[${i}].leader=this.value">
+      ${g.members.map(m=>`<option>${m}</option>`).join("")}
+    </select>
+
+    回站：
+    <input type="time" onchange="groups[${i}].returnTime=this.value">
+
+    </div>
+    `;
+  });
+
+  document.getElementById("groups").innerHTML = html;
+}
+
+
+// 送出
+window.submit = function(){
+
+  fetch(API_URL,{
+    method:"POST",
+    body:JSON.stringify({
+      type:"dispatch",
+      data:groups
+    })
+  });
+
+  alert("已送出");
+
+};
+
+</script>
+
+</body>
+</html>
