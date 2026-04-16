@@ -1,267 +1,192 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DPAC 指揮中心排班系統</title>
-
-<style>
-body{
-  margin:0;
-  font-family:Arial;
-  background:#06121f;
-  color:#fff;
-}
-
-header{
-  background:#0b2a4a;
-  padding:15px;
-  text-align:center;
-  font-size:24px;
-  font-weight:bold;
-}
-
-.container{
-  display:flex;
-}
-
-.left, .right{
-  padding:15px;
-}
-
-.left{ width:35%; background:#081a2f;}
-.right{ width:65%; }
-
-.panel{
-  background:#102b46;
-  padding:10px;
-  border-radius:10px;
-  margin-bottom:10px;
-}
-
-.member{
-  background:#1e4d7a;
-  padding:6px;
-  margin:4px;
-  display:inline-block;
-  border-radius:5px;
-  cursor:pointer;
-}
-
-.group{
-  border:1px solid #00d4ff;
-  padding:10px;
-  border-radius:10px;
-  margin-bottom:10px;
-}
-
-input,select,button{
-  margin:5px;
-  padding:6px;
-  border-radius:5px;
-  border:none;
-}
-
-button{
-  background:#00c3ff;
-  color:#000;
-  font-weight:bold;
-  cursor:pointer;
-}
-</style>
+  <base target="_top">
+  <style>
+    body { font-family: 'Helvetica Neue', Arial, sans-serif; padding: 20px; background-color: #f4f4f4; color: #111; }
+    h2, h3 { color: #000; border-bottom: 3px solid #333; padding-bottom: 5px; font-size: 24px; }
+    .container { max-width: 800px; margin: 0 auto; background: #fff; padding: 20px; border: 2px solid #000; border-radius: 8px; box-shadow: 3px 3px 10px rgba(0,0,0,0.2); }
+    
+    /* 大字體與高對比表單設計 */
+    label { font-size: 18px; font-weight: bold; display: block; margin-top: 15px; }
+    select, input[type="text"], input[type="time"] { 
+      width: 100%; padding: 12px; font-size: 18px; border: 2px solid #000; border-radius: 4px; box-sizing: border-box; background-color: #fff8e1;
+    }
+    .group-section { border: 2px solid #555; padding: 15px; margin-bottom: 20px; border-radius: 5px; background: #fafafa; }
+    
+    /* 按鈕設計：高清晰度 */
+    button { 
+      background-color: #000; color: #fff; border: none; padding: 15px 30px; font-size: 20px; font-weight: bold; 
+      border-radius: 5px; cursor: pointer; width: 100%; margin-top: 20px; transition: 0.3s;
+    }
+    button:hover { background-color: #444; }
+    
+    /* 排班資訊保留區 */
+    #dispatch-records { margin-top: 40px; background: #e3f2fd; padding: 15px; border: 2px solid #0d47a1; border-radius: 5px; }
+    .record-item { font-size: 18px; border-bottom: 1px solid #0d47a1; padding: 10px 0; }
+  </style>
 </head>
-
 <body>
 
-<header>🚑 DPAC 指揮中心排班系統</header>
-
 <div class="container">
+  <h2>出勤排班與裝備領用系統</h2>
+  
+  <label for="dispatch-type">出勤模式選擇：</label>
+  <select id="dispatch-type" onchange="toggleMode()">
+    <option value="general">一般排班 (3-5人/組)</option>
+    <option value="patrol">機巡排班 (單人1組，至多5組同時)</option>
+  </select>
 
-<!-- 左邊 -->
-<div class="left">
+  <div id="form-area" class="group-section">
+    <label>請選擇站別 (同組需同站別)：</label>
+    <select id="station-select" onchange="filterMembersByStation()">
+      <option value="">請先選擇站別...</option>
+      </select>
 
-<div class="panel">
-模式：
-<select id="mode">
-  <option value="team">一般出勤（3-5人）</option>
-  <option value="solo">機巡（單人）</option>
-</select>
+    <label>出勤人員 (按住 Ctrl/Cmd 可多選)：</label>
+    <select id="member-select" multiple size="5">
+      </select>
+    <small style="font-size: 14px; color: #d32f2f;">*未報到者不會顯示於此名單。機巡僅限選1人，一般排班請選3-5人。</small>
 
-<br>
+    <label>出站時間：</label>
+    <input type="time" id="out-time" required>
 
-站別：
-<select id="station"></select>
+    <label>出站地點：</label>
+    <input type="text" id="location" placeholder="輸入目的地" required>
 
-<br>
+    <hr style="border: 1px solid #ccc; margin: 20px 0;">
+    <h3>代表領用裝備</h3>
+    
+    <label>領用代表人 (將記錄於裝備C欄)：</label>
+    <select id="rep-name">
+       <option value="">請先選擇上方出勤人員</option>
+    </select>
 
-<button onclick="loadData()">🔄 載入人員</button>
+    <label>動作 (固定)：</label>
+    <input type="text" value="領用" disabled>
 
-<div id="staff"></div>
+    <label>領用裝備名稱/數量：</label>
+    <input type="text" id="equipment" placeholder="例如：急救包x1, 無線電x2">
+    
+    <button onclick="submitForm()">送出排班與領用</button>
+  </div>
 
-</div>
-
-</div>
-
-<!-- 右邊 -->
-<div class="right">
-
-<div class="panel">
-<button onclick="createGroup()">➕ 新增組別</button>
-<button onclick="submit()">🚀 送出排班</button>
-</div>
-
-<div id="groups"></div>
-
-</div>
-
+  <div id="dispatch-records">
+    <h3>今日排班動態資訊</h3>
+    <div id="record-list">尚無最新排班資訊...</div>
+  </div>
 </div>
 
 <script>
+  let allStaff = [];
 
-const API_URL = "https://script.google.com/macros/s/AKfycbzg_ICJ3tmew3aMJ-bEfcBM3AKiigGXbypJR0ZG0ynfWaUwycchcRWtbItdBQFKg0Ec/exec";
+  // 網頁載入時向 GAS 請求已報到人員名單
+  google.script.run.withSuccessHandler(initData).getAvailableStaff();
 
-let staffData = [];
-let groups = [];
-
-// ✅ 全域函式（重點）
-window.loadData = function(){
-
-  fetch(API_URL)
-  .then(res=>res.json())
-  .then(data=>{
-
-    // 只抓報到
-    staffData = data.filter(p=>p.狀態==="報到");
-
-    let stations = [...new Set(staffData.map(p=>p.站別))];
-
-    document.getElementById("station").innerHTML =
-      stations.map(s=>`<option>${s}</option>`).join("");
-
-    renderStaff();
-
-  })
-  .catch(err=>{
-    alert("載入失敗："+err);
-  });
-};
-
-// 顯示人員
-function renderStaff(){
-
-  let st = document.getElementById("station").value;
-
-  let list = staffData.filter(p=>p.站別===st);
-
-  document.getElementById("staff").innerHTML =
-    list.map(p=>
-      `<div class="member" onclick="addToGroup('${p.姓名}')">${p.姓名}</div>`
-    ).join("");
-}
-
-document.getElementById("station").onchange = renderStaff;
-
-
-// 建立組別
-function createGroup(){
-
-  if(groups.length>=5){
-    alert("最多5組");
-    return;
+  function initData(staffData) {
+    allStaff = staffData;
+    const stations = [...new Set(staffData.map(s => s.station))];
+    const stationSelect = document.getElementById('station-select');
+    
+    stations.forEach(st => {
+      let opt = document.createElement('option');
+      opt.value = st;
+      opt.textContent = st;
+      stationSelect.appendChild(opt);
+    });
   }
 
-  groups.push({
-    members:[],
-    leader:"",
-    time:"",
-    place:"",
-    returnTime:""
-  });
+  function filterMembersByStation() {
+    const selectedStation = document.getElementById('station-select').value;
+    const memberSelect = document.getElementById('member-select');
+    const repSelect = document.getElementById('rep-name');
+    
+    memberSelect.innerHTML = '';
+    repSelect.innerHTML = '<option value="">請選擇領用代表人</option>';
 
-  renderGroups();
-}
+    allStaff.filter(s => s.station === selectedStation).forEach(staff => {
+      let opt = document.createElement('option');
+      opt.value = staff.name;
+      opt.textContent = staff.name;
+      memberSelect.appendChild(opt);
+    });
 
-
-// 加入組
-function addToGroup(name){
-
-  let g = groups[groups.length-1];
-  if(!g){
-    alert("請先新增組別");
-    return;
+    // 監聽人員選擇變化，同步更新領用代表人選單
+    memberSelect.addEventListener('change', updateRepOptions);
   }
 
-  let mode = document.getElementById("mode").value;
-
-  if(mode==="team" && g.members.length>=5){
-    alert("最多5人");
-    return;
+  function updateRepOptions() {
+    const memberSelect = document.getElementById('member-select');
+    const repSelect = document.getElementById('rep-name');
+    const selectedOptions = Array.from(memberSelect.selectedOptions).map(opt => opt.value);
+    
+    repSelect.innerHTML = '';
+    selectedOptions.forEach(name => {
+      let opt = document.createElement('option');
+      opt.value = name;
+      opt.textContent = name;
+      repSelect.appendChild(opt);
+    });
   }
 
-  if(mode==="solo" && g.members.length>=1){
-    alert("機巡只能1人");
-    return;
+  function toggleMode() {
+    const mode = document.getElementById('dispatch-type').value;
+    const memberSelect = document.getElementById('member-select');
+    if (mode === 'patrol') {
+      memberSelect.removeAttribute('multiple');
+      memberSelect.size = 1;
+    } else {
+      memberSelect.setAttribute('multiple', 'multiple');
+      memberSelect.size = 5;
+    }
   }
 
-  if(!g.members.includes(name)){
-    g.members.push(name);
+  function submitForm() {
+    const mode = document.getElementById('dispatch-type').value;
+    const members = Array.from(document.getElementById('member-select').selectedOptions).map(opt => opt.value);
+    const outTime = document.getElementById('out-time').value;
+    const location = document.getElementById('location').value;
+    const repName = document.getElementById('rep-name').value;
+    const equipment = document.getElementById('equipment').value;
+
+    // 防呆驗證
+    if (members.length === 0) return alert("請選擇出勤人員！");
+    if (mode === 'general' && (members.length < 3 || members.length > 5)) return alert("一般排班需選擇 3-5 人！");
+    if (!outTime || !location) return alert("請填寫時間與地點！");
+
+    const data = {
+      members: members,
+      outTime: new Date().toDateString() + ' ' + outTime,
+      location: location,
+      repName: repName || members[0],
+      equipment: equipment,
+      notes: "動作:領用"
+    };
+
+    google.script.run.withSuccessHandler(updateRecordBoard).submitDispatch(data);
   }
 
-  renderGroups();
-}
+  function updateRecordBoard(response) {
+    alert(response);
+    const members = Array.from(document.getElementById('member-select').selectedOptions).map(opt => opt.value).join(', ');
+    const time = document.getElementById('out-time').value;
+    const loc = document.getElementById('location').value;
+    const equip = document.getElementById('equipment').value;
 
-
-// 顯示組
-function renderGroups(){
-
-  let html = "";
-
-  groups.forEach((g,i)=>{
-
-    html += `
-    <div class="group">
-
-    <b>第${i+1}組</b><br>
-
-    成員：${g.members.join(",")}<br>
-
-    出站：
-    <input type="time" onchange="groups[${i}].time=this.value">
-
-    地點：
-    <input onchange="groups[${i}].place=this.value">
-
-    領用代表：
-    <select onchange="groups[${i}].leader=this.value">
-      ${g.members.map(m=>`<option>${m}</option>`).join("")}
-    </select>
-
-    回站：
-    <input type="time" onchange="groups[${i}].returnTime=this.value">
-
-    </div>
-    `;
-  });
-
-  document.getElementById("groups").innerHTML = html;
-}
-
-
-// 送出
-window.submit = function(){
-
-  fetch(API_URL,{
-    method:"POST",
-    body:JSON.stringify({
-      type:"dispatch",
-      data:groups
-    })
-  });
-
-  alert("已送出");
-
-};
-
+    const recordList = document.getElementById('record-list');
+    if(recordList.innerHTML.includes('尚無')) recordList.innerHTML = '';
+    
+    const newRecord = document.createElement('div');
+    newRecord.className = 'record-item';
+    newRecord.innerHTML = `<strong>${time}</strong> | 地點：${loc} | 人員：${members} <br> <em>裝備：${equip || '無'} (代表：${document.getElementById('rep-name').value})</em>`;
+    
+    // 依要求排班資訊保留最下方 (新紀錄置頂於該區塊)
+    recordList.prepend(newRecord); 
+    
+    // 清空表單以利下一組排班
+    document.getElementById('equipment').value = '';
+    document.getElementById('location').value = '';
+  }
 </script>
 
 </body>
