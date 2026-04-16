@@ -2,161 +2,135 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EMS 勤務排班系統</title>
+    <title>EMS 高對比排班系統</title>
     <style>
-        :root {
-            --bg: #000000;
-            --card: #121212;
-            --yellow: #FFFF00;
-            --cyan: #00FFFF;
-            --white: #FFFFFF;
-        }
-        body {
-            background-color: var(--bg);
-            color: var(--white);
-            font-family: "Microsoft JhengHei", Arial, sans-serif;
-            padding: 10px;
-            font-size: 20px;
-            margin: 0;
-        }
-        h1 { color: var(--cyan); text-align: center; border-bottom: 2px solid var(--cyan); margin: 10px 0; padding-bottom: 5px; }
-        .tag { background: var(--cyan); color: #000; padding: 5px 15px; font-weight: bold; border-radius: 5px; margin: 15px 0 5px; display: inline-block; font-size: 18px; }
-        .card { background: var(--card); border: 2px solid var(--yellow); border-radius: 12px; padding: 15px; margin-bottom: 15px; }
-        .group-name { color: var(--yellow); font-size: 22px; font-weight: bold; margin-bottom: 10px; }
+        :root { --bg: #000; --y: #FF0; --c: #0FF; --w: #FFF; }
+        body { background: var(--bg); color: var(--w); font-family: sans-serif; font-size: 20px; padding: 10px; margin: 0; }
+        h1 { color: var(--c); text-align: center; border-bottom: 2px solid var(--c); }
+        .tag { background: var(--c); color: #000; padding: 5px 15px; font-weight: bold; border-radius: 5px; margin: 15px 0 5px; display: inline-block; }
+        .card { border: 2px solid var(--y); border-radius: 10px; padding: 15px; margin-bottom: 15px; background: #111; }
+        .group-head { color: var(--y); font-size: 24px; font-weight: bold; margin-bottom: 10px; }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
-        label { display: block; margin-top: 10px; color: #BBB; font-size: 16px; }
-        select, input { width: 100%; background: #000; border: 2px solid var(--yellow); color: #FFF; padding: 12px; font-size: 18px; border-radius: 8px; box-sizing: border-box; }
-        select[multiple] { height: 120px; }
+        select, input { background: #000; border: 2px solid var(--y); color: #FFF; padding: 12px; font-size: 18px; border-radius: 5px; width: 100%; box-sizing: border-box; }
         .disabled { opacity: 0.2; cursor: not-allowed; }
-        .btn { width: 100%; background: var(--yellow); color: #000; border: none; padding: 20px; font-size: 24px; font-weight: bold; border-radius: 10px; cursor: pointer; margin-top: 20px; }
-        #loading { position: fixed; top: 0; left: 0; width: 100%; background: #FF3D00; color: white; text-align: center; display: none; z-index: 100; }
+        #debug-console { background: #200; color: #F00; font-size: 14px; padding: 10px; border: 1px solid red; display: none; margin-bottom: 10px; }
     </style>
 </head>
 <body>
-    <div id="loading">連線試算表中...</div>
-    <h1>EMS 勤務排班</h1>
 
+<div id="debug-console"></div>
+<h1>EMS 勤務排班 (本地網頁版)</h1>
+
+<div id="main-content" style="display:none;">
     <div class="tag">一般出勤 (3-5人 / 站別須一致)</div>
-    <div id="std-list"></div>
+    <div id="std-area"></div>
+    <div class="tag">機巡勤務 (單人組 / 共5組)</div>
+    <div id="ptr-area"></div>
+    <button style="width:100%; padding:20px; background:var(--y); font-size:24px; font-weight:bold; margin-top:20px; border-radius:10px;" onclick="alert('排班已完成，請截圖存檔')">確認存檔</button>
+</div>
 
-    <div class="tag">機巡勤務 (單人編組)</div>
-    <div id="ptr-list"></div>
-
-    <button class="btn" onclick="save()">儲存排班資料</button>
+<div id="loader" style="text-align:center; padding:50px;">
+    <p style="color:var(--y); font-size:28px;">正在連線試算表...</p>
+    <p style="font-size:16px; color:#888;">請確保 API 網址填寫正確</p>
+</div>
 
 <script>
-    // 【修改重點】請在這裡填入你的 Google Apps Script 網址
-    const API_URL = "https://script.google.com/macros/s/AKfycbwndF2hPloA6z9MHESSXl-6P3BgzphdLmqMoqPOCpnsiCSAfRozJlRSTodZ1-ZUrYeS/exec";
+    // ---------------------------------------------------------
+    // 貼入你的 GAS 部署網址
+    const API_URL = "https://script.google.com/macros/s/AKfycbwndF2hPloA6z9MHESSXl-6P3BgzphdLmqMoqPOCpnsiCSAfRozJlRSTodZ1-ZUrYeS/exec"; 
+    // ---------------------------------------------------------
 
     let members = [];
     let equips = [];
 
-    // 自動讀取試算表資料
     window.onload = function() {
-        const loading = document.getElementById('loading');
-        loading.style.display = 'block';
+        if (API_URL.includes("在此貼上")) {
+            showError("錯誤：尚未在 HTML 程式碼中貼入 GAS 網址。");
+            return;
+        }
 
         fetch(API_URL)
             .then(res => res.json())
             .then(data => {
-                loading.style.display = 'none';
-                if(!data.success) throw new Error(data.error);
+                if(!data.success) { showError("試算表錯誤：" + data.error); return; }
                 members = data.members;
                 equips = data.equips;
-                init();
+                if(members.length === 0) { showError("目前無任何「已報到」的人員，無法排班。"); return; }
+                buildUI();
             })
             .catch(err => {
-                loading.innerText = "連線失敗：" + err;
-                console.error(err);
+                showError("連線失敗！原因可能是：\n1. GAS 未部署為「所有人」。\n2. 網址錯誤。\n3. 網路封鎖。");
             });
     };
 
-    function init() {
-        // 生成一般組 5 組
-        const stdList = document.getElementById('std-list');
-        for(let i=1; i<=5; i++) {
-            stdList.innerHTML += `
+    function showError(msg) {
+        const consoleObj = document.getElementById('debug-console');
+        consoleObj.style.display = 'block';
+        consoleObj.innerText = msg;
+        document.getElementById('loader').style.display = 'none';
+    }
+
+    function buildUI() {
+        document.getElementById('loader').style.display = 'none';
+        document.getElementById('main-content').style.display = 'block';
+        
+        // 一般組 5 組
+        const std = document.getElementById('std-area');
+        for(let i=1; i<=5; i++){
+            std.innerHTML += `
             <div class="card">
-                <div class="group-name">一般出勤 第 ${i} 組</div>
+                <div class="group-head">一般 第 ${i} 組</div>
                 <div class="grid">
                     <div style="grid-column: span 2;">
-                        <label>組員 (複選，限同站別)</label>
-                        <select id="std_m_${i}" multiple onchange="checkSt(${i})">
+                        <label>組員 (同站別)</label>
+                        <select id="s_m_${i}" multiple onchange="valStation(${i})">
                             ${members.map(m => `<option value="${m.name}" data-st="${m.station}">${m.name} [${m.station}]</option>`).join('')}
                         </select>
                     </div>
-                    <div>
-                        <label>地點</label><input type="text" id="std_l_${i}">
-                    </div>
-                    <div>
-                        <label>領用裝備 (限一人代表)</label>
-                        <select id="std_e_${i}"><option value="">無</option>${equips.map(e => `<option value="${e}">${e}</option>`).join('')}</select>
-                    </div>
-                    <div>
-                        <label>出站時間</label><input type="time" id="std_o_${i}" onchange="checkTime('std', ${i})">
-                    </div>
-                    <div>
-                        <label>回站時間</label><input type="time" id="std_i_${i}" class="disabled" disabled>
+                    <div><label>出站時間</label><input type="time" id="s_o_${i}" onchange="syncTime('s',${i})"></div>
+                    <div><label>回站時間</label><input type="time" id="s_i_${i}" class="disabled" disabled></div>
+                    <div style="grid-column: span 2;"><label>裝備(領用)</label>
+                        <select id="s_e_${i}"><option value="">無</option>${equips.map(e => `<option value="${e}">${e}</option>`).join('')}</select>
                     </div>
                 </div>
             </div>`;
         }
 
-        // 生成機巡組 5 組
-        const ptrList = document.getElementById('ptr-list');
-        for(let i=1; i<=5; i++) {
-            ptrList.innerHTML += `
-            <div class="card" style="border-color: var(--cyan)">
-                <div class="group-name" style="color: var(--cyan)">機巡 第 ${i} 組</div>
+        // 機巡組 5 組
+        const ptr = document.getElementById('ptr-area');
+        for(let i=1; i<=5; i++){
+            ptr.innerHTML += `
+            <div class="card" style="border-color:var(--c)">
+                <div class="group-head" style="color:var(--c)">機巡 第 ${i} 組</div>
                 <div class="grid">
-                    <div>
-                        <label>人員</label>
-                        <select id="ptr_m_${i}"><option value="">請選擇</option>${members.map(m => `<option value="${m.name}">${m.name}</option>`).join('')}</select>
-                    </div>
-                    <div>
-                        <label>領用裝備</label>
-                        <select id="ptr_e_${i}"><option value="">無</option>${equips.map(e => `<option value="${e}">${e}</option>`).join('')}</select>
-                    </div>
-                    <div>
-                        <label>出站時間</label><input type="time" id="ptr_o_${i}" onchange="checkTime('ptr', ${i})">
-                    </div>
-                    <div>
-                        <label>回站時間</label><input type="time" id="ptr_i_${i}" class="disabled" disabled>
-                    </div>
+                    <div><label>人員</label><select id="p_m_${i}"><option value="">請選擇</option>${members.map(m => `<option value="${m.name}">${m.name}</option>`).join('')}</select></div>
+                    <div><label>裝備</label><select id="p_e_${i}"><option value="">無</option>${equips.map(e => `<option value="${e}">${e}</option>`).join('')}</select></div>
+                    <div><label>出站時間</label><input type="time" id="p_o_${i}" onchange="syncTime('p',${i})"></div>
+                    <div><label>回站時間</label><input type="time" id="p_i_${i}" class="disabled" disabled></div>
                 </div>
             </div>`;
         }
     }
 
-    function checkSt(id) {
-        const sel = document.getElementById(`std_m_${id}`);
+    function valStation(id) {
+        const sel = document.getElementById(`s_m_${id}`);
         const opts = Array.from(sel.selectedOptions);
         if(opts.length > 0) {
             const st = opts[0].getAttribute('data-st');
             if(opts.some(o => o.getAttribute('data-st') !== st)) {
-                alert("警告：組員站別不同，無法排班！");
+                alert("警告：站別不同無法併組！");
                 sel.selectedIndex = -1;
             }
         }
     }
 
-    function checkTime(type, id) {
-        const outVal = document.getElementById(`${type}_o_${id}`).value;
-        const inInput = document.getElementById(`${type}_i_${id}`);
-        if(outVal) {
-            inInput.disabled = false;
-            inInput.classList.remove('disabled');
-        } else {
-            inInput.disabled = true;
-            inInput.classList.add('disabled');
-            inInput.value = "";
-        }
-    }
-
-    function save() {
-        alert("資料已暫存於瀏覽器，可截圖備查或連動後端儲存。");
+    function syncTime(prefix, id) {
+        const outVal = document.getElementById(`${prefix}_o_${id}`).value;
+        const inInput = document.getElementById(`${prefix}_i_${id}`);
+        inInput.disabled = !outVal;
+        inInput.classList.toggle('disabled', !outVal);
+        if(!outVal) inInput.value = "";
     }
 </script>
 </body>
