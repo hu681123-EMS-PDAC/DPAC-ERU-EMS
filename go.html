@@ -29,9 +29,6 @@
     <option value="solo">機巡（單人）</option>
   </select>
 
-  <label>選擇站別</label>
-  <select id="station" onchange="renderStaff()"><option>請先載入人員</option></select>
-  
   <button onclick="loadData()">🔄 載入報到名單與裝備</button>
   <hr style="border:0; border-top:1px solid #1f4e79; margin:15px 0;">
   <div id="staff"></div>
@@ -46,7 +43,6 @@
 <button onclick="submit()" style="background:#ffff00; color:#000; font-size:24px; padding:20px; margin-bottom:50px;">🚀 送出排班資料</button>
 
 <script>
-// 請確保這是你最新部署的 /exec 網址
 const API_URL = "https://script.google.com/macros/s/AKfycbxA1e1C4UC5VUZe2EBIlO1z5aykzBrFga70X4PxJN4rSiTX2cS2Y2pFGtN8w_Q2Z6hP/exec";
 
 let staffData = [];
@@ -60,22 +56,19 @@ function loadData(){
   .then(data=>{
     staffData = data.staff;
     equipList = data.equips;
-    
-    let stations = [...new Set(staffData.map(p=>p.站別))];
-    let sel = document.getElementById("station");
-    sel.innerHTML = stations.map(s=>`<option value="${s}">${s}</option>`).join("");
-    
-    renderStaff();
+
+    renderStaff(); // 👉 直接顯示全部人
     document.querySelector('button').innerText = "🔄 重新載入數據";
   })
   .catch(err => alert("連線失敗，請檢查 GAS 是否部署為『所有人』"));
 }
 
+// ⭐ 不再篩選站別
 function renderStaff(){
-  let st = document.getElementById("station").value;
-  let list = staffData.filter(p=>p.站別===st);
-  let html = list.map(p=> `<div class="member" onclick="addToGroup('${p.姓名}')">${p.姓名}</div>`).join("");
-  document.getElementById("staff").innerHTML = html || "該站目前無人報到";
+  let html = staffData.map(p=> 
+    `<div class="member" onclick="addToGroup('${p.姓名}')">${p.姓名}</div>`
+  ).join("");
+  document.getElementById("staff").innerHTML = html || "目前無人報到";
 }
 
 function resetGroups() { groups = []; renderGroups(); }
@@ -146,7 +139,7 @@ function submit(){
   
   fetch(API_URL,{
     method:"POST",
-    mode: "no-cors", // 解決跨網域 POST 問題
+    mode: "no-cors",
     body:JSON.stringify({
       mode: document.getElementById("mode").value,
       data: groups
