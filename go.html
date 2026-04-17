@@ -3,61 +3,129 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DPAC 出勤排班戰情室</title>
+<title>🚑 出勤排班戰情室 (欄位精準修復版)</title>
 
 <style>
-body{
-  font-family:"Microsoft JhengHei";
-  background:#08131f;
-  color:#fff;
-  font-size:20px;
-  margin:0;
-  padding:15px;
+:root {
+  --bg: #050d14;
+  --card: #0f1f31;
+  --text: #ffffff;
+  --accent: #00eaff; /* 青藍色 */
+  --warn: #ffff00;   /* 高對比黃 */
+  --highlight: #00ffaa; /* 亮綠色 */
+  --danger: #ff3333;
 }
 
-h1{
-  text-align:center;
-  color:#00eaff;
-  border-bottom:3px solid #00eaff;
-  padding-bottom:10px;
+* { box-sizing: border-box; }
+
+body {
+  font-family: "Microsoft JhengHei", "微軟正黑體", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 20px;
+  padding: 12px;
+  margin: 0;
+  line-height: 1.5;
 }
 
-.panel{
-  background:#122c45;
-  padding:20px;
-  margin:15px 0;
-  border-radius:12px;
-  border:2px solid #00eaff;
+h1 {
+  text-align: center;
+  color: var(--accent);
+  border-bottom: 4px solid var(--accent);
+  padding-bottom: 12px;
+  margin: 10px 0 20px 0;
+  text-shadow: 0 0 8px rgba(0, 234, 255, 0.4);
 }
 
-select,button,input{
-  padding:14px;
-  font-size:18px;
-  margin:8px 0;
-  width:100%;
-  border-radius:8px;
-  border:2px solid #00eaff;
-  background:#08131f;
-  color:#fff;
+.panel {
+  background: var(--card);
+  padding: 22px;
+  margin: 12px 0;
+  border-radius: 15px;
+  border: 2px solid var(--accent);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.7);
 }
 
-button{
-  background:#00eaff;
-  color:#000;
-  font-weight:bold;
+label {
+  display: block;
+  margin-top: 15px;
+  font-weight: bold;
+  color: #aed9e0;
+  font-size: 18px;
 }
 
-button:hover{
-  background:#fff;
+select, input, button {
+  padding: 14px;
+  font-size: 20px;
+  width: 100%;
+  border-radius: 10px;
+  border: 2px solid #2a5a8a;
+  background: #02080e;
+  color: #fff;
+  margin-top: 8px;
+  outline: none;
 }
 
-.group{
-  border:2px solid #ffff00;
-  padding:15px;
-  margin:15px 0;
-  border-radius:10px;
-  background:#1a1a1a;
+button {
+  background: var(--accent);
+  color: #002233;
+  font-weight: bold;
+  font-size: 22px;
+  border: none;
+  cursor: pointer;
+  margin-top: 20px;
 }
+
+button:active { transform: scale(0.97); background: var(--highlight); }
+
+.group {
+  border: 3px solid var(--warn);
+  padding: 20px;
+  margin: 25px 0;
+  background: rgba(0,0,0,0.5);
+  border-radius: 18px;
+}
+
+.group-title {
+  font-size: 24px;
+  color: var(--warn);
+  font-weight: bold;
+  border-bottom: 2px solid #555;
+  padding-bottom: 10px;
+  margin-bottom: 15px;
+}
+
+.member-badge {
+  background: #15314d;
+  border-left: 6px solid var(--highlight);
+  padding: 12px;
+  margin: 10px 0;
+  border-radius: 8px;
+  font-size: 21px;
+}
+
+/* 🎒 裝備追蹤區 */
+.equip-area {
+  margin-top: 20px;
+  padding: 15px;
+  background: #000;
+  border: 2.5px solid var(--highlight);
+  border-radius: 12px;
+}
+
+.equip-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+}
+
+.equip-table th { color: #888; text-align: left; padding: 6px; font-size: 15px; border-bottom: 1px solid #333; }
+.equip-table td { padding: 12px 6px; border-bottom: 1px solid #1a1a1a; font-size: 17px; vertical-align: top; }
+
+.text-time { color: #00ccff; font-family: monospace; font-size: 14px; display: block; }
+.text-item { color: #fff; font-weight: bold; }
+.text-status { color: var(--warn); font-size: 15px; }
+.no-data { color: #ff5555; text-align: center; padding: 15px; font-weight: bold; }
 </style>
 </head>
 
@@ -66,118 +134,218 @@ button:hover{
 <h1>🚑 出勤排班戰情室</h1>
 
 <div class="panel">
-  <label>勤務模式</label>
-  <select id="mode" onchange="resetGroups()">
-    <option value="team">一般出勤（3-5人）</option>
-    <option value="solo">機巡（單人）</option>
+  <label>🚩 勤務模式設定</label>
+  <select id="mode">
+    <option value="team">一般出勤 (3-5人)</option>
+    <option value="solo">機巡模式 (單人)</option>
   </select>
 
-  <label>選擇已報到人員</label>
+  <label>📍 分派至組別</label>
+  <select id="groupSelect">
+    <option value="0">第 1 組</option>
+    <option value="1">第 2 組</option>
+    <option value="2">第 3 組</option>
+    <option value="3">第 4 組</option>
+    <option value="4">第 5 組</option>
+    <option value="5">第 6 組</option>
+  </select>
+
+  <label>👤 選擇已報到人員 (工作表1狀態：已報到)</label>
   <select id="staffSelect"></select>
-  <button onclick="addSelected()">➕ 加入目前組別</button>
+
+  <button onclick="addMember()">➕ 確認加入組別</button>
 </div>
 
 <div class="panel">
-  <h2>📋 目前編組</h2>
-  <button onclick="createGroup()">➕ 新增組別 (上限5組)</button>
-  <div id="groups"></div>
+  <h2 style="margin:0; color:var(--warn); text-align:center;">📋 即時編組狀態面板</h2>
+  <div id="groupsDisplay"></div>
 </div>
 
-<button onclick="submit()" style="background:#ffff00;color:#000;font-size:22px;padding:18px;">
-🚀 送出排班資料
-</button>
-
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbyiHPihQpGvo9YXoNK0bnFtc4-f4sR1A6bJq_mFsT-cfWBl4rAfQqAhLAQ6Ko2BW7eq/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbxHxQVVHxx8m1BJqHzy0dxTt3uSrY5FN5W6FvlrWKjopcwwZVK9rmS1BjWMaQbfnEMh/exec";
 
-let staffData = [];
-let equipList = [];
-let groups = [];
+let staffData = []; // 工作表1 資料
+let equipData = []; // 裝備紀錄 資料
+let groups = JSON.parse(localStorage.getItem("ems_groups_v5")) || Array.from({length:6},()=>({
+    members:[],
+    station:null,
+    missionCount:1,
+    assignedEquipUser: "", 
+    missions:[...Array(5)].map(()=>({loc:"",start:"",end:""}))
+}));
 
-window.onload = loadData;
+function save() { localStorage.setItem("ems_groups_v5", JSON.stringify(groups)); }
 
-// ⭐ 正常 fetch（已修）
-function loadData(){
-  fetch(API_URL)
-  .then(res=>res.json())
-  .then(data=>{
-    staffData = data.staff.filter(p =>
-      p.已報到 === true ||
-      p.已報到 === "TRUE"
-    );
-
-    equipList = data.equips || [];
-
-    renderStaffSelect();
-  })
-  .catch(err=>{
-    alert("🔥 無法載入資料："+err.message);
-    console.error(err);
-  });
+// ✨ 字串淨化處理：解決 Excel 姓名帶空白的問題
+function fixName(str) {
+  return String(str || "").replace(/[\s\uFEFF\xA0\u200B]+/g, "").trim();
 }
 
-// 下拉
-function renderStaffSelect(){
+async function loadData() {
+  try {
+    const res = await fetch(API_URL);
+    const data = await res.json();
+    
+    // 1. 處理【工作表1】資料
+    staffData = (data.staff || []).map(s => ({
+      姓名: fixName(s.姓名),
+      站別: s.站別 || "",
+      屬性: s.屬性 || "",
+      狀態: s.狀態 || "" // 用於過濾是否報到
+    }));
+    
+    // 2. 處理【裝備紀錄】資料 (B~F 欄)
+    equipData = (data.equips || []).map(e => ({
+      time: e.時間 || "",   // A
+      name: fixName(e.姓名), // B
+      action: e.動作 || "",  // C
+      item: e.物品 || "",    // D
+      status: e.狀態 || "",  // E
+      note: e.備註 || ""     // F
+    })).filter(e => e.name !== ""); 
+    
+    refreshUI();
+  } catch(e) {
+    console.error("資料載入失敗", e);
+    refreshUI();
+  }
+}
+
+function renderStaffSelect() {
+  const usedNames = groups.flatMap(g => g.members);
+  // 過濾：必須在工作表1中「狀態 === 已報到」且「未被分組」
+  const available = staffData.filter(p => p.狀態 === "已報到" && !usedNames.includes(p.姓名));
+
   const el = document.getElementById("staffSelect");
-
-  if(staffData.length===0){
-    el.innerHTML="<option>無人報到</option>";
-    return;
+  if (available.length > 0) {
+    el.innerHTML = available.map(p => 
+      `<option value="${p.姓名}">${p.姓名} (${p.屬性} | ${p.站別})</option>`
+    ).join("");
+  } else {
+    el.innerHTML = "<option value=''>-- 目前無可分配之已報到人員 --</option>";
   }
-
-  el.innerHTML = staffData.map(p=>
-    `<option value="${p.姓名}">${p.姓名}</option>`
-  ).join("");
 }
 
-// 加入
-function addSelected(){
+function addMember() {
   const name = document.getElementById("staffSelect").value;
-  if(!name) return;
+  if (!name) return;
 
-  if(groups.length===0){
-    alert("請先新增組別");
-    return;
-  }
+  const idx = Number(document.getElementById("groupSelect").value);
+  const p = staffData.find(x => x.姓名 === name);
+  const g = groups[idx];
 
-  if(groups.some(g=>g.members.includes(name))){
-    alert(name+" 已在隊伍中 👻");
-    return;
-  }
-
-  let g = groups[groups.length-1];
-  let mode = document.getElementById("mode").value;
-
-  if(mode==="team" && g.members.length>=5) return alert("最多5人");
-  if(mode==="solo" && g.members.length>=1) return alert("單人模式");
+  if (p.狀態 !== "已報到") { alert("❌ 此人未在工作表1完成報到！"); return; }
+  if (g.station && g.station !== p.站別) { alert("❌ 不同站別不可同組！"); return; }
+  
+  const limit = document.getElementById("mode").value === "solo" ? 1 : 5;
+  if (g.members.length >= limit) { alert(`❌ 人數已滿`); return; }
 
   g.members.push(name);
-  renderGroups();
+  g.station = p.站別;
+  save();
+  refreshUI();
 }
 
-// 組別
-function createGroup(){
-  if(groups.length>=5){ alert("最多5組"); return; }
-  groups.push({members:[]});
-  renderGroups();
+// 🎒 裝備追蹤區域渲染
+function renderEquipSection(g, idx) {
+  // 從【裝備紀錄】中提取所有不重複的姓名列表
+  const allEquipUsers = [...new Set(equipData.map(e => e.name))].sort();
+
+  let selectHtml = `
+    <select onchange="updateEquipUser(${idx}, this.value)" style="border-color:var(--highlight); background:#111;">
+      <option value="">-- 指定此組裝備領用人 --</option>
+      ${allEquipUsers.map(n => `<option value="${n}" ${fixName(g.assignedEquipUser) === n ? "selected" : ""}>${n}</option>`).join("")}
+    </select>
+  `;
+
+  const records = equipData.filter(e => e.name === fixName(g.assignedEquipUser));
+  
+  let tableHtml = records.length ? `
+    <table class="equip-table">
+      <tr><th>時間/狀態</th><th>物品/動作/備註</th></tr>
+      ${records.map(e => `
+        <tr>
+          <td>
+            <span class="text-time">${e.time}</span>
+            <span class="text-status">${e.status}</span>
+          </td>
+          <td>
+            <div class="text-item">${e.item} (${e.action})</div>
+            <div style="font-size:14px; color:#aaa;">${e.note}</div>
+          </td>
+        </tr>
+      `).join("")}
+    </table>` : `<div class='no-data'>⚠️ 選單中查無此人領用紀錄</div>`;
+
+  return `
+    <div class="equip-area">
+      <label style="color:var(--highlight); margin:0 0 10px 0; font-size:17px;">🎒 裝備領用追蹤 (依裝備紀錄表)：</label>
+      ${selectHtml}
+      ${tableHtml}
+    </div>
+  `;
 }
 
-function renderGroups(){
-  let html="";
-  groups.forEach((g,i)=>{
-    html+=`
-    <div class="group">
-      第 ${i+1} 組：${g.members.join(", ")||"無"}
-    </div>`;
+function renderGroups() {
+  let html = "";
+  groups.forEach((g, i) => {
+    const membersHtml = g.members.length ? g.members.map(m => {
+      const info = staffData.find(s => s.姓名 === m);
+      return `<div class="member-badge">👤 ${m} <small style="color:#aaa; font-size:14px;">(${info?info.屬性:"-"} | ${info?info.站別:"-"})</small></div>`;
+    }).join("") : "<div style='color:#666; padding:10px;'>等待編組中...</div>";
+
+    html += `
+      <div class="group">
+        <div class="group-title">第 ${i+1} 組 [站別：${g.station || "未定"}]</div>
+        ${membersHtml}
+
+        ${g.members.length ? `
+          <div style="margin-top:15px; border-top:1px solid #444; padding-top:10px;">
+            <label style="display:inline; color:#fff">任務分段：</label>
+            <select style="width:auto; display:inline; padding:5px;" onchange="updateCount(${i},this.value)">
+              ${[1,2,3,4,5].map(n => `<option ${g.missionCount==n?"selected":""}>${n}</option>`).join("")}
+            </select>
+          </div>
+
+          ${g.missions.slice(0, g.missionCount).map((m, mi) => `
+            <div style="margin-top:12px; background:rgba(255,255,255,0.05); padding:10px; border-radius:8px;">
+              <b style="color:var(--highlight)">任務時段 ${mi+1}</b>
+              <input placeholder="任務地點" value="${m.loc}" onchange="updateMission(${i},${mi},'loc',this.value)">
+              <div style="display:flex; gap:8px;">
+                <input type="time" value="${m.start}" onchange="updateMission(${i},${mi},'start',this.value)">
+                <input type="time" value="${m.end}" onchange="updateMission(${i},${mi},'end',this.value)">
+              </div>
+            </div>
+          `).join("")}
+
+          ${renderEquipSection(g, i)}
+
+          <button style="background:var(--danger); color:#fff; font-size:18px; margin-top:20px; padding:10px;" 
+                  onclick="clearGroup(${i})">🗑 清空第 ${i+1} 組</button>
+        ` : ""}
+      </div>
+    `;
   });
-  document.getElementById("groups").innerHTML=html;
+  document.getElementById("groupsDisplay").innerHTML = html;
 }
 
-function resetGroups(){ groups=[]; renderGroups(); }
+function updateEquipUser(idx, val) { groups[idx].assignedEquipUser = val; save(); refreshUI(); }
+function updateMission(i, m, k, v) { groups[i].missions[m][k] = v; save(); }
+function updateCount(i, v) { groups[i].missionCount = Number(v); save(); refreshUI(); }
 
-function submit(){
-  alert("🚀 排班送出（示意）");
+function clearGroup(i) {
+  if (!confirm(`確定清空第 ${i+1} 組嗎？`)) return;
+  groups[i] = { members:[], station:null, missionCount:1, assignedEquipUser:"", missions:[...Array(5)].map(()=>({loc:"",start:"",end:""})) };
+  save();
+  refreshUI();
 }
+
+function refreshUI() {
+  renderStaffSelect();
+  renderGroups();
+}
+
+loadData();
 </script>
 
 </body>
