@@ -99,7 +99,7 @@ button:hover{opacity:0.8;}
 <div class="list" id="list"></div>
 
 <script>
-const API = "你的GAS網址"; // ←填這
+const API = "https://script.google.com/macros/s/AKfycbxA1e1C4UC5VUZe2EBIlO1z5aykzBrFga70X4PxJN4rSiTX2cS2Y2pFGtN8w_Q2Z6hP/exec"; // ←填這
 
 function loadStats(){
   fetch(API+"?action=stats")
