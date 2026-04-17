@@ -4,18 +4,19 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DPAC 出勤排班戰情室</title>
+
 <style>
-  body{ font-family: "Microsoft JhengHei", Arial; background:#0b1b2b; color:#fff; margin:0; padding:10px; }
-  h1{ text-align:center; color:#00d4ff; border-bottom:2px solid #00d4ff; padding-bottom:10px; }
-  .panel{ background:#132f4c; padding:15px; margin:10px 0; border-radius:10px; border:1px solid #1f4e79; }
-  select, button, input { padding:10px; margin:5px 0; border-radius:5px; border:1px solid #00d4ff; background:#0b1b2b; color:#fff; width:100%; box-sizing:border-box; font-size:16px; }
-  button { background:#00d4ff; color:#000; font-weight:bold; cursor:pointer; border:none; margin-top:10px; }
-  button:hover { background:#fff; }
-  .group { border:2px solid #ffff00; padding:15px; margin:15px 0; border-radius:10px; background:#1a1a1a; }
-  label { font-size: 14px; color: #00d4ff; display: block; margin-top: 10px; }
-  .disabled { opacity: 0.3; cursor: not-allowed; }
+body{ font-family:"Microsoft JhengHei", Arial; background:#0b1b2b; color:#fff; margin:0; padding:10px; font-size:18px;}
+h1{ text-align:center; color:#00d4ff; border-bottom:2px solid #00d4ff; padding-bottom:10px;}
+.panel{ background:#132f4c; padding:20px; margin:15px 0; border-radius:12px; border:1px solid #1f4e79;}
+select, button, input{ padding:12px; margin:8px 0; border-radius:8px; border:1px solid #00d4ff; background:#0b1b2b; color:#fff; width:100%; font-size:18px;}
+button{ background:#00d4ff; color:#000; font-weight:bold;}
+button:hover{ background:#fff;}
+.group{ border:2px solid #ffff00; padding:15px; margin:15px 0; border-radius:10px; background:#1a1a1a;}
+label{ color:#00d4ff;}
 </style>
 </head>
+
 <body>
 
 <h1>🚑 出勤排班戰情室</h1>
@@ -30,7 +31,6 @@
   <label>選擇已報到人員</label>
   <select id="staffSelect"></select>
   <button onclick="addSelected()">➕ 加入目前組別</button>
-
 </div>
 
 <div class="panel">
@@ -39,7 +39,7 @@
   <div id="groups"></div>
 </div>
 
-<button onclick="submit()" style="background:#ffff00; color:#000; font-size:24px; padding:20px; margin-bottom:50px;">🚀 送出排班資料</button>
+<button onclick="submit()" style="background:#ffff00;color:#000;font-size:22px;padding:18px;">🚀 送出排班資料</button>
 
 <script>
 const API_URL = "https://script.google.com/macros/s/AKfycbxXpJ-Cisn0ir2MNaf3Ogf6b6gD3zO2smoQgGIbrLBTOkXvkSLG30Af0RDb_tjjJnFb/exec";
@@ -48,118 +48,129 @@ let staffData = [];
 let equipList = [];
 let groups = [];
 
-// 🚀 自動載入（不用按按鈕）
+// ⭐ 只留一個 loadData（終極穩定版）
 window.onload = loadData;
 
 function loadData(){
-  fetch(API_URL)
-  .then(res=>res.json())
-  .then(data=>{
-    // ⭐ 只取已報到人員
-    staffData = data.staff.filter(p => p.已報到 === true || p.已報到 === "TRUE");
+  console.log("🚀 載入資料中...");
 
-    equipList = data.equips;
+  fetch(API_URL)
+  .then(res=>{
+    if(!res.ok) throw new Error("HTTP錯誤:"+res.status);
+    return res.text();
+  })
+  .then(text=>{
+    console.log("📦 原始資料:", text);
+
+    let data;
+    try{
+      data = JSON.parse(text);
+    }catch(e){
+      alert("❌ JSON解析失敗，請看Console");
+      console.error(text);
+      return;
+    }
+
+    if(!data || !Array.isArray(data.staff)){
+      alert("❌ 資料格式錯誤");
+      return;
+    }
+
+    // ⭐ 關鍵修正：已報到判斷（超寬鬆版）
+    staffData = data.staff.filter(p =>
+      p.已報到 === true ||
+      p.已報到 === "TRUE" ||
+      p.已報到 === "true" ||
+      p.已報到 === "已報到" ||
+      p.已報到 === 1
+    );
+
+    equipList = Array.isArray(data.equips) ? data.equips : [];
+
+    console.log("✅ 已報到:", staffData);
+
     renderStaffSelect();
   })
-  .catch(err => alert("連線失敗，請檢查 GAS"));
+  .catch(err=>{
+    alert("🔥 載入失敗:"+err.message);
+    console.error(err);
+  });
 }
 
-// ✅ 下拉選單
+// ⭐ 下拉選單
 function renderStaffSelect(){
-  let html = staffData.map(p=> 
+  const el = document.getElementById("staffSelect");
+
+  if(staffData.length === 0){
+    el.innerHTML = "<option>無人報到</option>";
+    return;
+  }
+
+  el.innerHTML = staffData.map(p =>
     `<option value="${p.姓名}">${p.姓名}</option>`
   ).join("");
-  document.getElementById("staffSelect").innerHTML = html || "<option>無人報到</option>";
 }
 
-// 👉 加入組別
+// 加入
 function addSelected(){
   const name = document.getElementById("staffSelect").value;
   if(!name) return;
   addToGroup(name);
 }
 
-function resetGroups() { groups = []; renderGroups(); }
+function resetGroups(){ groups=[]; renderGroups(); }
 
 function createGroup(){
   if(groups.length>=5){ alert("最多5組"); return; }
-  groups.push({ members:[], time:"", place:"", leader:"", equip:"", returnTime:"" });
+  groups.push({members:[],time:"",place:"",leader:"",equip:""});
   renderGroups();
 }
 
+// ⭐ 防重複
 function addToGroup(name){
-  if(groups.length === 0) { alert("請先新增組別"); return; }
+  if(groups.length===0){ alert("請先新增組別"); return;}
+
+  if(groups.some(g=>g.members.includes(name))){
+    alert(name+" 已被編組（禁止分身👻）");
+    return;
+  }
+
   let g = groups[groups.length-1];
   let mode = document.getElementById("mode").value;
 
-  if(mode==="team" && g.members.length>=5){ alert("一般組最多5人"); return; }
-  if(mode==="solo" && g.members.length>=1){ alert("機巡組限1人"); return; }
+  if(mode==="team" && g.members.length>=5) return alert("最多5人");
+  if(mode==="solo" && g.members.length>=1) return alert("單人模式");
 
-  if(!g.members.includes(name)){
-    g.members.push(name);
-    if(!g.leader) g.leader = name;
-  }
+  g.members.push(name);
+  if(!g.leader) g.leader = name;
+
   renderGroups();
 }
 
 function renderGroups(){
-  let html = "";
+  let html="";
   groups.forEach((g,i)=>{
     html+=`
     <div class="group">
-      <b style="color:#ffff00; font-size:20px;">第 ${i+1} 組</b> 
-      <button onclick="removeGroup(${i})" style="width:auto; padding:5px 10px; float:right; background:#ff3d00;">刪除</button>
-
-      <div style="margin:10px 0;">成員：${g.members.join(", ") || "尚未選擇"}</div>
-
-      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-        <div>
-          <label>領用代表</label>
-          <select onchange="groups[${i}].leader=this.value">
-            ${g.members.map(m=>`<option value="${m}" ${g.leader===m?'selected':''}>${m}</option>`).join("")}
-          </select>
-        </div>
-        <div>
-          <label>領用裝備</label>
-          <select onchange="groups[${i}].equip=this.value">
-            <option value="">無</option>
-            ${equipList.map(e=>`<option value="${e}">${e}</option>`).join("")}
-          </select>
-        </div>
-        <div>
-          <label>出站時間</label>
-          <input type="time" onchange="groups[${i}].time=this.value; renderGroups();">
-        </div>
-        <div>
-          <label>回站時間</label>
-          <input type="time">
-        </div>
-      </div>
-
-      <label>勤務地點</label>
-      <input type="text" onchange="groups[${i}].place=this.value">
+      <b>第 ${i+1} 組</b>
+      <div>成員：${g.members.join(", ")||"無"}</div>
     </div>`;
   });
-
-  document.getElementById("groups").innerHTML = html;
+  document.getElementById("groups").innerHTML=html;
 }
 
-function removeGroup(i) { groups.splice(i, 1); renderGroups(); }
-
 function submit(){
-  if(groups.length === 0) { alert("請先編組"); return; }
+  if(groups.length===0){ alert("請先編組"); return;}
 
   fetch(API_URL,{
     method:"POST",
-    mode: "no-cors",
-    body:JSON.stringify({
-      mode: document.getElementById("mode").value,
-      data: groups
-    })
+    mode:"no-cors",
+    body:JSON.stringify({data:groups})
   });
 
-  alert("排班已送出 🚀（快去試算表看成果）");
+  alert("🚀 已送出");
 }
 </script>
+
 </body>
 </html>
