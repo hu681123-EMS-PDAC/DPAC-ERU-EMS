@@ -12,8 +12,6 @@
   button { background:#00d4ff; color:#000; font-weight:bold; cursor:pointer; border:none; margin-top:10px; }
   button:hover { background:#fff; }
   .group { border:2px solid #ffff00; padding:15px; margin:15px 0; border-radius:10px; background:#1a1a1a; }
-  .member { background:#1f4e79; padding:8px 15px; margin:5px; border-radius:5px; display:inline-block; cursor:pointer; border:1px solid #00d4ff; }
-  .member:hover { background:#00d4ff; color:#000; }
   label { font-size: 14px; color: #00d4ff; display: block; margin-top: 10px; }
   .disabled { opacity: 0.3; cursor: not-allowed; }
 </style>
@@ -29,9 +27,10 @@
     <option value="solo">機巡（單人）</option>
   </select>
 
-  <button onclick="loadData()">🔄 載入報到名單與裝備</button>
-  <hr style="border:0; border-top:1px solid #1f4e79; margin:15px 0;">
-  <div id="staff"></div>
+  <label>選擇已報到人員</label>
+  <select id="staffSelect"></select>
+  <button onclick="addSelected()">➕ 加入目前組別</button>
+
 </div>
 
 <div class="panel">
@@ -49,26 +48,35 @@ let staffData = [];
 let equipList = [];
 let groups = [];
 
+// 🚀 自動載入（不用按按鈕）
+window.onload = loadData;
+
 function loadData(){
-  document.querySelector('button').innerText = "讀取中...";
   fetch(API_URL)
   .then(res=>res.json())
   .then(data=>{
-    staffData = data.staff;
-    equipList = data.equips;
+    // ⭐ 只取已報到人員
+    staffData = data.staff.filter(p => p.已報到 === true || p.已報到 === "TRUE");
 
-    renderStaff(); // 👉 直接顯示全部人
-    document.querySelector('button').innerText = "🔄 重新載入數據";
+    equipList = data.equips;
+    renderStaffSelect();
   })
-  .catch(err => alert("連線失敗，請檢查 GAS 是否部署為『所有人』"));
+  .catch(err => alert("連線失敗，請檢查 GAS"));
 }
 
-// ⭐ 不再篩選站別
-function renderStaff(){
+// ✅ 下拉選單
+function renderStaffSelect(){
   let html = staffData.map(p=> 
-    `<div class="member" onclick="addToGroup('${p.姓名}')">${p.姓名}</div>`
+    `<option value="${p.姓名}">${p.姓名}</option>`
   ).join("");
-  document.getElementById("staff").innerHTML = html || "目前無人報到";
+  document.getElementById("staffSelect").innerHTML = html || "<option>無人報到</option>";
+}
+
+// 👉 加入組別
+function addSelected(){
+  const name = document.getElementById("staffSelect").value;
+  if(!name) return;
+  addToGroup(name);
 }
 
 function resetGroups() { groups = []; renderGroups(); }
@@ -80,13 +88,17 @@ function createGroup(){
 }
 
 function addToGroup(name){
-  if(groups.length === 0) { alert("請先點擊『新增組別』"); return; }
+  if(groups.length === 0) { alert("請先新增組別"); return; }
   let g = groups[groups.length-1];
   let mode = document.getElementById("mode").value;
 
   if(mode==="team" && g.members.length>=5){ alert("一般組最多5人"); return; }
   if(mode==="solo" && g.members.length>=1){ alert("機巡組限1人"); return; }
-  if(!g.members.includes(name)){ g.members.push(name); if(!g.leader) g.leader = name; }
+
+  if(!g.members.includes(name)){
+    g.members.push(name);
+    if(!g.leader) g.leader = name;
+  }
   renderGroups();
 }
 
@@ -97,8 +109,9 @@ function renderGroups(){
     <div class="group">
       <b style="color:#ffff00; font-size:20px;">第 ${i+1} 組</b> 
       <button onclick="removeGroup(${i})" style="width:auto; padding:5px 10px; float:right; background:#ff3d00;">刪除</button>
-      <div style="margin:10px 0; border-bottom:1px solid #333; padding-bottom:5px;">成員：${g.members.join(", ") || "尚未選擇"}</div>
-      
+
+      <div style="margin:10px 0;">成員：${g.members.join(", ") || "尚未選擇"}</div>
+
       <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
         <div>
           <label>領用代表</label>
@@ -110,33 +123,32 @@ function renderGroups(){
           <label>領用裝備</label>
           <select onchange="groups[${i}].equip=this.value">
             <option value="">無</option>
-            ${equipList.map(e=>`<option value="${e}" ${g.equip===e?'selected':''}>${e}</option>`).join("")}
+            ${equipList.map(e=>`<option value="${e}">${e}</option>`).join("")}
           </select>
         </div>
         <div>
           <label>出站時間</label>
-          <input type="time" value="${g.time}" onchange="groups[${i}].time=this.value; renderGroups();">
+          <input type="time" onchange="groups[${i}].time=this.value; renderGroups();">
         </div>
         <div>
           <label>回站時間</label>
-          <input type="time" value="${g.returnTime}" 
-                 class="${!g.time?'disabled':''}" 
-                 ${!g.time?'disabled':''}
-                 onchange="groups[${i}].returnTime=this.value">
+          <input type="time">
         </div>
       </div>
+
       <label>勤務地點</label>
-      <input type="text" placeholder="輸入地點" value="${g.place}" onchange="groups[${i}].place=this.value">
+      <input type="text" onchange="groups[${i}].place=this.value">
     </div>`;
   });
+
   document.getElementById("groups").innerHTML = html;
 }
 
 function removeGroup(i) { groups.splice(i, 1); renderGroups(); }
 
 function submit(){
-  if(groups.length === 0) { alert("請先編組再送出"); return; }
-  
+  if(groups.length === 0) { alert("請先編組"); return; }
+
   fetch(API_URL,{
     method:"POST",
     mode: "no-cors",
@@ -145,7 +157,8 @@ function submit(){
       data: groups
     })
   });
-  alert("排班資料已送出（請至試算表確認紀錄）");
+
+  alert("排班已送出 🚀（快去試算表看成果）");
 }
 </script>
 </body>
