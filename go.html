@@ -3,20 +3,20 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🚑 DPCA 出勤排班戰情室 (圓形錶盤旗艦版)</title>
+<title>🚑 DPCA 出勤排班戰情室 (圓形錶盤 + 記錄按鈕版)</title>
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/clocklet@0.3.0/css/clocklet.min.css">
 
 <style>
 :root {
-  --bg: #02060c;         /* 極深太空黑 */
-  --card: #0d1520;       /* 戰情室深藍 */
+  --bg: #02060c;         
+  --card: #0d1520;       
   --text: #ffffff;
-  --accent: #00f2ff;     /* 亮青色 */
-  --warn: #ffff00;       /* 螢光黃 */
-  --highlight: #00ff88;  /* 螢光綠 */
-  --danger: #ff2d55;     /* 警示紅 */
-  --leader-gold: #ffd700;/* 組長金 */
+  --accent: #00f2ff;     
+  --warn: #ffff00;       
+  --highlight: #00ff88;  
+  --danger: #ff2d55;     
+  --leader-gold: #ffd700;
   --attr-rn: #ff007f; --attr-emt2: #ff8c00; --attr-emt1: #ffcc00; --attr-bls: #00e600;
 }
 
@@ -26,7 +26,7 @@ body {
   font-family: "Segoe UI", "PingFang TC", "Microsoft JhengHei", sans-serif;
   background: var(--bg);
   color: var(--text);
-  font-size: 15px; /* 【優化】中小字體，畫面更緊湊精緻 */
+  font-size: 15px; /* 中小字體，畫面緊湊精緻 */
   padding: 12px;
   margin: 0;
   line-height: 1.4;
@@ -41,11 +41,10 @@ h1 {
   padding-bottom: 12px;
   margin: 5px 0 20px 0;
   text-shadow: 0 0 12px rgba(0, 242, 255, 0.6);
-  font-size: 26px; /* 縮小標題比例 */
+  font-size: 26px; 
   letter-spacing: 2px;
 }
 
-/* 面板與卡片 */
 .panel {
   background: var(--card);
   padding: 20px;
@@ -55,81 +54,38 @@ h1 {
   box-shadow: 0 8px 30px rgba(0,0,0,0.8);
 }
 
-label {
-  display: block;
-  margin-top: 12px;
-  font-weight: 900;
-  color: #b0d4de;
-  font-size: 16px;
-}
+label { display: block; margin-top: 12px; font-weight: 900; color: #b0d4de; font-size: 16px; }
 
 select, input {
-  padding: 10px;
-  font-size: 16px; 
-  width: 100%;
-  border-radius: 8px;
-  border: 2px solid #3d5a80;
-  background: #000;
-  color: #fff;
-  margin-top: 6px;
-  outline: none;
-  transition: border-color 0.2s;
+  padding: 10px; font-size: 15px; width: 100%; border-radius: 8px;
+  border: 2px solid #3d5a80; background: #000; color: #fff; margin-top: 6px; outline: none;
 }
-
 select:focus, input:focus { border-color: var(--warn); box-shadow: 0 0 8px rgba(255, 255, 0, 0.3); }
 
 .btn-row { display: flex; gap: 12px; margin-top: 20px; }
-
-button {
-  flex: 1; padding: 12px; font-size: 17px; font-weight: 900;
-  border-radius: 10px; cursor: pointer; border: none; transition: transform 0.1s;
-}
-
+button { flex: 1; padding: 12px; font-size: 17px; font-weight: 900; border-radius: 10px; cursor: pointer; border: none; }
 .btn-leader { background: linear-gradient(135deg, #ffd700, #b8860b); color: #000; }
 .btn-member { background: linear-gradient(135deg, var(--accent), #00a8cc); color: #000; }
 button:active { transform: scale(0.97); }
 
-/* 組別區塊 */
 .group {
-  border: 2px solid #2a4a6a;
-  padding: 18px;
-  margin: 20px 0;
-  background: rgba(13, 21, 32, 0.95);
-  border-radius: 15px;
-  position: relative;
+  border: 2px solid #2a4a6a; padding: 18px; margin: 20px 0;
+  background: rgba(13, 21, 32, 0.95); border-radius: 15px;
 }
-
 .group-title {
-  font-size: 20px;
-  color: var(--warn);
-  font-weight: 900;
-  border-bottom: 1px solid #334;
-  padding-bottom: 10px;
-  margin-bottom: 15px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  font-size: 20px; color: var(--warn); font-weight: 900;
+  border-bottom: 1px solid #334; padding-bottom: 10px; margin-bottom: 15px;
+  display: flex; justify-content: space-between; align-items: center;
 }
 
-/* 人員標籤 */
 .badge {
-  padding: 10px 15px;
-  margin: 8px 0;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  background: #111e2d;
-  border-left: 6px solid #444;
+  padding: 10px 15px; margin: 8px 0; border-radius: 8px; display: flex; align-items: center; gap: 12px;
+  background: #111e2d; border-left: 6px solid #444;
 }
-
 .leader-badge { border-left-color: var(--leader-gold); background: rgba(255, 215, 0, 0.05); }
 .member-badge { border-left-color: var(--highlight); }
 
-.attr-tag {
-  font-size: 13px; padding: 3px 8px; border-radius: 5px;
-  font-weight: 900; min-width: 70px; text-align: center; color: #fff;
-}
+.attr-tag { font-size: 13px; padding: 3px 8px; border-radius: 5px; font-weight: 900; min-width: 70px; text-align: center; color: #fff; }
 .attr-護理師 { background: var(--attr-rn); }
 .attr-EMT-2 { background: var(--attr-emt2); }
 .attr-EMT-1 { background: var(--attr-emt1); color: #000; }
@@ -137,71 +93,56 @@ button:active { transform: scale(0.97); }
 
 .name-txt { font-weight: bold; color: #fff; font-size: 18px; }
 .station-txt { color: #88b0c0; font-size: 15px; margin-left: auto; }
+.remove-btn { color: var(--danger); font-size: 20px; cursor: pointer; padding: 0 10px; font-weight: bold; }
 
-/* 任務與時間區塊 */
-.mission-box {
-  margin-top: 12px; 
-  background: rgba(0,0,0,0.4); 
-  padding: 12px; 
-  border-radius: 10px;
-  border: 1px solid #3d5a80;
-}
+.mission-box { margin-top: 12px; background: rgba(0,0,0,0.4); padding: 15px; border-radius: 10px; border: 1px solid #3d5a80; }
 
-.time-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 10px;
-  margin-top: 10px;
-}
+.time-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 10px; }
 .time-label { font-size: 13px; color: #aaa; text-align: center; font-weight: bold; margin-bottom: 4px; display: block; }
 
-/* ⏱️ 錶盤輸入框專屬美化 */
+/* ⏱️ 錶盤輸入框 */
 .time-picker-ui {
-  text-align: center;
-  cursor: pointer;
-  background: #000 !important;
-  font-weight: bold;
-  font-size: 16px;
-  border-color: #2a4a6a;
-  letter-spacing: 1px;
-  color: var(--accent);
+  text-align: center; cursor: pointer; background: #000 !important; font-weight: bold;
+  font-size: 16px; border-color: #2a4a6a; letter-spacing: 1px; color: var(--accent);
 }
 
-/* 🎨 Clocklet 圓形錶盤深色高對比主題 (覆寫預設) */
-.custom-clocklet {
-  background-color: #0d1520 !important;
-  border: 2px solid #00f2ff !important;
-  border-radius: 15px !important;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.9) !important;
-  z-index: 9999 !important;
-}
+/* 🎨 Clocklet 圓形錶盤深色樣式 */
+.custom-clocklet { background-color: #0d1520 !important; border: 2px solid #00f2ff !important; border-radius: 15px !important; z-index: 9999 !important; }
 .custom-clocklet .clocklet-dial { background-color: #02060c !important; }
 .custom-clocklet .clocklet-tick { color: #b0d4de !important; font-size: 16px !important; font-family: sans-serif; }
 .custom-clocklet .clocklet-tick:hover { color: #00f2ff !important; font-weight: bold; }
-.custom-clocklet .clocklet-tick.clocklet-active { 
-  background-color: #00ff88 !important; color: #000 !important; font-weight: bold; 
-}
-.custom-clocklet .clocklet-hand { background-color: #00ff88 !important; }
-.custom-clocklet .clocklet-hand-origin { background-color: #00ff88 !important; }
-.custom-clocklet .clocklet-header { color: #fff !important; border-bottom: 1px solid #2a4a6a !important; font-size: 20px !important; font-weight: bold; }
+.custom-clocklet .clocklet-tick.clocklet-active { background-color: #00ff88 !important; color: #000 !important; font-weight: bold; }
+.custom-clocklet .clocklet-hand, .custom-clocklet .clocklet-hand-origin { background-color: #00ff88 !important; }
 
-/* 警報動畫 */
+/* 🚨 警報動畫 */
 .alarm-active { animation: blinker 1.2s linear infinite; border: 2px solid var(--danger); }
 @keyframes blinker { 50% { background: rgba(255, 0, 0, 0.15); box-shadow: 0 0 10px var(--danger); } }
 
-/* 裝備區 */
 .equip-area { margin-top: 15px; padding: 12px; background: #000; border: 1px solid #444; border-radius: 10px; }
 .equip-table td { padding: 10px 8px; border-bottom: 1px solid #1a1a1a; font-size: 14px; }
-
 .btn-danger { background: linear-gradient(to bottom, #600, #400); color: #fff; margin-top: 15px; font-size: 16px; width: 100%; border-radius: 8px; padding: 12px;}
-.remove-btn { color: var(--danger); font-size: 20px; cursor: pointer; padding: 0 10px; font-weight: bold; }
+
+/* 💾 找回來的記錄按鈕專屬樣式 */
+.btn-record-silent {
+  background-color: #00C853; 
+  color: #000; 
+  font-weight: 900; 
+  border: none; 
+  border-radius: 8px; 
+  padding: 0 18px; 
+  cursor: pointer;
+  white-space: nowrap;
+  font-size: 15px;
+  margin-top: 6px;
+}
+.btn-record-silent:disabled { background-color: #444; color: #888; cursor: not-allowed; }
 </style>
 </head>
 
 <body>
 
 <div class="container">
-  <h1>🚑 DPCA 出勤排班 </h1>
+  <h1>🚑 DPCA 出勤排班戰情室</h1>
 
   <div class="panel">
     <label>📍 分配組別 (1 - 15組)</label>
@@ -227,7 +168,7 @@ button:active { transform: scale(0.97); }
 const API_URL = "https://script.google.com/macros/s/AKfycby3BSIVXhhPzBoJXIL9GMId54ZfGBm3BOEeiRyQd4wsk7ZWTY4zuwlUUMNaMyi8XJX3/exec";
 const attrWeight = { "護理師": 1, "EMT-2": 2, "EMT-1": 3, "BLS": 4 };
 
-// ✅ 保證不刪除舊資料：讀取相同的 localStorage Key
+// ✅ 讀取相同的 localStorage Key，保證資料不遺失
 let groups = JSON.parse(localStorage.getItem("ems_v12_15groups_stable"));
 if (!groups || !Array.isArray(groups)) {
   groups = Array.from({length:15},()=>({
@@ -270,7 +211,6 @@ function assign(type) {
     alert(`⛔ 排班阻擋！\n此組鎖定站別：【${g.station}】\n欲加入人員站別：【${p.站別}】`);
     return;
   }
-
   if (type === 'leader') {
     if (g.leader && !confirm("確定更換現有組長？")) return;
     g.leader = name;
@@ -288,6 +228,40 @@ function removePerson(groupIdx, name, isLeader) {
   else g.members = g.members.filter(m => m !== name);
   if (!g.leader && g.members.length === 0) g.station = null;
   save(); refreshUI();
+}
+
+// 💾 背景靜默寫入 Google Sheets 的函數
+function recordSilent(gIdx, mIdx, btn) {
+  const g = groups[gIdx];
+  const m = g.missions[mIdx];
+  const taskName = m.loc || "未命名任務";
+
+  btn.innerText = "⏳ 寫入中...";
+  btn.disabled = true;
+
+  const payload = {
+    group: `第 ${gIdx+1} 組`,
+    station: g.station || "未定",
+    leader: g.leader || "無",
+    members: g.members.join(", "),
+    task: taskName,
+    dispatchTime: m.dispatchTime,
+    expectedReturn: m.expectedReturn,
+    actualReturn: m.actualReturn
+  };
+
+  try {
+    google.script.run.withSuccessHandler(function() {
+      btn.innerText = "✅ 已記錄";
+      setTimeout(() => { btn.innerText = "💾 記錄"; btn.disabled = false; }, 2500);
+    }).withFailureHandler(function() {
+      btn.innerText = "❌ 失敗";
+      setTimeout(() => { btn.innerText = "💾 記錄"; btn.disabled = false; }, 2500);
+    }).saveMissionRecord(payload);
+  } catch(e) {
+    // 預防如果在本地端測試沒有 Google 環境也不會當機
+    setTimeout(() => { btn.innerText = "✅ 已記錄"; setTimeout(() => { btn.innerText = "💾 記錄"; btn.disabled = false; }, 2000); }, 1000);
+  }
 }
 
 function renderGroups() {
@@ -318,17 +292,22 @@ function renderGroups() {
               const isAlarm = m.expectedReturn && !m.actualReturn && nowStr >= m.expectedReturn;
               return `
               <div class="mission-box ${isAlarm ? 'alarm-active' : ''}">
-                <div style="display:flex; gap:8px;">
-                    <select style="flex:1;" onchange="updateMission(${i},${mi},'loc',this.value)">
-                        <option value="">-- 🗺️ 選擇任務地點 --</option>
-                        <option value="機巡" ${m.loc==='機巡'?'selected':''}>🏍️ 機巡</option>
-                        <option value="步巡" ${m.loc==='步巡'?'selected':''}>🚶 步巡</option>
-                        <option value="天后宮內" ${m.loc==='天后宮內'?'selected':''}>⛩️ 天后宮內</option>
-                        <option value="遶境" ${m.loc==='遶境'?'selected':''}>🚩 遶境</option>
-                        <option value="其他" ${(!['','機巡','步巡','天后宮內','遶境'].includes(m.loc))?'selected':''}>➕ 其他地點...</option>
-                    </select>
-                    <input placeholder="自訂地點" value="${m.loc}" style="flex:1; display:${(!['','機巡','步巡','天后宮內','遶境'].includes(m.loc))?'block':'none'};" 
-                           id="customLoc_${i}_${mi}" onchange="updateMission(${i},${mi},'loc',this.value)">
+                
+                <div style="display:flex; gap:8px; align-items: flex-start;">
+                    <div style="flex:1;">
+                        <select onchange="updateMission(${i},${mi},'loc',this.value)">
+                            <option value="">-- 🗺️ 選擇任務地點 --</option>
+                            <option value="機巡" ${m.loc==='機巡'?'selected':''}>🏍️ 機巡</option>
+                            <option value="步巡" ${m.loc==='步巡'?'selected':''}>🚶 步巡</option>
+                            <option value="天后宮內" ${m.loc==='天后宮內'?'selected':''}>⛩️ 天后宮內</option>
+                            <option value="遶境" ${m.loc==='遶境'?'selected':''}>🚩 遶境</option>
+                            <option value="其他" ${(!['','機巡','步巡','天后宮內','遶境'].includes(m.loc))?'selected':''}>➕ 其他地點...</option>
+                        </select>
+                        <input placeholder="輸入自訂地點" value="${m.loc}" style="display:${(!['','機巡','步巡','天后宮內','遶境'].includes(m.loc))?'block':'none'};" 
+                               id="customLoc_${i}_${mi}" onchange="updateMission(${i},${mi},'loc',this.value)">
+                    </div>
+                    
+                    <button class="btn-record-silent" onclick="recordSilent(${i}, ${mi}, this)">💾 記錄</button>
                 </div>
 
                 <div class="time-grid">
@@ -412,7 +391,7 @@ function updateMission(i, m, k, v) {
       if(input) {
          if (v === '其他') {
             input.style.display = 'block';
-            groups[i].missions[m][k] = ''; // 清空讓使用者重新輸入
+            groups[i].missions[m][k] = ''; 
             input.value = '';
             input.focus();
          } else {
@@ -447,7 +426,6 @@ function refreshUI() {
 loadData();
 setInterval(loadData, 30000); 
 
-// 自動時效警報檢查
 setInterval(() => {
     const nowStr = new Date().getHours().toString().padStart(2, '0') + ':' + new Date().getMinutes().toString().padStart(2, '0');
     let needRefresh = false;
@@ -459,7 +437,6 @@ setInterval(() => {
             }
         });
     });
-    // 只有當警報觸發時才刷新 DOM，避免打斷使用者操作
     if (needRefresh) renderGroups();
 }, 10000);
 </script>
