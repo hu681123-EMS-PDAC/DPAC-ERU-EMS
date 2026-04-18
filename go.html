@@ -3,387 +3,465 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🚑 出勤排班戰情室 (10組領隊強化版)</title>
+<title>🚑 出勤排班戰情室 (15組高對比錶盤版)</title>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
 
 <style>
 :root {
-  --bg: #050a10;         /* 極深色背景 */
-  --card: #111d2b;       /* 面板背景 */
+  --bg: #02060c;         /* 極深背景 */
+  --card: #0d1520;       /* 深藍灰面板 */
   --text: #ffffff;
-  --accent: #00eaff;     /* 亮青色 */
+  --accent: #00f2ff;     /* 亮青色 */
   --warn: #ffff00;       /* 螢光黃 */
-  --highlight: #00ffaa;  /* 亮綠色 */
-  --danger: #ff4d4d;     /* 警示紅 */
+  --highlight: #00ff88;  /* 螢光綠 */
+  --danger: #ff2d55;     /* 警示紅 */
   --leader-gold: #ffd700;/* 組長金 */
+  
+  --attr-rn: #ff007f;    
+  --attr-emt2: #ff8c00;  
+  --attr-emt1: #ffcc00;  
+  --attr-bls: #00e600;   
 }
 
 * { box-sizing: border-box; }
 
 body {
-  font-family: "Segoe UI", "Microsoft JhengHei", "微軟正黑體", sans-serif;
+  font-family: "Segoe UI", "PingFang TC", "Microsoft JhengHei", sans-serif;
   background: var(--bg);
   color: var(--text);
-  font-size: 18px; /* 中字體標準 */
-  padding: 12px;
+  font-size: 20px; /* 整體字體微調大 */
+  padding: 15px;
   margin: 0;
-  line-height: 1.5;
+  line-height: 1.4;
 }
 
-.container { max-width: 1000px; margin: 0 auto; }
+.container { max-width: 1100px; margin: 0 auto; }
 
 h1 {
   text-align: center;
   color: var(--accent);
-  border-bottom: 4px solid var(--accent);
-  padding-bottom: 12px;
-  margin: 10px 0 20px 0;
-  text-shadow: 0 0 10px rgba(0, 234, 255, 0.5);
-  font-size: 28px;
+  border-bottom: 5px solid var(--accent);
+  padding-bottom: 15px;
+  margin: 10px 0 30px 0;
+  text-shadow: 0 0 15px rgba(0, 242, 255, 0.7);
+  font-size: 34px;
+  letter-spacing: 3px;
 }
 
 .panel {
   background: var(--card);
-  padding: 22px;
-  margin-bottom: 20px;
-  border-radius: 15px;
-  border: 1px solid #2a3a4a;
-  box-shadow: 0 5px 25px rgba(0,0,0,0.7);
+  padding: 30px;
+  margin-bottom: 30px;
+  border-radius: 18px;
+  border: 2px solid #1e2e3e;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.9);
 }
 
 label {
   display: block;
   margin-top: 15px;
-  font-weight: bold;
-  color: #aed9e0;
-  font-size: 16px;
+  font-weight: 900;
+  color: #b0d4de;
+  font-size: 20px;
 }
 
 select, input {
-  padding: 12px;
-  font-size: 19px; /* 中大字體，利於點選 */
+  padding: 14px;
+  font-size: 21px; 
   width: 100%;
   border-radius: 10px;
   border: 2px solid #3d5a80;
   background: #000;
   color: #fff;
-  margin-top: 8px;
+  margin-top: 10px;
   outline: none;
+  transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-select:focus { border-color: var(--accent); }
+select:focus, input:focus { border-color: var(--warn); box-shadow: 0 0 12px rgba(255, 255, 0, 0.4); }
 
-.btn-row { display: flex; gap: 10px; margin-top: 20px; }
+.btn-row { display: flex; gap: 20px; margin-top: 30px; }
 
 button {
   flex: 1;
-  padding: 15px;
-  font-size: 20px;
-  font-weight: bold;
+  padding: 18px;
+  font-size: 22px;
+  font-weight: 900;
   border-radius: 12px;
   cursor: pointer;
   border: none;
-  transition: 0.2s;
+  transition: transform 0.1s, opacity 0.2s;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.6);
 }
 
-.btn-leader { background: var(--leader-gold); color: #000; }
-.btn-member { background: var(--accent); color: #000; }
-button:active { transform: scale(0.96); opacity: 0.8; }
+.btn-leader { background: linear-gradient(135deg, #ffd700, #b8860b); color: #000; }
+.btn-member { background: linear-gradient(135deg, var(--accent), #00a8cc); color: #000; }
+button:active { transform: scale(0.97); }
 
-/* 組別區域樣式 */
 .group {
-  border: 3px solid var(--warn);
-  padding: 18px;
-  margin: 25px 0;
-  background: rgba(0,0,0,0.5);
-  border-radius: 18px;
+  border: 3px solid #2a4a6a;
+  padding: 25px;
+  margin: 30px 0;
+  background: rgba(13, 21, 32, 0.9);
+  border-radius: 20px;
 }
+.group:hover { border-color: var(--accent); }
 
 .group-title {
-  font-size: 24px;
+  font-size: 28px;
   color: var(--warn);
-  font-weight: bold;
-  border-bottom: 2px solid #555;
-  padding-bottom: 10px;
-  margin-bottom: 15px;
+  font-weight: 900;
+  border-bottom: 2px solid #444;
+  padding-bottom: 15px;
+  margin-bottom: 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-/* 人員顯示排版：屬性 | 姓名 | 站別 */
 .badge {
-  padding: 12px 15px;
-  margin: 10px 0;
-  border-radius: 8px;
-  font-size: 20px;
+  padding: 15px 20px;
+  margin: 15px 0;
+  border-radius: 12px;
+  font-size: 22px;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 15px;
+  background: #111e2d;
+  border-left: 8px solid #444;
 }
 
-.leader-badge {
-  background: rgba(255, 215, 0, 0.15);
-  border: 2px solid var(--leader-gold);
-}
-
-.member-badge {
-  background: #1a2a3a;
-  border-left: 6px solid var(--highlight);
-}
+.leader-badge { border-left-color: var(--leader-gold); background: rgba(255, 215, 0, 0.08); }
+.member-badge { border-left-color: var(--highlight); }
 
 .attr-tag {
-  font-size: 14px;
-  padding: 2px 8px;
-  border-radius: 4px;
-  background: #333;
-  color: var(--highlight);
-  font-weight: bold;
-  min-width: 65px;
+  font-size: 17px;
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-weight: 900;
+  min-width: 90px;
   text-align: center;
+  color: #fff;
+}
+.attr-護理師 { background: var(--attr-rn); }
+.attr-EMT-2 { background: var(--attr-emt2); }
+.attr-EMT-1 { background: var(--attr-emt1); color: #000; }
+.attr-BLS { background: var(--attr-bls); }
+
+.name-txt { font-weight: bold; color: #fff; font-size: 26px; }
+
+.badge-actions { margin-left: auto; display: flex; align-items: center; gap: 15px; }
+.station-txt { color: #88b0c0; font-size: 20px; font-weight: bold; }
+
+.btn-remove-person {
+  background: rgba(255, 51, 51, 0.15);
+  color: var(--danger);
+  border: 2px solid var(--danger);
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-weight: bold;
 }
 
-.name-txt { font-weight: bold; color: #fff; }
-.station-txt { color: #88b0c0; font-size: 16px; margin-left: auto; font-style: italic; }
-
-/* 🎒 裝備區 */
-.equip-area {
-  margin-top: 20px;
-  padding: 15px;
-  background: #000;
-  border: 2px solid var(--highlight);
-  border-radius: 12px;
+.mission-box {
+  margin-top: 15px; 
+  background: rgba(0,0,0,0.4); 
+  padding: 20px; 
+  border-radius: 15px;
+  border: 1px solid #334;
 }
 
-.equip-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 12px;
+.alarm-active {
+  animation: blinker 1s linear infinite;
+  border: 3px solid var(--danger);
 }
 
-.equip-table th { color: #888; text-align: left; padding: 6px; font-size: 14px; border-bottom: 1px solid #333; }
-.equip-table td { padding: 10px 6px; border-bottom: 1px solid #1a1a1a; font-size: 16px; }
+@keyframes blinker {
+  50% { background: rgba(255, 0, 0, 0.25); box-shadow: 0 0 25px var(--danger); }
+}
 
-.text-time { color: var(--accent); font-family: monospace; font-size: 14px; }
-.text-status { color: var(--warn); font-weight: bold; }
+.time-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 15px;
+  margin-top: 15px;
+}
+.time-label { font-size: 16px; color: #ccc; text-align: center; font-weight: bold; margin-bottom: 8px; display: block; }
 
-.btn-danger { background: var(--danger); color: white; margin-top: 20px; font-size: 18px; padding: 12px; width: 100%; }
+/* 針對錶盤選取器的輸入框美化 */
+.time-picker-ui {
+  text-align: center;
+  cursor: pointer;
+  background: #000 !important;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+.equip-area { margin-top: 25px; padding: 20px; background: #000; border: 2px solid #444; border-radius: 15px; }
+.equip-table td { padding: 14px 10px; border-bottom: 1px solid #1a1a1a; font-size: 19px; }
+
+.btn-danger { background: linear-gradient(to bottom, var(--danger), #900); color: #fff; margin-top: 30px; font-size: 22px; }
 </style>
 </head>
 
 <body>
 
 <div class="container">
-  <h1>🚑 DPCA 大甲媽祖 出勤排班 </h1>
+  <h1>🚑 DPCA 出勤排班 </h1>
 
   <div class="panel">
-    <label>📍 選擇分配組別 (第 1 - 10 組)</label>
+    <label>📍 選擇分配至組別 (第 1 - 15 組)</label>
     <select id="groupSelect">
-      <option value="0">第 1 組</option><option value="1">第 2 組</option>
-      <option value="2">第 3 組</option><option value="3">第 4 組</option>
-      <option value="4">第 5 組</option><option value="5">第 6 組</option>
-      <option value="6">第 7 組</option><option value="7">第 8 組</option>
-      <option value="8">第 9 組</option><option value="9">第 10 組</option>
+      <script>
+        for(let i=1; i<=15; i++) document.write(`<option value="${i-1}">第 ${i} 組</option>`);
+      </script>
     </select>
 
-    <label>👤 選擇已報到人員 (護理師 / EMT / BLS)</label>
+    <label>👤 選擇已報到人員 (自動依專業排序)</label>
     <select id="staffSelect"></select>
 
     <div class="btn-row">
-      <button class="btn-leader" onclick="assign('leader')">👑 設為組長</button>
-      <button class="btn-member" onclick="assign('member')">➕ 加入組員</button>
+      <button class="btn-leader" onclick="assign('leader')">👑 指派為組長</button>
+      <button class="btn-member" onclick="assign('member')">➕ 加入為組員</button>
     </div>
   </div>
 
-  <div class="panel">
-    <h2 style="margin:0; color:var(--warn); text-align:center; letter-spacing: 2px;">📋 即時編組狀態面板</h2>
-    <div id="groupsDisplay"></div>
-  </div>
+  <div id="groupsDisplay"></div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
 <script>
 const API_URL = "https://script.google.com/macros/s/AKfycby3BSIVXhhPzBoJXIL9GMId54ZfGBm3BOEeiRyQd4wsk7ZWTY4zuwlUUMNaMyi8XJX3/exec";
 
 let staffData = []; 
 let equipData = []; 
+const attrWeight = { "護理師": 1, "EMT-2": 2, "EMT-1": 3, "BLS": 4 };
 
-// 初始化 10 組，包含領隊、組員、站別與持久化的裝備追蹤人
-let groups = JSON.parse(localStorage.getItem("ems_v10_final_stable")) || Array.from({length:10},()=>({
+let groups = JSON.parse(localStorage.getItem("ems_v12_15groups_stable")) || Array.from({length:15},()=>({
     leader: null,
     members: [],
     station: null,
     missionCount: 1,
     assignedEquipUser: "",
-    missions: [...Array(5)].map(()=>({loc:"",start:"",end:""}))
+    missions: [...Array(3)].map(()=>({loc:"", dispatchTime:"", expectedReturn:"", actualReturn:"", notified: false}))
 }));
 
-function save() { localStorage.setItem("ems_v10_final_stable", JSON.stringify(groups)); }
-
-function fixName(str) { return String(str || "").replace(/[\s\uFEFF\xA0\u200B]+/g, "").trim(); }
+function save() { localStorage.setItem("ems_v12_15groups_stable", JSON.stringify(groups)); }
 
 async function loadData() {
   try {
     const res = await fetch(API_URL);
     const data = await res.json();
     staffData = (data.staff || []).map(s => ({
-      姓名: fixName(s.姓名),
+      姓名: String(s.姓名 || "").replace(/\s+/g, "").trim(),
       站別: s.站別 || "",
       屬性: s.屬性 || "隊員",
       狀態: s.狀態 || "" 
     }));
     equipData = (data.equips || []).map(e => ({
-      time: e.時間 || "", name: fixName(e.姓名), action: e.動作 || "", 
+      time: e.時間 || "", name: String(e.姓名 || "").trim(), action: e.動作 || "", 
       item: e.物品 || "", status: e.狀態 || "", note: e.備註 || ""
     })).filter(e => e.name !== ""); 
     refreshUI();
-  } catch(e) { 
-    console.error("資料更新失敗", e);
-    refreshUI(); 
-  }
+  } catch(e) { console.error("資料載入失敗", e); }
 }
 
 function renderStaffSelect() {
-  const assignedNames = groups.flatMap(g => {
-    let names = [...g.members];
-    if (g.leader) names.push(g.leader);
-    return names;
-  });
-  const available = staffData.filter(p => p.狀態 === "已報到" && !assignedNames.includes(p.姓名));
+  const assignedNames = groups.flatMap(g => [g.leader, ...g.members]);
+  let available = staffData.filter(p => p.狀態 === "已報到" && !assignedNames.includes(p.姓名));
+  available.sort((a, b) => (attrWeight[a.屬性] || 99) - (attrWeight[b.屬性] || 99));
+
   const el = document.getElementById("staffSelect");
   el.innerHTML = available.length > 0 
-    ? available.map(p => `<option value="${p.姓名}">${p.屬性} | ${p.姓名} (${p.站別})</option>`).join("")
-    : "<option value=''>-- 目前無可用人員 --</option>";
+    ? available.map(p => `<option value="${p.姓名}">[${p.屬性}] ${p.姓名} (${p.站別})</option>`).join("")
+    : "<option value=''>-- 目前無可指派人員 --</option>";
 }
 
 function assign(type) {
   const name = document.getElementById("staffSelect").value;
   if (!name) return;
-
   const idx = Number(document.getElementById("groupSelect").value);
   const p = staffData.find(x => x.姓名 === name);
   const g = groups[idx];
 
-  // 🛡️ 站別檢查邏輯：護理師/EMT/BLS 必須同站別
   if (g.station && g.station !== p.站別) {
-    alert(`❌ 站別不符！\n\n該組鎖定站別：[${g.station}]\n加入人員站別：[${p.站別}]\n不同站別不可排在同一組！`);
+    alert(`⛔ 排班阻擋！\n\n此組目前鎖定站別：【${g.station}】\n欲加入人員所屬站別：【${p.站別}】`);
     return;
   }
 
   if (type === 'leader') {
-    if (g.leader) { if(!confirm("該組已有組長，是否覆蓋更換？")) return; }
+    if (g.leader && !confirm("確定替換現有組長？")) return;
     g.leader = name;
   } else {
     if (g.members.length >= 5) { alert("組員人數已達上限 (5人)"); return; }
     g.members.push(name);
   }
-
-  g.station = p.站別; // 鎖定該組站別
-  save();
-  refreshUI();
+  g.station = p.站別;
+  save(); refreshUI();
 }
 
-function renderPerson(name, isLeader = false) {
-  const p = staffData.find(s => s.姓名 === name);
-  if (!p) return `<div class="badge">未知人員: ${name}</div>`;
-  
-  return `
-    <div class="badge ${isLeader ? 'leader-badge' : 'member-badge'}">
-      ${isLeader ? '👑' : '👤'}
-      <span class="attr-tag">${p.屬性}</span>
-      <span class="name-txt">${p.姓名}</span>
-      <span class="station-txt">(${p.站別})</span>
-    </div>
-  `;
+function removePerson(groupIdx, name, isLeader) {
+  if (!confirm(`確定要將 [${name}] 從名單中移除嗎？`)) return;
+  const g = groups[groupIdx];
+  if (isLeader) g.leader = null;
+  else g.members = g.members.filter(m => m !== name);
+  if (!g.leader && g.members.length === 0) g.station = null;
+  save(); refreshUI();
 }
 
-function renderEquipSection(g, idx) {
-  const allEquipUsers = [...new Set(equipData.map(e => e.name))].sort();
-  
-  let selectHtml = `
-    <select onchange="updateEquipUser(${idx}, this.value)" style="border-color:var(--highlight); background:#111; font-size:16px;">
-      <option value="">-- 指定此組裝備領用人 --</option>
-      ${allEquipUsers.map(n => `<option value="${n}" ${g.assignedEquipUser === n ? "selected" : ""}>${n}</option>`).join("")}
-    </select>
-  `;
-
-  const records = equipData.filter(e => e.name === g.assignedEquipUser);
-  let tableHtml = records.length ? `
-    <table class="equip-table">
-      <tr><th>時間</th><th>內容</th></tr>
-      ${records.map(e => `
-        <tr>
-          <td><span class="text-time">${e.time}</span><br><span class="text-status">${e.status}</span></td>
-          <td><b>${e.item}</b><br><small style="color:#aaa">${e.action} ${e.note}</small></td>
-        </tr>
-      `).join("")}
-    </table>` : "<div style='color:#666; font-size:14px; padding:10px; text-align:center;'>尚未選擇人員或查無領用紀錄</div>";
-
-  return `<div class="equip-area"><label style="margin:0 0 8px 0; font-size:15px; color:var(--highlight);">🎒 裝備領用追蹤 (依裝備紀錄表)</label>${selectHtml}${tableHtml}</div>`;
+function clearGroup(i) {
+  if (!confirm(`⚠️ 確定要完全清空 第 ${i+1} 組嗎？`)) return;
+  groups[i] = { leader:null, members:[], station:null, missionCount:1, assignedEquipUser:"", missions:[...Array(3)].map(()=>({loc:"", dispatchTime:"", expectedReturn:"", actualReturn:"", notified: false})) };
+  save(); refreshUI();
 }
 
 function renderGroups() {
+  const nowStr = new Date().getHours().toString().padStart(2, '0') + ':' + new Date().getMinutes().toString().padStart(2, '0');
   let html = "";
+
   groups.forEach((g, i) => {
-    let groupBody = "";
-    if (g.leader) groupBody += renderPerson(g.leader, true);
+    let bodyHtml = "";
+    if (g.leader) bodyHtml += renderBadge(g.leader, true, i);
     if (g.members.length > 0) {
-      groupBody += g.members.map(m => renderPerson(m, false)).join("");
+      const sortedMembers = g.members.map(m => staffData.find(s => s.姓名 === m) || {姓名:m, 屬性:"隊員", 站別:"未知"});
+      sortedMembers.sort((a,b) => (attrWeight[a.屬性] || 99) - (attrWeight[b.屬性] || 99));
+      bodyHtml += sortedMembers.map(info => renderBadge(info.姓名, false, i)).join("");
     } else if (!g.leader) {
-      groupBody = "<div style='color:#555; padding:15px; font-style:italic;'>等待編組中...</div>";
+      bodyHtml = "<div style='color:#555; padding:15px; font-style:italic;'>等待指派人員...</div>";
     }
 
     html += `
       <div class="group">
         <div class="group-title">
           <span>第 ${i+1} 組</span>
-          <span style="font-size:16px; color:var(--accent); border:1px solid #334a62; padding:2px 10px; border-radius:5px;">📍 ${g.station || "未定"}</span>
+          <span style="font-size:20px; color:#fff; border:2px solid var(--accent); padding:4px 15px; border-radius:10px;">📍 ${g.station || "尚未鎖定"}</span>
         </div>
-        ${groupBody}
+        ${bodyHtml}
         
         ${(g.leader || g.members.length) ? `
-          <div style="margin-top:15px; border-top:1px solid #444; padding-top:15px;">
-            <label style="display:inline; color:#fff">任務時段：</label>
-            <select style="width:auto; display:inline; padding:5px; font-size:16px;" onchange="updateCount(${i},this.value)">
-              ${[1,2,3,4,5].map(n => `<option ${g.missionCount==n?"selected":""}>${n}</option>`).join("")}
+          <div style="margin-top:20px; border-top:2px dashed #444; padding-top:20px;">
+            <label style="display:inline; color:#fff;">任務分段：</label>
+            <select style="width:auto; display:inline;" onchange="updateCount(${i},this.value)">
+              ${[1,2,3].map(n => `<option ${g.missionCount==n?"selected":""}>${n}</option>`).join("")}
             </select>
-            ${g.missions.slice(0, g.missionCount).map((m, mi) => `
-              <div style="margin-top:10px; background:rgba(255,255,255,0.05); padding:10px; border-radius:10px;">
-                <input placeholder="任務地點" value="${m.loc}" style="font-size:16px; padding:8px;" onchange="updateMission(${i},${mi},'loc',this.value)">
-                <div style="display:flex; gap:10px; margin-top:8px;">
-                  <input type="time" value="${m.start}" style="padding:8px;" onchange="updateMission(${i},${mi},'start',this.value)">
-                  <input type="time" value="${m.end}" style="padding:8px;" onchange="updateMission(${i},${mi},'end',this.value)">
+            
+            ${g.missions.slice(0, g.missionCount).map((m, mi) => {
+              const isAlarm = m.expectedReturn && !m.actualReturn && nowStr >= m.expectedReturn;
+              return `
+              <div class="mission-box ${isAlarm ? 'alarm-active' : ''}">
+                <input placeholder="📍 任務地點/代號" value="${m.loc}" style="font-weight:bold; margin-bottom:10px;" onchange="updateMission(${i},${mi},'loc',this.value)">
+                <div class="time-grid">
+                  <div>
+                    <span class="time-label">🚀 出勤</span>
+                    <input class="time-picker-ui" data-group="${i}" data-miss="${mi}" data-key="dispatchTime" value="${m.dispatchTime}" readonly>
+                  </div>
+                  <div>
+                    <span class="time-label" style="color:var(--warn);">⏱️ 預計回勤</span>
+                    <input class="time-picker-ui" data-group="${i}" data-miss="${mi}" data-key="expectedReturn" value="${m.expectedReturn}" style="border-color:var(--warn);" readonly>
+                  </div>
+                  <div>
+                    <span class="time-label" style="color:var(--highlight);">✅ 實際回勤</span>
+                    <input class="time-picker-ui" data-group="${i}" data-miss="${mi}" data-key="actualReturn" value="${m.actualReturn}" style="border-color:var(--highlight);" readonly>
+                  </div>
                 </div>
-              </div>
-            `).join("")}
+              </div>`;
+            }).join("")}
             
             ${renderEquipSection(g, i)}
-            
-            <button class="btn-danger" onclick="clearGroup(${i})">🗑 清空第 ${i+1} 組編組資料</button>
+            <button class="btn-danger" onclick="clearGroup(${i})">🗑 清空 第 ${i+1} 組所有資料</button>
           </div>
         ` : ""}
       </div>
     `;
   });
   document.getElementById("groupsDisplay").innerHTML = html;
+  initTimePickers(); // 渲染後初始化錶盤元件
 }
 
-function updateEquipUser(idx, val) { groups[idx].assignedEquipUser = val; save(); renderGroups(); }
+function renderBadge(name, isLeader, groupIdx) {
+  const info = staffData.find(s => s.姓名 === name) || { 姓名: name, 屬性: "未知", 站別: "未知" };
+  const attrCls = `attr-${info.屬性.includes("護理師")?"護理師":info.屬性.includes("EMT-2")?"EMT-2":info.屬性.includes("EMT-1")?"EMT-1":info.屬性.includes("BLS")?"BLS":"default"}`;
+  return `
+    <div class="badge ${isLeader ? 'leader-badge' : 'member-badge'}">
+      <div style="font-size:30px;">${isLeader ? '👑' : '👤'}</div>
+      <span class="attr-tag ${attrCls}">${info.屬性}</span>
+      <span class="name-txt">${info.姓名}</span>
+      <div class="badge-actions">
+        <span class="station-txt">(${info.站別})</span>
+        <button class="btn-remove-person" onclick="removePerson(${groupIdx}, '${info.姓名}', ${isLeader})">✖</button>
+      </div>
+    </div>
+  `;
+}
+
+function renderEquipSection(g, idx) {
+  const users = [...new Set(equipData.map(e => e.name))].sort();
+  const records = equipData.filter(e => e.name === g.assignedEquipUser);
+  return `
+    <div class="equip-area">
+      <label style="margin-top:0; color:var(--accent);">🎒 裝備領用追蹤</label>
+      <select onchange="updateEquipUser(${idx}, this.value)" style="border-color:#555;">
+        <option value="">-- 指定此組裝備領用人 --</option>
+        ${users.map(n => `<option value="${n}" ${g.assignedEquipUser === n ? "selected" : ""}>${n}</option>`).join("")}
+      </select>
+      <table width="100%" style="margin-top:10px; border-collapse:collapse;">
+        ${records.length ? records.map(e => `
+          <tr>
+            <td style="color:var(--accent); font-family:monospace; width:90px;">${e.time}</td>
+            <td style="color:#fff;"><b>${e.item}</b><br><small style="color:#888">${e.action} ${e.status}</small></td>
+          </tr>
+        `).join("") : "<tr><td colspan='2' style='color:#555; text-align:center; padding:10px;'>查無領用紀錄</td></tr>"}
+      </table>
+    </div>
+  `;
+}
+
+// 初始化時鐘錶盤選取器
+function initTimePickers() {
+  flatpickr(".time-picker-ui", {
+    enableTime: true,
+    noCalendar: true,
+    dateFormat: "H:i",
+    time_24hr: true,
+    disableMobile: "true", // 強制使用插件錶盤而非手機內建
+    onClose: function(selectedDates, dateStr, instance) {
+      const gIdx = instance.element.getAttribute('data-group');
+      const mIdx = instance.element.getAttribute('data-miss');
+      const key = instance.element.getAttribute('data-key');
+      groups[gIdx].missions[mIdx][key] = dateStr;
+      if(key !== 'actualReturn') groups[gIdx].missions[mIdx].notified = false;
+      save();
+      // 如果是回勤，刷新 UI 以更新警報狀態
+      if(key === 'actualReturn') renderGroups();
+    }
+  });
+}
+
 function updateMission(i, m, k, v) { groups[i].missions[m][k] = v; save(); }
+function updateEquipUser(idx, val) { groups[idx].assignedEquipUser = val; save(); renderGroups(); }
 function updateCount(i, v) { groups[i].missionCount = Number(v); save(); refreshUI(); }
 
-function clearGroup(i) {
-  if (!confirm(`確定要完全清空第 ${i+1} 組嗎？\n清空後人員將可重新分配。`)) return;
-  groups[i] = { leader:null, members:[], station:null, missionCount:1, assignedEquipUser:"", missions:[...Array(5)].map(()=>({loc:"",start:"",end:""})) };
-  save();
-  refreshUI();
+function checkAlarms() {
+  const nowStr = new Date().getHours().toString().padStart(2, '0') + ':' + new Date().getMinutes().toString().padStart(2, '0');
+  let needRefresh = false;
+  groups.forEach((g, i) => {
+    g.missions.slice(0, g.missionCount).forEach((m, mi) => {
+      if (m.expectedReturn && !m.actualReturn && !m.notified && nowStr >= m.expectedReturn) {
+        alert(`🚨【超時警報】🚨\n第 ${i+1} 組 (${g.station})\n地點：${m.loc || '未填'}\n時間：${m.expectedReturn} 已屆！`);
+        m.notified = true; save(); needRefresh = true; 
+      }
+    });
+  });
+  if (needRefresh) renderGroups();
 }
 
-function refreshUI() {
-  renderStaffSelect();
-  renderGroups();
-}
+function refreshUI() { renderStaffSelect(); renderGroups(); }
 
 loadData();
-setInterval(loadData, 30000); // 每30秒同步一次背景雲端資料
+setInterval(loadData, 30000); 
+setInterval(checkAlarms, 10000); 
 </script>
 
 </body>
