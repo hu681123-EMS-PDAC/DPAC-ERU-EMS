@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>📋 現場出勤名單 (醫護優先排序版)</title>
+<title>📋 現場戰力出勤名單 (戰力統計旗艦大字版)</title>
 
 <style>
 :root {
@@ -19,108 +19,142 @@
 body {
   background: var(--bg);
   color: var(--text);
-  font-family: -apple-system, "Microsoft JhengHei", sans-serif;
+  font-family: -apple-system, "Segoe UI", "Microsoft JhengHei", sans-serif;
   padding: 12px;
   line-height: 1.5;
+  font-size: 18px; /* 🌟 中大字體基礎 */
 }
 
-h2 { text-align: center; color: var(--blue); font-size: 28px; margin: 10px 0; letter-spacing: 2px; font-weight: 900; }
+h2 { 
+  text-align: center; color: var(--blue); font-size: 28px; 
+  margin: 10px 0 20px 0; letter-spacing: 2px; font-weight: 900; 
+  text-shadow: 0 0 12px rgba(0, 229, 255, 0.6);
+}
 
-/* ⭐ 狀態區塊 */
+/* ⭐ 狀態區塊 (高對比加粗邊框) */
 .section {
-  margin-bottom: 15px;
-  padding: 15px;
+  margin-bottom: 20px;
+  padding: 15px 18px;
   border-radius: 12px;
-  font-size: 19px; /* 中大字體 */
 }
 
-.in-box { border: 2px solid var(--green); background: rgba(57, 255, 20, 0.05); }
-.out-box { border: 2px solid var(--orange); background: rgba(255, 145, 0, 0.05); }
+.in-box { border: 3px solid var(--green); background: rgba(57, 255, 20, 0.08); }
+.out-box { border: 3px solid var(--orange); background: rgba(255, 145, 0, 0.08); }
 .pending-box { 
-  border: 2px solid var(--red); 
+  border: 3px solid var(--red); 
   background: rgba(255, 49, 49, 0.1); 
-  animation: blink 1.5s infinite; 
+  animation: blink 2s infinite; 
 }
 
 @keyframes blink {
   0% { box-shadow: 0 0 5px rgba(255, 49, 49, 0.2); }
-  50% { box-shadow: 0 0 15px rgba(255, 49, 49, 0.5); }
+  50% { box-shadow: 0 0 15px rgba(255, 49, 49, 0.6); }
   100% { box-shadow: 0 0 5px rgba(255, 49, 49, 0.2); }
+}
+
+/* 專業戰力統計列 */
+.stats-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+  padding-bottom: 12px;
+  border-bottom: 2px dashed #444;
+}
+.stat-badge {
+  font-size: 16px;
+  font-weight: 900;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: #1a1a1a;
+  border: 1px solid #444;
 }
 
 /* 內部站別分組樣式 */
 .group-title {
   color: #00e5ff;
+  font-size: 20px;
+  font-weight: 900;
+  border-bottom: 2px solid #333;
+  margin: 15px 0 8px 0;
+  padding-bottom: 6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* 🌟 新增：各站獨立統計標籤 */
+.station-stats {
   font-size: 16px;
   font-weight: bold;
-  border-bottom: 1px solid #333;
-  margin: 12px 0 6px 0;
-  padding-bottom: 2px;
+  background: rgba(0,0,0,0.6);
+  padding: 4px 10px;
+  border-radius: 8px;
+  border: 1px solid #444;
+  color: #fff;
 }
 
 .person-row {
   display: flex;
   justify-content: space-between;
-  padding: 6px 0;
-  border-bottom: 1px solid #1a1a1a;
+  align-items: center;
+  padding: 8px 6px;
+  border-bottom: 1px solid #222;
 }
+.person-row:hover { background: rgba(255,255,255,0.08); }
 
-.person-info { font-weight: 600; color: #fff; }
-.person-attr { font-weight: bold; font-size: 16px; }
+.person-info { font-weight: bold; color: #fff; font-size: 20px; }
+.person-attr { font-weight: 900; font-size: 16px; letter-spacing: 1px; }
 
-/* 特殊職級顏色 */
-.attr-nurse { color: #ff00ff; } /* 護理師：桃紅 */
-.attr-emt2 { color: #00e5ff; }  /* EMT-2：青藍 */
-.attr-emt1 { color: #39ff14; }  /* EMT-1：螢光綠 */
-.attr-bls { color: #ffffff; }   /* BLS：白色 */
-.attr-other { color: #888888; } /* 其他：灰色 */
+/* 特殊職級顏色 (高對比) */
+.attr-nurse { color: #ff33ff; text-shadow: 0 0 5px rgba(255,0,255,0.5); } 
+.attr-emt2 { color: #00e5ff; text-shadow: 0 0 5px rgba(0,229,255,0.5); }  
+.attr-emt1 { color: #39ff14; text-shadow: 0 0 5px rgba(57,255,20,0.5); }  
+.attr-bls { color: #ffffff; }   
+.attr-other { color: #aaaaaa; } 
 
 /* 搜尋與表格 */
 .search-box {
-  width: 100%;
-  padding: 15px;
-  font-size: 18px;
-  margin-bottom: 15px;
-  background: #151515;
-  border: 1px solid #444;
-  color: #fff;
-  border-radius: 8px;
-  box-sizing: border-box;
+  width: 100%; padding: 15px; font-size: 18px; margin-bottom: 20px; font-weight: bold;
+  background: #0a0a0a; border: 2px solid #444; color: #fff;
+  border-radius: 10px; box-sizing: border-box; outline: none;
 }
+.search-box:focus { border-color: var(--blue); box-shadow: 0 0 10px rgba(0, 229, 255, 0.4); }
 
-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-th { background: #1a1a1a; color: var(--blue); padding: 12px; font-size: 16px; }
-td { padding: 12px; border-bottom: 1px solid #222; text-align: center; font-size: 16px; }
+table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 16px; }
+th { background: #1a1a1a; color: var(--blue); padding: 12px; font-size: 18px; border-bottom: 2px solid #333;}
+td { padding: 12px; border-bottom: 1px solid #222; text-align: center; }
 
-.status-in { color: var(--green); font-weight: bold; }
-.status-out { color: var(--orange); font-weight: bold; }
-.status-pending { color: var(--red); font-weight: bold; }
+.status-in { color: var(--green); font-weight: 900; }
+.status-out { color: var(--orange); font-weight: 900; }
+.status-pending { color: var(--red); font-weight: 900; }
 
 .section-header {
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 900;
-  margin-bottom: 5px;
   display: flex;
   justify-content: space-between;
+  align-items: center;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.8);
 }
 </style>
 </head>
 
 <body>
 
-<h2>📋 DPCA 現場出勤名單</h2>
-
-<div id="inBox" class="section in-box"></div>
-<div id="outBox" class="section out-box"></div>
-<div id="pendingBox" class="section pending-box"></div>
+<h2>📋 DPCA 現場戰力名單</h2>
 
 <input id="search-input" class="search-box" placeholder="🔍 搜尋站別、姓名、屬性..." onkeyup="renderTable()">
 
+<div id="inBox" class="section in-box"></div>
+<div id="pendingBox" class="section pending-box"></div>
+<div id="outBox" class="section out-box"></div>
+
 <table>
   <thead>
-    <tr>
-      <th>站別</th><th>姓名</th><th>屬性</th><th>狀態</th>
-    </tr>
+    <tr><th>📍 站別</th><th>👤 姓名</th><th>🛡️ 屬性</th><th>🚥 狀態</th></tr>
   </thead>
   <tbody id="table-body"></tbody>
 </table>
@@ -129,7 +163,7 @@ td { padding: 12px; border-bottom: 1px solid #222; text-align: center; font-size
 const API = "https://script.google.com/macros/s/AKfycbwFMuR1LuYeMZyK7D7Ym1n7-4sZ97ThD_5v52j_zsxIvpScfgAoEx-DAWLJB_d8Vmbf/exec";
 let allData = [];
 
-/* ⭐ 屬性權重定義 (數字愈小愈前面) */
+/* ⭐ 屬性權重定義 (嚴格遵守：護理師 > EMT-2 > EMT-1 > BLS) */
 function getAttrRank(a) {
   a = (a || "").toUpperCase();
   if (a.includes("護理師")) return 1;
@@ -140,17 +174,26 @@ function getAttrRank(a) {
   return 99; // 其他
 }
 
-/* 取得屬性對應樣式 */
+/* 取得屬性對應樣式與圖示 */
 function getAttrClass(a) {
   a = (a || "").toUpperCase();
-  if (a.includes("護理師")) return "attr-nurse";
-  if (a.includes("EMT-2") || a.includes("EMT2")) return "attr-emt2";
-  if (a.includes("EMT-1") || a.includes("EMT1")) return "attr-emt1";
-  if (a.includes("BLS")) return "attr-bls";
-  return "attr-other";
+  if (a.includes("護理師")) return { cls: "attr-nurse", icon: "🏥" };
+  if (a.includes("EMT-2") || a.includes("EMT2")) return { cls: "attr-emt2", icon: "🚑" };
+  if (a.includes("EMT-1") || a.includes("EMT1")) return { cls: "attr-emt1", icon: "🚑" };
+  if (a.includes("BLS")) return { cls: "attr-bls", icon: "🩺" };
+  return { cls: "attr-other", icon: "👤" };
 }
 
-/* ⭐ 狀態判斷 */
+/* ⭐ 站點優先權定義 (嚴格遵守：溪洲后天宮站 > 西螺大橋北站 > 步行隊 > 其他) */
+function getStationRank(s) {
+  s = s || "";
+  if (s.includes("溪洲后天宮")) return 1;
+  if (s.includes("西螺大橋北")) return 2;
+  if (s.includes("步行隊")) return 3;
+  return 4;
+}
+
+/* 狀態判斷 */
 function getType(s) {
   s = (s || "").trim();
   if (s === "已報到" || s === "報到") return "in";
@@ -158,67 +201,114 @@ function getType(s) {
   return "pending";
 }
 
-/* ⭐ 核心排序邏輯：站別 > 屬性權重 > 姓名 */
+/* 核心排序邏輯：站點優先權 > 站名 > 屬性權重 > 姓名 */
 function sortMaster(data) {
   return [...data].sort((a, b) => {
+    const rankA = getStationRank(a.station);
+    const rankB = getStationRank(b.station);
+    if (rankA !== rankB) return rankA - rankB;
     return (a.station || "").localeCompare(b.station || "", 'zh-Hant') ||
            getAttrRank(a.attr) - getAttrRank(b.attr) ||
            (a.name || "").localeCompare(b.name || "", 'zh-Hant');
   });
 }
 
-/* ⭐ 渲染分組區塊 */
+/* 渲染分組區塊 */
 function renderSections(data) {
   const sections = {
     in: { id: "inBox", title: "🟢 已報到", color: "var(--green)" },
-    out: { id: "outBox", title: "🟡 已報退", color: "var(--orange)" },
-    pending: { id: "pendingBox", title: "🔴 未報到", color: "var(--red)" }
+    pending: { id: "pendingBox", title: "🔴 未報到", color: "var(--red)" },
+    out: { id: "outBox", title: "🟡 已報退", color: "var(--orange)" }
   };
 
   const grouped = { in: {}, out: {}, pending: {} };
+  
+  // 🌟 計算全域各站點的「報到/未報到」總人數
+  const globalStationStats = {};
 
   data.forEach(r => {
     const type = getType(r.status);
     const station = r.station || "未分類";
+    
+    // 初始化分組與統計
     if (!grouped[type][station]) grouped[type][station] = [];
+    if (!globalStationStats[station]) globalStationStats[station] = { in: 0, pending: 0, out: 0 };
+    
     grouped[type][station].push(r);
+    globalStationStats[station][type]++; // 累加該站狀態人數
   });
 
   Object.keys(sections).forEach(type => {
     const config = sections[type];
     const stationData = grouped[type];
-    const stationNames = Object.keys(stationData).sort((a, b) => a.localeCompare(b, 'zh-Hant'));
+    
+    // 站名排序(套用優先權)
+    const stationNames = Object.keys(stationData).sort((a, b) => {
+      const rankA = getStationRank(a);
+      const rankB = getStationRank(b);
+      if (rankA !== rankB) return rankA - rankB;
+      return a.localeCompare(b, 'zh-Hant');
+    });
     
     let totalCount = 0;
+    let stats = { rn: 0, emt2: 0, emt1: 0, bls: 0 };
     let html = '';
 
     stationNames.forEach(stName => {
-      html += `<div class="group-title">${stName}</div>`;
-      // 站內依照「職級屬性」排序
+      // 屬性權重 > 姓名 排序
       const people = stationData[stName].sort((a, b) => getAttrRank(a.attr) - getAttrRank(b.attr) || (a.name || "").localeCompare(b.name || "", 'zh-Hant'));
+      
+      // 取出該站的總計數據
+      const stStats = globalStationStats[stName] || { in: 0, pending: 0 };
+      
+      html += `
+        <div class="group-title">
+          <span>📍 ${stName}</span>
+          <span class="station-stats">
+             <span style="color:var(--green)">🟢 報到:${stStats.in}</span> | 
+             <span style="color:var(--red)">🔴 未報:${stStats.pending}</span>
+          </span>
+        </div>`;
       
       people.forEach(p => {
         totalCount++;
-        const attrCls = getAttrClass(p.attr);
+        const attrUpper = (p.attr || "").toUpperCase();
+        if (attrUpper.includes("護理師")) stats.rn++;
+        else if (attrUpper.includes("EMT-2") || attrUpper.includes("EMT2")) stats.emt2++;
+        else if (attrUpper.includes("EMT-1") || attrUpper.includes("EMT1")) stats.emt1++;
+        else if (attrUpper.includes("BLS")) stats.bls++;
+
+        const attrInfo = getAttrClass(p.attr);
         html += `
           <div class="person-row">
             <div class="person-info">${p.name}</div>
-            <div class="person-attr ${attrCls}">${p.attr || ''}</div>
+            <div class="person-attr ${attrInfo.cls}">${attrInfo.icon} ${p.attr || ''}</div>
           </div>`;
       });
     });
 
+    // 戰力統計列 HTML
+    const statsHtml = totalCount > 0 ? `
+      <div class="stats-row">
+        <span class="stat-badge" style="color:var(--text); border-color:#555;">📊 總計: ${totalCount} 人</span>
+        <span class="stat-badge attr-nurse">🏥 護理師: ${stats.rn}</span>
+        <span class="stat-badge attr-emt2">🚑 EMT-2: ${stats.emt2}</span>
+        <span class="stat-badge attr-emt1">🚑 EMT-1: ${stats.emt1}</span>
+        <span class="stat-badge attr-bls">🚑 BLS: ${stats.bls}</span>
+      </div>
+    ` : '';
+
     document.getElementById(config.id).innerHTML = `
       <div class="section-header" style="color:${config.color}">
         <span>${config.title}</span>
-        <span>${totalCount} 人</span>
       </div>
-      ${totalCount > 0 ? html : '<div style="color:#444; font-size:15px; margin-top:5px;">無人員</div>'}
+      ${statsHtml}
+      ${totalCount > 0 ? html : '<div style="color:#666; font-size:16px; margin-top:15px; text-align:center;">此區間目前無人員</div>'}
     `;
   });
 }
 
-/* ⭐ 渲染表格 */
+/* 渲染表格 */
 function renderTable() {
   const q = document.getElementById("search-input").value.toLowerCase();
   const sorted = sortMaster(allData);
@@ -234,12 +324,12 @@ function renderTable() {
   document.getElementById("table-body").innerHTML = filtered.map(r => {
     const type = getType(r.status);
     const cls = type === "in" ? "status-in" : (type === "out" ? "status-out" : "status-pending");
-    const attrCls = getAttrClass(r.attr);
+    const attrInfo = getAttrClass(r.attr);
     return `
       <tr>
-        <td>${r.station}</td>
+        <td style="color:#aaa;">${r.station}</td>
         <td style="font-weight:bold; font-size:18px;">${r.name}</td>
-        <td class="${attrCls}">${r.attr || ''}</td>
+        <td class="${attrInfo.cls}" style="font-weight:900;">${attrInfo.icon} ${r.attr || ''}</td>
         <td class="${cls}">${r.status || "未報到"}</td>
       </tr>`;
   }).join("");
