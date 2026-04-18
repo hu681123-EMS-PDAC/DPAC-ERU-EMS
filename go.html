@@ -3,10 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🚑 DPCA 出勤排班戰情室 (高對比中小字體版)</title>
+<title>🚑 DPCA 出勤排班戰情室 (圓形錶盤旗艦版)</title>
 
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/clocklet@0.3.0/css/clocklet.min.css">
 
 <style>
 :root {
@@ -27,7 +26,7 @@ body {
   font-family: "Segoe UI", "PingFang TC", "Microsoft JhengHei", sans-serif;
   background: var(--bg);
   color: var(--text);
-  font-size: 15px; /* 【修正】中小字體標準 */
+  font-size: 15px; /* 【優化】中小字體，畫面更緊湊精緻 */
   padding: 12px;
   margin: 0;
   line-height: 1.4;
@@ -42,10 +41,11 @@ h1 {
   padding-bottom: 12px;
   margin: 5px 0 20px 0;
   text-shadow: 0 0 12px rgba(0, 242, 255, 0.6);
-  font-size: 26px; /* 縮小標題 */
+  font-size: 26px; /* 縮小標題比例 */
   letter-spacing: 2px;
 }
 
+/* 面板與卡片 */
 .panel {
   background: var(--card);
   padding: 20px;
@@ -155,7 +155,7 @@ button:active { transform: scale(0.97); }
 }
 .time-label { font-size: 13px; color: #aaa; text-align: center; font-weight: bold; margin-bottom: 4px; display: block; }
 
-/* 錶盤輸入框專屬美化 */
+/* ⏱️ 錶盤輸入框專屬美化 */
 .time-picker-ui {
   text-align: center;
   cursor: pointer;
@@ -164,19 +164,36 @@ button:active { transform: scale(0.97); }
   font-size: 16px;
   border-color: #2a4a6a;
   letter-spacing: 1px;
+  color: var(--accent);
 }
 
-.alarm-active {
-  animation: blinker 1.2s linear infinite;
-  border: 2px solid var(--danger);
+/* 🎨 Clocklet 圓形錶盤深色高對比主題 (覆寫預設) */
+.custom-clocklet {
+  background-color: #0d1520 !important;
+  border: 2px solid #00f2ff !important;
+  border-radius: 15px !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.9) !important;
+  z-index: 9999 !important;
 }
+.custom-clocklet .clocklet-dial { background-color: #02060c !important; }
+.custom-clocklet .clocklet-tick { color: #b0d4de !important; font-size: 16px !important; font-family: sans-serif; }
+.custom-clocklet .clocklet-tick:hover { color: #00f2ff !important; font-weight: bold; }
+.custom-clocklet .clocklet-tick.clocklet-active { 
+  background-color: #00ff88 !important; color: #000 !important; font-weight: bold; 
+}
+.custom-clocklet .clocklet-hand { background-color: #00ff88 !important; }
+.custom-clocklet .clocklet-hand-origin { background-color: #00ff88 !important; }
+.custom-clocklet .clocklet-header { color: #fff !important; border-bottom: 1px solid #2a4a6a !important; font-size: 20px !important; font-weight: bold; }
+
+/* 警報動畫 */
+.alarm-active { animation: blinker 1.2s linear infinite; border: 2px solid var(--danger); }
 @keyframes blinker { 50% { background: rgba(255, 0, 0, 0.15); box-shadow: 0 0 10px var(--danger); } }
 
+/* 裝備區 */
 .equip-area { margin-top: 15px; padding: 12px; background: #000; border: 1px solid #444; border-radius: 10px; }
-.equip-table td { padding: 10px 8px; border-bottom: 1px solid #1a1a1a; font-size: 15px; }
+.equip-table td { padding: 10px 8px; border-bottom: 1px solid #1a1a1a; font-size: 14px; }
 
 .btn-danger { background: linear-gradient(to bottom, #600, #400); color: #fff; margin-top: 15px; font-size: 16px; width: 100%; border-radius: 8px; padding: 12px;}
-
 .remove-btn { color: var(--danger); font-size: 20px; cursor: pointer; padding: 0 10px; font-weight: bold; }
 </style>
 </head>
@@ -184,7 +201,7 @@ button:active { transform: scale(0.97); }
 <body>
 
 <div class="container">
-  <h1>🚑 DPCA 出勤排班戰情室</h1>
+  <h1>🚑 DPCA 出勤排班 </h1>
 
   <div class="panel">
     <label>📍 分配組別 (1 - 15組)</label>
@@ -204,22 +221,17 @@ button:active { transform: scale(0.97); }
   <div id="groupsDisplay"></div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/clocklet@0.3.0"></script>
 
 <script>
 const API_URL = "https://script.google.com/macros/s/AKfycby3BSIVXhhPzBoJXIL9GMId54ZfGBm3BOEeiRyQd4wsk7ZWTY4zuwlUUMNaMyi8XJX3/exec";
-
 const attrWeight = { "護理師": 1, "EMT-2": 2, "EMT-1": 3, "BLS": 4 };
 
 // ✅ 保證不刪除舊資料：讀取相同的 localStorage Key
 let groups = JSON.parse(localStorage.getItem("ems_v12_15groups_stable"));
 if (!groups || !Array.isArray(groups)) {
   groups = Array.from({length:15},()=>({
-      leader: null,
-      members: [],
-      station: null,
-      missionCount: 1,
-      assignedEquipUser: "",
+      leader: null, members: [], station: null, missionCount: 1, assignedEquipUser: "",
       missions: [...Array(3)].map(()=>({loc:"", dispatchTime:"", expectedReturn:"", actualReturn:"", notified: false}))
   }));
 }
@@ -291,13 +303,13 @@ function renderGroups() {
       <div class="group">
         <div class="group-title">
           <span>第 ${i+1} 組</span>
-          <span style="font-size:16px; color:var(--accent); border: 1px solid var(--accent); padding: 2px 10px; border-radius: 6px;">📍 ${g.station || "待定"}</span>
+          <span style="font-size:15px; color:var(--accent); border: 1px solid var(--accent); padding: 2px 10px; border-radius: 6px;">📍 ${g.station || "待定"}</span>
         </div>
         ${body || "<div style='color:#555; padding:8px; font-style:italic;'>（等待指派人員）</div>"}
         
         ${(g.leader || g.members.length) ? `
           <div style="margin-top:15px; border-top:1px dashed #444; padding-top:12px;">
-            <label style="display:inline; color:#fff;">📋 任務分段：</label>
+            <label style="display:inline; color:#fff;">📋 任務分段數：</label>
             <select style="width:auto; display:inline; padding:5px; font-size:15px;" onchange="updateCount(${i},this.value)">
               ${[1,2,3].map(n => `<option ${g.missionCount==n?"selected":""}>${n}</option>`).join("")}
             </select>
@@ -322,15 +334,27 @@ function renderGroups() {
                 <div class="time-grid">
                   <div>
                     <span class="time-label">🚀 出勤</span>
-                    <input class="time-picker-ui" data-g="${i}" data-m="${mi}" data-k="dispatchTime" value="${m.dispatchTime}" readonly>
+                    <input type="text" class="time-picker-ui" placeholder="--:--" 
+                           data-clocklet="class-name: custom-clocklet; format: HH:mm; alignment: center;"
+                           value="${m.dispatchTime}" 
+                           oninput="updateMission(${i},${mi},'dispatchTime',this.value); groups[${i}].missions[${mi}].notified=false;"
+                           onchange="renderGroups()">
                   </div>
                   <div>
                     <span class="time-label" style="color:var(--warn);">⏱️ 預計回</span>
-                    <input class="time-picker-ui" style="border-color:var(--warn);" data-g="${i}" data-m="${mi}" data-k="expectedReturn" value="${m.expectedReturn}" readonly>
+                    <input type="text" class="time-picker-ui" style="border-color:var(--warn);" placeholder="--:--" 
+                           data-clocklet="class-name: custom-clocklet; format: HH:mm; alignment: center;"
+                           value="${m.expectedReturn}" 
+                           oninput="updateMission(${i},${mi},'expectedReturn',this.value); groups[${i}].missions[${mi}].notified=false;"
+                           onchange="renderGroups()">
                   </div>
                   <div>
                     <span class="time-label" style="color:var(--highlight);">✅ 實際回</span>
-                    <input class="time-picker-ui" style="border-color:var(--highlight);" data-g="${i}" data-m="${mi}" data-k="actualReturn" value="${m.actualReturn}" readonly>
+                    <input type="text" class="time-picker-ui" style="border-color:var(--highlight);" placeholder="--:--" 
+                           data-clocklet="class-name: custom-clocklet; format: HH:mm; alignment: center;"
+                           value="${m.actualReturn}" 
+                           oninput="updateMission(${i},${mi},'actualReturn',this.value);"
+                           onchange="renderGroups()">
                   </div>
                 </div>
               </div>`;
@@ -344,9 +368,6 @@ function renderGroups() {
     `;
   });
   document.getElementById("groupsDisplay").innerHTML = html;
-  
-  // ✅ 確保每次重新渲染後，綁定圓形時鐘選取器
-  initTimePickers();
 }
 
 function renderBadge(name, isL, gIdx) {
@@ -367,7 +388,7 @@ function renderEquipSection(g, idx) {
   const records = equipData.filter(e => e.name === g.assignedEquipUser);
   return `
     <div class="equip-area">
-      <label style="margin-top:0; color:var(--accent); font-size:15px;">🎒 裝備領用狀態</label>
+      <label style="margin-top:0; color:var(--accent); font-size:14px;">🎒 裝備領用狀態</label>
       <select onchange="updateEquipUser(${idx}, this.value)" style="border-color:#555; padding:6px; font-size:15px;">
         <option value="">-- 指定此組裝備領用人 --</option>
         ${users.map(n => `<option value="${n}" ${g.assignedEquipUser === n ? "selected" : ""}>${n}</option>`).join("")}
@@ -375,29 +396,13 @@ function renderEquipSection(g, idx) {
       <table width="100%" style="margin-top:8px; border-collapse:collapse;">
         ${records.length ? records.map(e => `
           <tr>
-            <td style="color:var(--accent); font-family:monospace; width:65px; font-size:13px;">${e.time}</td>
+            <td style="color:var(--accent); font-family:monospace; width:60px; font-size:13px;">${e.time}</td>
             <td style="color:#fff;"><b>${e.item}</b> <small style="color:#888">(${e.action} ${e.status})</small></td>
           </tr>
-        `).join("") : "<tr><td colspan='2' style='color:#555; text-align:center; padding:5px; font-size:14px;'>查無領用紀錄</td></tr>"}
+        `).join("") : "<tr><td colspan='2' style='color:#555; text-align:center; padding:5px; font-size:13px;'>查無領用紀錄</td></tr>"}
       </table>
     </div>
   `;
-}
-
-function initTimePickers() {
-  flatpickr(".time-picker-ui", {
-    enableTime: true, 
-    noCalendar: true, 
-    dateFormat: "H:i", 
-    time_24hr: true,
-    disableMobile: "true", // 強制使用美觀的插件錶盤
-    onClose: function(sel, str, ins) {
-      const g = ins.element.dataset.g, m = ins.element.dataset.m, k = ins.element.dataset.k;
-      groups[g].missions[m][k] = str;
-      if(k !== 'actualReturn') groups[g].missions[m].notified = false;
-      save(); renderGroups();
-    }
-  });
 }
 
 function updateMission(i, m, k, v) {
@@ -408,6 +413,8 @@ function updateMission(i, m, k, v) {
          if (v === '其他') {
             input.style.display = 'block';
             groups[i].missions[m][k] = ''; // 清空讓使用者重新輸入
+            input.value = '';
+            input.focus();
          } else {
             input.style.display = 'none';
          }
@@ -443,14 +450,17 @@ setInterval(loadData, 30000);
 // 自動時效警報檢查
 setInterval(() => {
     const nowStr = new Date().getHours().toString().padStart(2, '0') + ':' + new Date().getMinutes().toString().padStart(2, '0');
+    let needRefresh = false;
     groups.forEach((g, i) => {
         g.missions.slice(0, g.missionCount).forEach((m, mi) => {
             if (m.expectedReturn && !m.actualReturn && !m.notified && nowStr >= m.expectedReturn) {
                 alert(`🚨【超時警報】第 ${i+1} 組 (${g.station})\n地點：${m.loc || '未填'}\n時間：${m.expectedReturn} 已超過！`);
-                m.notified = true; save(); renderGroups();
+                m.notified = true; save(); needRefresh = true;
             }
         });
     });
+    // 只有當警報觸發時才刷新 DOM，避免打斷使用者操作
+    if (needRefresh) renderGroups();
 }, 10000);
 </script>
 
