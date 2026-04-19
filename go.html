@@ -222,4 +222,79 @@ function renderGroups() {
           ">
             <option value="" ${loc === '' ? 'selected' : ''}>-- 🚩 選擇勤務地點 --</option>
             <option value="機巡" ${loc === '機巡' ? 'selected' : ''}>🏍️ 機巡</option>
-            <option value="路巡" ${loc === '路
+            <option value="路巡" ${loc === '路巡' ? 'selected' : ''}>🚶 路巡</option>
+            <option value="繞境" ${loc === '繞境' ? 'selected' : ''}>🏮 繞境</option>
+            <option value="其他" ${isCustom ? 'selected' : ''}>➕ 自訂其他...</option>
+          </select>
+          
+          <input type="text" placeholder="✏️ 請輸入自訂地點" 
+                 style="display: ${isCustom ? 'block' : 'none'}; border-color: var(--highlight);"
+                 value="${isCustom ? loc : ''}" 
+                 onchange="updateMission(${i},'loc',this.value)">
+
+          <div class="time-grid">
+            <div><div class="time-label">🚀 出站</div><input class="time-input" data-clocklet value="${g.missions[0].dispatchTime}" onchange="updateMission(${i},'dispatchTime',this.value)"></div>
+            <div><div class="time-label">⏱️ 預回</div><input class="time-input" data-clocklet value="${g.missions[0].expectedReturn}" onchange="updateMission(${i},'expectedReturn',this.value)"></div>
+            <div><div class="time-label">✅ 回站</div><input class="time-input" data-clocklet value="${g.missions[0].actualReturn}" onchange="updateMission(${i},'actualReturn',this.value)"></div>
+          </div>
+          <button class="btn-save-record" onclick="recordMission(${i}, this)">💾 記錄到任務紀錄表</button>
+        </div>
+        <button class="btn-danger" onclick="clearGroup(${i})">🗑 清空此組資料</button>
+      </div>`;
+  });
+  document.getElementById("groupsDisplay").innerHTML = html || "<div style='text-align:center; color:#555; padding:20px;'>-- 暫無編組 --</div>";
+}
+
+function renderBadge(name, isL, gIdx) {
+  const p = staffData.find(s => s.姓名 === name) || { 屬性: "隊員", 站別: "未知" };
+  const attrCls = `attr-${p.屬性.includes("護理")?"護理師":p.屬性.includes("EMT-2")?"EMT-2":p.屬性.includes("EMT-1")?"EMT-1":"BLS"}`;
+  return `<div class="badge ${isL?'leader-badge':'member-badge'}">
+    <span class="attr-tag ${attrCls}">${p.屬性}</span>
+    <span class="name-txt">${isL?'👑 ':''}${name}</span>
+    <span class="station-txt">(${p.站別})</span>
+    <span class="remove-btn" onclick="removePerson(${gIdx},'${name}',${isL})">✖</span>
+  </div>`;
+}
+
+function updateMission(i, k, v) { groups[i].missions[0][k] = v; syncToCloud(); }
+
+async function recordMission(i, btn) {
+  const g = groups[i]; const m = g.missions[0];
+  const payload = { action: "saveRecord", data: { group: `第 ${i+1} 組`, station: g.station, leader: g.leader, members: g.members.join(", "), task: m.loc, dispatchTime: m.dispatchTime, expectedReturn: m.expectedReturn, actualReturn: m.actualReturn } };
+  btn.innerText = "⏳ 傳送中...";
+  await fetch(API_URL, { method: "POST", body: JSON.stringify(payload) });
+  btn.innerText = "✅ 紀錄成功";
+  setTimeout(() => btn.innerText = "💾 記錄到任務紀錄表", 2000);
+}
+
+function clearGroup(i) {
+  if(!confirm("確定清空第 " + (i+1) + " 組的編組嗎？")) return;
+  groups[i] = {leader:null, members:[], station:null, missions:[{loc:"", dispatchTime:"", expectedReturn:"", actualReturn:""}]};
+  syncToCloud(); refreshUI();
+}
+
+function refreshUI() {
+  const assigned = groups.flatMap(g => [g.leader, ...g.members].filter(Boolean));
+  const avail = staffData.filter(p => p.狀態 === "已報到" && !assigned.includes(p.姓名))
+                 .sort((a,b) => (attrWeight[a.屬性]||99) - (attrWeight[b.屬性]||99));
+  
+  const sel = document.getElementById("staffSelect");
+  sel.innerHTML = avail.length ? avail.map(p => `<option value="${p.姓名}">[${p.屬性}] ${p.姓名} (${p.站別})</option>`).join("") : "<option value=''>-- 無可用人員 --</option>";
+  renderGroups();
+}
+
+function shareToLine() {
+  let t = "🚑 DPCA 勤務編組表\n";
+  groups.forEach((g, i) => {
+    if(g.leader) t += `\n【第 ${i+1} 組】📍${g.station}\n👑組長: ${g.leader}\n👥組員: ${g.members.join(", ")}\n🚩任務: ${g.missions[0].loc || "待命"}\n`;
+  });
+  window.open(`https://line.me/R/msg/text/?${encodeURIComponent(t)}`, '_blank');
+}
+
+// 啟動載入
+loadData();
+setInterval(loadData, 45000); // 每 45 秒自動同步雲端資料
+</script>
+
+</body>
+</html>
