@@ -3,13 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>DPAC 人員編制管理系統</title>
+<title>🚑 DPAC 人員編制管理系統</title>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/clocklet@0.3.0/css/clocklet.min.css">
+
 <style>
   :root { 
     --bg: #000; 
     --card-bg: #111; 
     --blue: #00d2ff; 
     --purple: #bc13fe;
+    --warn: #ffff00;
     --text: #fff; 
     --border: #333; 
   }
@@ -17,7 +21,7 @@
   body { 
     background: var(--bg); 
     color: var(--text); 
-    font-family: -apple-system, "Microsoft JhengHei", sans-serif; 
+    font-family: -apple-system, "Segoe UI", "Microsoft JhengHei", sans-serif; 
     padding: 20px; 
     margin: 0; 
     display: flex; 
@@ -39,30 +43,29 @@
     padding: 30px 25px; 
     border-radius: 20px; 
     border: 2px solid var(--border); 
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
   }
 
   h2 { text-align: center; margin-top: 0; font-size: 32px; font-weight: 900; letter-spacing: 2px; }
   .title-add { color: var(--blue); }
   .title-edit { color: var(--purple); }
 
-  label { display: block; margin-bottom: 8px; font-weight: bold; font-size: 18px; color: #aaa; }
+  label { display: block; margin-bottom: 8px; font-weight: bold; font-size: 20px; color: #aaa; margin-top: 15px; }
 
   input, select { 
     width: 100%; 
     padding: 18px; 
-    margin-bottom: 20px; 
     background: #000; 
     color: #fff; 
-    border: 1px solid var(--border); 
+    border: 2px solid var(--border); 
     border-radius: 12px; 
     font-size: 22px; 
+    font-weight: bold;
     box-sizing: border-box; 
     outline: none;
-    appearance: none; /* 移除行動裝置預設樣式 */
+    appearance: none;
   }
 
-  /* 下拉選單的小箭頭樣式 */
   select {
     background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e");
     background-repeat: no-repeat;
@@ -70,7 +73,7 @@
     background-size: 30px;
   }
 
-  input:focus, select:focus { border-color: var(--blue); background: #050505; }
+  input:focus, select:focus { border-color: var(--blue); background: #0a0a0a; }
 
   .btn { 
     width: 100%; 
@@ -81,6 +84,7 @@
     border-radius: 12px; 
     cursor: pointer; 
     transition: 0.2s;
+    margin-top: 25px;
   }
 
   .btn:active { transform: scale(0.98); }
@@ -89,12 +93,22 @@
   .btn-blue { background: var(--blue); color: #000; }
   .btn-purple { background: var(--purple); color: #fff; }
 
-  #sync-status { margin-bottom: 20px; color: #666; font-size: 16px; font-weight: bold; }
+  #sync-status { margin-bottom: 20px; color: var(--warn); font-size: 18px; font-weight: bold; }
+
+  /* 🕒 Clocklet 黑暗模式修復 */
+  .clocklet {
+    --clocklet-background-color: #111 !important;
+    --clocklet-border-color: var(--blue) !important;
+    --clocklet-dial-background-color: #000 !important;
+    --clocklet-color: #fff !important;
+    --clocklet-hand-color: var(--blue) !important;
+    z-index: 9999 !important;
+  }
 </style>
 </head>
 <body>
 
-  <h1 style="color:#fff; font-size: 32px; margin-bottom: 5px; font-weight: 900;">🚑 DPAC 系統後台</h1>
+  <h1 style="color:#fff; font-size: 36px; margin-bottom: 5px; font-weight: 900;">🚑 DPAC 系統後台</h1>
   <div id="sync-status">正在同步雲端資料...</div>
 
   <div class="container">
@@ -103,13 +117,25 @@
       <h2 class="title-add">➕ 新增人員編制</h2>
       
       <label>選擇分配站別</label>
-      <select id="add-station">
+      <select id="add-station" onchange="toggleCustomStation('add')">
+        <option value="新港崙仔代天宮站">新港崙仔代天宮站</option>
         <option value="溪洲后天宮站">溪洲后天宮站</option>
         <option value="步行隊">步行隊</option>
         <option value="西螺大橋北站">西螺大橋北站</option>
         <option value="支援組">支援組</option>
+        <option value="CUSTOM">➕ 自訂其他站別...</option>
       </select>
+      <input type="text" id="add-station-custom" placeholder="請輸入新站別名稱" style="display:none; margin-top:10px; border-color:var(--blue);">
       
+      <label>人員屬性</label>
+      <select id="add-attr">
+        <option value="護理師">護理師</option>
+        <option value="EMT-2">EMT-2</option>
+        <option value="EMT-1">EMT-1</option>
+        <option value="BLS">BLS</option>
+        <option value="BRU">BRU</option>
+      </select>
+
       <label>人員姓名 (必填)</label>
       <input type="text" id="add-name" placeholder="請輸入姓名">
       
@@ -131,8 +157,18 @@
         <label>修正姓名</label>
         <input type="text" id="edit-name">
 
+        <label>修正屬性</label>
+        <select id="edit-attr">
+          <option value="護理師">護理師</option>
+          <option value="EMT-2">EMT-2</option>
+          <option value="EMT-1">EMT-1</option>
+          <option value="BLS">BLS</option>
+          <option value="BRU">BRU</option>
+        </select>
+
         <label>修正站別</label>
         <select id="edit-station">
+          <option value="新港崙仔代天宮站">新港崙仔代天宮站</option>
           <option value="溪洲后天宮站">溪洲后天宮站</option>
           <option value="步行隊">步行隊</option>
           <option value="西螺大橋北站">西螺大橋北站</option>
@@ -159,6 +195,7 @@
   const API = "https://script.google.com/macros/s/AKfycbz6jLiq0iRwzoRU2uEB1Sn-9MoTEhbc7n9BhsUc22P5xbBRC8ATsV6IaIUOLReJbwH2/exec";
   let allMembers = [];
 
+  // 初始化載入
   async function init() {
     try {
       const res = await fetch(`${API}?action=members&_t=${Date.now()}`).then(r => r.json());
@@ -166,7 +203,7 @@
       const select = document.getElementById("member-select");
       let html = '<option value="">-- 請點擊選擇人員 --</option>';
       res.forEach(m => {
-        html += `<option value="${m.name}">${m.station} - ${m.name}</option>`;
+        html += `<option value="${m.name}">${m.station} - ${m.name} (${m.attr || '無屬性'})</option>`;
       });
       select.innerHTML = html;
       document.getElementById("sync-status").innerText = "✅ 雲端同步完成 " + new Date().toLocaleTimeString();
@@ -175,10 +212,30 @@
     }
   }
 
+  // 自訂站別切換
+  function toggleCustomStation(type) {
+    const select = document.getElementById(`${type}-station`);
+    const customInput = document.getElementById(`${type}-station-custom`);
+    if (select.value === "CUSTOM") {
+      customInput.style.display = "block";
+      customInput.focus();
+    } else {
+      customInput.style.display = "none";
+    }
+  }
+
+  // 新增人員
   async function addNewMember() {
-    const s = document.getElementById("add-station").value;
+    let s = document.getElementById("add-station").value;
+    if (s === "CUSTOM") {
+      s = document.getElementById("add-station-custom").value.trim();
+      if (!s) return alert("⚠️ 請輸入自訂站別名稱！");
+    }
+    
+    const attr = document.getElementById("add-attr").value;
     const n = document.getElementById("add-name").value.trim();
     const p = document.getElementById("add-phone").value.trim();
+    
     if (!n) return alert("⚠️ 姓名必填！");
     
     const btn = document.getElementById("btn-add");
@@ -186,12 +243,16 @@
     btn.innerText = "⏳ 寫入中...";
 
     try {
-      const url = `${API}?action=add&s=${encodeURIComponent(s)}&n=${encodeURIComponent(n)}&p=${encodeURIComponent(p)}&_t=${Date.now()}`;
+      // 注意：API 參數需配合 GAS 端的接收名稱，這裡增加 attr
+      const url = `${API}?action=add&s=${encodeURIComponent(s)}&n=${encodeURIComponent(n)}&p=${encodeURIComponent(p)}&attr=${encodeURIComponent(attr)}&_t=${Date.now()}`;
       const res = await fetch(url).then(r => r.json());
       if (res.ok) {
-        alert(`✅ 成功新增：${n}`);
+        alert(`✅ 成功新增：${n} (${attr})`);
         document.getElementById("add-name").value = "";
         document.getElementById("add-phone").value = "";
+        document.getElementById("add-station-custom").value = "";
+        document.getElementById("add-station-custom").style.display = "none";
+        document.getElementById("add-station").selectedIndex = 0;
         init(); 
       }
     } catch (e) { alert("❌ 連線超時"); }
@@ -201,6 +262,7 @@
     }
   }
 
+  // 載入選擇的人員資料
   function loadMemberData() {
     const selectedName = document.getElementById("member-select").value;
     const btnSave = document.getElementById("btn-save");
@@ -210,25 +272,28 @@
     if (member) {
       document.getElementById("edit-name").value = member.name;
       document.getElementById("edit-station").value = member.station;
-      document.getElementById("edit-phone").value = member.phone;
-      document.getElementById("edit-status").value = member.status;
+      document.getElementById("edit-phone").value = member.phone || "";
+      document.getElementById("edit-status").value = member.status || "未報到";
+      document.getElementById("edit-attr").value = member.attr || "EMT-1";
       btnSave.disabled = false;
     }
   }
 
+  // 儲存修正
   async function saveEdit() {
     const originalName = document.getElementById("member-select").value;
     const newName = document.getElementById("edit-name").value.trim();
     const s = document.getElementById("edit-station").value;
     const p = document.getElementById("edit-phone").value.trim();
     const st = document.getElementById("edit-status").value;
+    const attr = document.getElementById("edit-attr").value;
 
     const btn = document.getElementById("btn-save");
     btn.disabled = true;
     btn.innerText = "⏳ 修正中...";
 
     try {
-      const url = `${API}?action=update&name=${encodeURIComponent(originalName)}&newName=${encodeURIComponent(newName)}&s=${encodeURIComponent(s)}&p=${encodeURIComponent(p)}&st=${encodeURIComponent(st)}&_t=${Date.now()}`;
+      const url = `${API}?action=update&name=${encodeURIComponent(originalName)}&newName=${encodeURIComponent(newName)}&s=${encodeURIComponent(s)}&p=${encodeURIComponent(p)}&st=${encodeURIComponent(st)}&attr=${encodeURIComponent(attr)}&_t=${Date.now()}`;
       const res = await fetch(url).then(r => r.json());
       if (res.ok) {
         alert("✅ 資料已成功更新");
