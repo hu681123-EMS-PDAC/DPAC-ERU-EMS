@@ -52,7 +52,7 @@ select, input {
   border-radius: 12px; border: 3px solid #3d5a80; 
   background: #000; color: #fff; margin-top: 10px; outline: none;
 }
-select:focus { border-color: var(--warn); }
+select:focus, input:focus { border-color: var(--warn); }
 
 .btn-row { display: flex; gap: 15px; margin-top: 25px; }
 button { flex: 1; padding: 22px; font-size: 24px; font-weight: 900; border-radius: 15px; cursor: pointer; border: none; transition: 0.2s; }
@@ -127,7 +127,7 @@ button { flex: 1; padding: 22px; font-size: 24px; font-weight: 900; border-radiu
 
 <script>
 /**
- * ⚠️ 請在這裡替換成你剛剛複製的 GAS Web App 網址
+ * ⚠️ GAS Web App 網址
  */
 const API_URL = "https://script.google.com/macros/s/AKfycbwRrA9FF7M6ymDm3sx-WCdOIYolGK3IUvznuanTc6MBSFl5VTWciw1WyhZG-CYeYYVm/exec";
 
@@ -200,75 +200,26 @@ function renderGroups() {
     let membersHtml = (g.leader ? renderBadge(g.leader, true, i) : "") + 
                       g.members.map(m => renderBadge(m, false, i)).join("");
     
+    let loc = g.missions[0].loc || "";
+    let isCustom = !['', '機巡', '路巡', '繞境'].includes(loc) && loc !== '';
+
     html += `
       <div class="group">
         <div class="group-title">第 ${i+1} 組 <span style="font-size:24px;">📍 ${g.station}</span></div>
         ${membersHtml}
         <div class="mission-box">
-          <input placeholder="🚩 勤務地點 (例如：機巡、步巡)" value="${g.missions[0].loc}" onchange="updateMission(${i},'loc',this.value)">
-          <div class="time-grid">
-            <div><div class="time-label">🚀 出站</div><input class="time-input" data-clocklet value="${g.missions[0].dispatchTime}" oninput="updateMission(${i},'dispatchTime',this.value)"></div>
-            <div><div class="time-label">⏱️ 預回</div><input class="time-input" data-clocklet value="${g.missions[0].expectedReturn}" oninput="updateMission(${i},'expectedReturn',this.value)"></div>
-            <div><div class="time-label">✅ 回站</div><input class="time-input" data-clocklet value="${g.missions[0].actualReturn}" oninput="updateMission(${i},'actualReturn',this.value)"></div>
-          </div>
-          <button class="btn-save-record" onclick="recordMission(${i}, this)">💾 記錄到任務紀錄表</button>
-        </div>
-        <button class="btn-danger" onclick="clearGroup(${i})">🗑 清空此組資料</button>
-      </div>`;
-  });
-  document.getElementById("groupsDisplay").innerHTML = html || "<div style='text-align:center; color:#555; padding:20px;'>-- 暫無編組 --</div>";
-}
-
-function renderBadge(name, isL, gIdx) {
-  const p = staffData.find(s => s.姓名 === name) || { 屬性: "隊員", 站別: "未知" };
-  const attrCls = `attr-${p.屬性.includes("護理")?"護理師":p.屬性.includes("EMT-2")?"EMT-2":p.屬性.includes("EMT-1")?"EMT-1":"BLS"}`;
-  return `<div class="badge ${isL?'leader-badge':'member-badge'}">
-    <span class="attr-tag ${attrCls}">${p.屬性}</span>
-    <span class="name-txt">${isL?'👑 ':''}${name}</span>
-    <span class="station-txt">(${p.站別})</span>
-    <span class="remove-btn" onclick="removePerson(${gIdx},'${name}',${isL})">✖</span>
-  </div>`;
-}
-
-function updateMission(i, k, v) { groups[i].missions[0][k] = v; syncToCloud(); }
-
-async function recordMission(i, btn) {
-  const g = groups[i]; const m = g.missions[0];
-  const payload = { action: "saveRecord", data: { group: `第 ${i+1} 組`, station: g.station, leader: g.leader, members: g.members.join(", "), task: m.loc, dispatchTime: m.dispatchTime, expectedReturn: m.expectedReturn, actualReturn: m.actualReturn } };
-  btn.innerText = "⏳ 傳送中...";
-  await fetch(API_URL, { method: "POST", body: JSON.stringify(payload) });
-  btn.innerText = "✅ 紀錄成功";
-  setTimeout(() => btn.innerText = "💾 記錄到任務紀錄表", 2000);
-}
-
-function clearGroup(i) {
-  if(!confirm("確定清空第 " + (i+1) + " 組的編組嗎？")) return;
-  groups[i] = {leader:null, members:[], station:null, missions:[{loc:"", dispatchTime:"", expectedReturn:"", actualReturn:""}]};
-  syncToCloud(); refreshUI();
-}
-
-function refreshUI() {
-  const assigned = groups.flatMap(g => [g.leader, ...g.members].filter(Boolean));
-  const avail = staffData.filter(p => p.狀態 === "已報到" && !assigned.includes(p.姓名))
-                 .sort((a,b) => (attrWeight[a.屬性]||99) - (attrWeight[b.屬性]||99));
-  
-  const sel = document.getElementById("staffSelect");
-  sel.innerHTML = avail.length ? avail.map(p => `<option value="${p.姓名}">[${p.屬性}] ${p.姓名} (${p.站別})</option>`).join("") : "<option value=''>-- 無可用人員 --</option>";
-  renderGroups();
-}
-
-function shareToLine() {
-  let t = "🚑 DPCA 勤務編組表\n";
-  groups.forEach((g, i) => {
-    if(g.leader) t += `\n【第 ${i+1} 組】📍${g.station}\n👑組長: ${g.leader}\n👥組員: ${g.members.join(", ")}\n🚩任務: ${g.missions[0].loc || "待命"}\n`;
-  });
-  window.open(`https://line.me/R/msg/text/?${encodeURIComponent(t)}`, '_blank');
-}
-
-// 啟動載入
-loadData();
-setInterval(loadData, 45000); // 每 45 秒自動同步雲端資料
-</script>
-
-</body>
-</html>
+          
+          <select onchange="
+            const customInput = this.nextElementSibling;
+            if(this.value === '其他') {
+              customInput.style.display = 'block';
+              customInput.focus();
+              updateMission(${i},'loc','');
+            } else {
+              customInput.style.display = 'none';
+              updateMission(${i},'loc',this.value);
+            }
+          ">
+            <option value="" ${loc === '' ? 'selected' : ''}>-- 🚩 選擇勤務地點 --</option>
+            <option value="機巡" ${loc === '機巡' ? 'selected' : ''}>🏍️ 機巡</option>
+            <option value="路巡" ${loc === '路
