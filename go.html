@@ -95,6 +95,27 @@ button { flex: 1; padding: 22px; font-size: 24px; font-weight: 900; border-radiu
 
 .btn-danger { background: linear-gradient(to bottom, #700, #400); color: #fff; margin-top: 20px; font-size: 22px; border-radius: 12px; width:100%; padding:15px; }
 .btn-save-record { background: var(--highlight); color: #000; font-weight: 900; font-size: 22px; margin-top: 15px; width: 100%; border-radius: 10px; padding: 12px; }
+
+/* 🕒 Clocklet 黑暗模式客製化 (解決白色圓盤與層級問題) */
+.clocklet {
+  --clocklet-background-color: #0d1520 !important; /* 彈出視窗背景 */
+  --clocklet-border-color: #00f2ff !important;     /* 邊框顏色 */
+  --clocklet-dial-background-color: #02060c !important; /* 圓盤背景 */
+  --clocklet-color: #ffffff !important;            /* 數字顏色 */
+  --clocklet-hand-color: #00f2ff !important;       /* 指針顏色 */
+  --clocklet-hover-background-color: #3d5a80 !important; /* 滑過顏色 */
+  --clocklet-selected-background-color: #00ff88 !important; /* 選中背景 */
+  --clocklet-selected-color: #000000 !important;   /* 選中數字顏色 */
+  border-radius: 15px !important;
+  border-width: 3px !important;
+  font-family: inherit !important;
+  font-size: 20px !important;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.9), 0 0 20px rgba(0, 242, 255, 0.3) !important;
+}
+/* 確保圓盤彈出時位於最上層 */
+.clocklet.clocklet-visible {
+  z-index: 99999 !important;
+}
 </style>
 </head>
 
@@ -233,9 +254,9 @@ function renderGroups() {
                  onchange="updateMission(${i},'loc',this.value)">
 
           <div class="time-grid">
-            <div><div class="time-label">🚀 出站</div><input class="time-input" data-clocklet value="${g.missions[0].dispatchTime}" onchange="updateMission(${i},'dispatchTime',this.value)"></div>
-            <div><div class="time-label">⏱️ 預回</div><input class="time-input" data-clocklet value="${g.missions[0].expectedReturn}" onchange="updateMission(${i},'expectedReturn',this.value)"></div>
-            <div><div class="time-label">✅ 回站</div><input class="time-input" data-clocklet value="${g.missions[0].actualReturn}" onchange="updateMission(${i},'actualReturn',this.value)"></div>
+            <div><div class="time-label">🚀 出站</div><input class="time-input" data-clocklet="format: HH:mm" value="${g.missions[0].dispatchTime}" onchange="updateMission(${i},'dispatchTime',this.value)"></div>
+            <div><div class="time-label">⏱️ 預回</div><input class="time-input" data-clocklet="format: HH:mm" value="${g.missions[0].expectedReturn}" onchange="updateMission(${i},'expectedReturn',this.value)"></div>
+            <div><div class="time-label">✅ 回站</div><input class="time-input" data-clocklet="format: HH:mm" value="${g.missions[0].actualReturn}" onchange="updateMission(${i},'actualReturn',this.value)"></div>
           </div>
           <button class="btn-save-record" onclick="recordMission(${i}, this)">💾 記錄到任務紀錄表</button>
         </div>
