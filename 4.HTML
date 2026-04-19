@@ -73,16 +73,33 @@ h2 {
 /* 內部站別分組樣式 */
 .group-title {
   color: #00e5ff;
-  font-size: 20px;
-  font-weight: 900;
   border-bottom: 2px solid #333;
   margin: 15px 0 8px 0;
-  padding-bottom: 6px;
+  padding-bottom: 8px;
+  display: flex;
+  flex-direction: column; /* 垂直排列以容納更多統計資訊 */
+  gap: 8px;
+}
+
+.group-title-top {
+  font-size: 20px;
+  font-weight: 900;
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
   gap: 10px;
+}
+
+.group-title-sub {
+  display: flex;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: bold;
+  flex-wrap: wrap;
+  background: rgba(255,255,255,0.05);
+  padding: 4px 8px;
+  border-radius: 6px;
 }
 
 /* 🌟 新增：各站獨立統計標籤 */
@@ -113,6 +130,7 @@ h2 {
 .attr-emt2 { color: #00e5ff; text-shadow: 0 0 5px rgba(0,229,255,0.5); }  
 .attr-emt1 { color: #39ff14; text-shadow: 0 0 5px rgba(57,255,20,0.5); }  
 .attr-bls { color: #ffffff; }   
+.attr-eru { color: #b822ff; text-shadow: 0 0 5px rgba(184,34,255,0.5); } /* ERU 專屬色 */
 .attr-other { color: #aaaaaa; } 
 
 /* 搜尋與表格 */
@@ -163,14 +181,15 @@ td { padding: 12px; border-bottom: 1px solid #222; text-align: center; }
 const API = "https://script.google.com/macros/s/AKfycbwFMuR1LuYeMZyK7D7Ym1n7-4sZ97ThD_5v52j_zsxIvpScfgAoEx-DAWLJB_d8Vmbf/exec";
 let allData = [];
 
-/* ⭐ 屬性權重定義 (嚴格遵守：護理師 > EMT-2 > EMT-1 > BLS) */
+/* ⭐ 屬性權重定義 (嚴格遵守：護理師 > EMT-2 > EMT-1 > BLS > ERU) */
 function getAttrRank(a) {
   a = (a || "").toUpperCase();
   if (a.includes("護理師")) return 1;
   if (a.includes("EMT-2") || a.includes("EMT2")) return 2;
   if (a.includes("EMT-1") || a.includes("EMT1")) return 3;
   if (a.includes("BLS")) return 4;
-  if (a.includes("防災士")) return 5;
+  if (a.includes("ERU")) return 5;
+  if (a.includes("防災士")) return 6;
   return 99; // 其他
 }
 
@@ -181,16 +200,19 @@ function getAttrClass(a) {
   if (a.includes("EMT-2") || a.includes("EMT2")) return { cls: "attr-emt2", icon: "🚑" };
   if (a.includes("EMT-1") || a.includes("EMT1")) return { cls: "attr-emt1", icon: "🚑" };
   if (a.includes("BLS")) return { cls: "attr-bls", icon: "🩺" };
+  if (a.includes("ERU")) return { cls: "attr-eru", icon: "🚨" };
   return { cls: "attr-other", icon: "👤" };
 }
 
-/* ⭐ 站點優先權定義 (嚴格遵守：溪洲后天宮站 > 西螺大橋北站 > 步行隊 > 其他) */
+/* ⭐ 站點優先權定義 (鹿港彰濱衛生所 > 埔鹽鄉衛生所 > 溪州國小 > 福興鄉衛生所 > 埤頭鄉衛生所) */
 function getStationRank(s) {
   s = s || "";
-  if (s.includes("溪洲后天宮")) return 1;
-  if (s.includes("西螺大橋北")) return 2;
-  if (s.includes("步行隊")) return 3;
-  return 4;
+  if (s.includes("鹿港彰濱衛生所")) return 1;
+  if (s.includes("埔鹽鄉衛生所")) return 2;
+  if (s.includes("溪州國小")) return 3;
+  if (s.includes("福興鄉衛生所")) return 4;
+  if (s.includes("埤頭鄉衛生所")) return 5;
+  return 99;
 }
 
 /* 狀態判斷 */
@@ -223,19 +245,29 @@ function renderSections(data) {
 
   const grouped = { in: {}, out: {}, pending: {} };
   
-  // 🌟 計算全域各站點的「報到/未報到」總人數
+  // 🌟 計算全域各站點的「所有屬性與報到」總人數
   const globalStationStats = {};
 
   data.forEach(r => {
     const type = getType(r.status);
     const station = r.station || "未分類";
+    const attrUpper = (r.attr || "").toUpperCase();
     
     // 初始化分組與統計
     if (!grouped[type][station]) grouped[type][station] = [];
-    if (!globalStationStats[station]) globalStationStats[station] = { in: 0, pending: 0, out: 0 };
+    if (!globalStationStats[station]) {
+      globalStationStats[station] = { in: 0, pending: 0, out: 0, rn: 0, emt2: 0, emt1: 0, bls: 0, eru: 0 };
+    }
     
     grouped[type][station].push(r);
     globalStationStats[station][type]++; // 累加該站狀態人數
+
+    // 累加該站的全域屬性戰力 (無論是否報到都在這計算全體編制，或也可依需求拆分)
+    if (attrUpper.includes("護理師")) globalStationStats[station].rn++;
+    else if (attrUpper.includes("EMT-2") || attrUpper.includes("EMT2")) globalStationStats[station].emt2++;
+    else if (attrUpper.includes("EMT-1") || attrUpper.includes("EMT1")) globalStationStats[station].emt1++;
+    else if (attrUpper.includes("BLS")) globalStationStats[station].bls++;
+    else if (attrUpper.includes("ERU")) globalStationStats[station].eru++;
   });
 
   Object.keys(sections).forEach(type => {
@@ -251,7 +283,7 @@ function renderSections(data) {
     });
     
     let totalCount = 0;
-    let stats = { rn: 0, emt2: 0, emt1: 0, bls: 0 };
+    let stats = { rn: 0, emt2: 0, emt1: 0, bls: 0, eru: 0 };
     let html = '';
 
     stationNames.forEach(stName => {
@@ -259,15 +291,25 @@ function renderSections(data) {
       const people = stationData[stName].sort((a, b) => getAttrRank(a.attr) - getAttrRank(b.attr) || (a.name || "").localeCompare(b.name || "", 'zh-Hant'));
       
       // 取出該站的總計數據
-      const stStats = globalStationStats[stName] || { in: 0, pending: 0 };
+      const stStats = globalStationStats[stName] || { in: 0, pending: 0, rn: 0, emt2: 0, emt1: 0, bls: 0, eru: 0 };
       
+      // 站別標題與專屬戰力明細
       html += `
         <div class="group-title">
-          <span>📍 ${stName}</span>
-          <span class="station-stats">
-             <span style="color:var(--green)">🟢 報到:${stStats.in}</span> | 
-             <span style="color:var(--red)">🔴 未報:${stStats.pending}</span>
-          </span>
+          <div class="group-title-top">
+            <span>📍 ${stName}</span>
+            <span class="station-stats">
+               <span style="color:var(--green)">🟢 報到:${stStats.in}</span> | 
+               <span style="color:var(--red)">🔴 未報:${stStats.pending}</span>
+            </span>
+          </div>
+          <div class="group-title-sub">
+            <span class="attr-nurse">🏥 護理:${stStats.rn}</span>
+            <span class="attr-emt2">🚑 EMT2:${stStats.emt2}</span>
+            <span class="attr-emt1">🚑 EMT1:${stStats.emt1}</span>
+            <span class="attr-bls">🩺 BLS:${stStats.bls}</span>
+            <span class="attr-eru">🚨 ERU:${stStats.eru}</span>
+          </div>
         </div>`;
       
       people.forEach(p => {
@@ -277,6 +319,7 @@ function renderSections(data) {
         else if (attrUpper.includes("EMT-2") || attrUpper.includes("EMT2")) stats.emt2++;
         else if (attrUpper.includes("EMT-1") || attrUpper.includes("EMT1")) stats.emt1++;
         else if (attrUpper.includes("BLS")) stats.bls++;
+        else if (attrUpper.includes("ERU")) stats.eru++;
 
         const attrInfo = getAttrClass(p.attr);
         html += `
@@ -287,14 +330,15 @@ function renderSections(data) {
       });
     });
 
-    // 戰力統計列 HTML
+    // 大區塊戰力統計列 HTML
     const statsHtml = totalCount > 0 ? `
       <div class="stats-row">
         <span class="stat-badge" style="color:var(--text); border-color:#555;">📊 總計: ${totalCount} 人</span>
-        <span class="stat-badge attr-nurse">🏥 護理師: ${stats.rn}</span>
+        <span class="stat-badge attr-nurse">🏥 護理: ${stats.rn}</span>
         <span class="stat-badge attr-emt2">🚑 EMT-2: ${stats.emt2}</span>
         <span class="stat-badge attr-emt1">🚑 EMT-1: ${stats.emt1}</span>
-        <span class="stat-badge attr-bls">🚑 BLS: ${stats.bls}</span>
+        <span class="stat-badge attr-bls">🩺 BLS: ${stats.bls}</span>
+        <span class="stat-badge attr-eru">🚨 ERU: ${stats.eru}</span>
       </div>
     ` : '';
 
