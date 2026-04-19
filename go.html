@@ -2,8 +2,8 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🚑 DPCA 出勤排班戰情室 (圓形錶盤 + 記錄按鈕版)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>🚑 DPCA 出勤排班戰情室 (高對比/雲端同步版)</title>
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/clocklet@0.3.0/css/clocklet.min.css">
 
@@ -24,118 +24,98 @@
 
 body {
   font-family: "Segoe UI", "PingFang TC", "Microsoft JhengHei", sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  font-size: 15px; /* 中小字體，畫面緊湊精緻 */
-  padding: 12px;
-  margin: 0;
-  line-height: 1.4;
+  background: var(--bg); color: var(--text);
+  font-size: 18px; /* 🔠 中大字體 */
+  padding: 15px; margin: 0; line-height: 1.5;
 }
 
 .container { max-width: 1050px; margin: 0 auto; }
 
 h1 {
-  text-align: center;
-  color: var(--accent);
-  border-bottom: 3px solid var(--accent);
-  padding-bottom: 12px;
-  margin: 5px 0 20px 0;
-  text-shadow: 0 0 12px rgba(0, 242, 255, 0.6);
-  font-size: 26px; 
-  letter-spacing: 2px;
+  text-align: center; color: var(--accent);
+  border-bottom: 4px solid var(--accent);
+  padding-bottom: 15px; margin: 10px 0 25px 0;
+  text-shadow: 0 0 15px rgba(0, 242, 255, 0.8);
+  font-size: 32px; font-weight: 900; letter-spacing: 3px;
 }
 
 .panel {
-  background: var(--card);
-  padding: 20px;
-  margin-bottom: 25px;
-  border-radius: 15px;
-  border: 2px solid #1e2e3e;
+  background: var(--card); padding: 20px; margin-bottom: 25px;
+  border-radius: 15px; border: 2px solid #1e2e3e;
   box-shadow: 0 8px 30px rgba(0,0,0,0.8);
 }
 
-label { display: block; margin-top: 12px; font-weight: 900; color: #b0d4de; font-size: 16px; }
+label { display: block; margin-top: 15px; font-weight: 900; color: #b0d4de; font-size: 20px; }
 
+/* 🔠 高對比超大輸入框 */
 select, input {
-  padding: 10px; font-size: 15px; width: 100%; border-radius: 8px;
-  border: 2px solid #3d5a80; background: #000; color: #fff; margin-top: 6px; outline: none;
+  padding: 15px; font-size: 18px; font-weight: bold; width: 100%; 
+  border-radius: 10px; border: 3px solid #3d5a80; 
+  background: #000; color: #fff; margin-top: 8px; outline: none;
 }
-select:focus, input:focus { border-color: var(--warn); box-shadow: 0 0 8px rgba(255, 255, 0, 0.3); }
+select:focus, input:focus { border-color: var(--warn); box-shadow: 0 0 15px rgba(255, 255, 0, 0.5); }
 
-.btn-row { display: flex; gap: 12px; margin-top: 20px; }
-button { flex: 1; padding: 12px; font-size: 17px; font-weight: 900; border-radius: 10px; cursor: pointer; border: none; }
-.btn-leader { background: linear-gradient(135deg, #ffd700, #b8860b); color: #000; }
-.btn-member { background: linear-gradient(135deg, var(--accent), #00a8cc); color: #000; }
+/* 🔠 超大型操作按鈕 */
+.btn-row { display: flex; gap: 15px; margin-top: 25px; }
+button { flex: 1; padding: 18px; font-size: 20px; font-weight: 900; border-radius: 12px; cursor: pointer; border: none; transition: 0.2s; }
 button:active { transform: scale(0.97); }
 
+.btn-leader { background: linear-gradient(135deg, #ffd700, #daa520); color: #000; box-shadow: 0 4px 10px rgba(255,215,0,0.3); }
+.btn-member { background: linear-gradient(135deg, var(--accent), #0096b3); color: #000; box-shadow: 0 4px 10px rgba(0,242,255,0.3); }
+.btn-share { background: linear-gradient(135deg, #00c300, #009900); color: #fff; margin-top: 15px; width: 100%; box-shadow: 0 4px 10px rgba(0,195,0,0.3); }
+
 .group {
-  border: 2px solid #2a4a6a; padding: 18px; margin: 20px 0;
+  border: 2px solid #2a4a6a; padding: 20px; margin: 25px 0;
   background: rgba(13, 21, 32, 0.95); border-radius: 15px;
 }
 .group-title {
-  font-size: 20px; color: var(--warn); font-weight: 900;
-  border-bottom: 1px solid #334; padding-bottom: 10px; margin-bottom: 15px;
+  font-size: 24px; color: var(--warn); font-weight: 900;
+  border-bottom: 2px solid #334; padding-bottom: 12px; margin-bottom: 18px;
   display: flex; justify-content: space-between; align-items: center;
 }
 
 .badge {
-  padding: 10px 15px; margin: 8px 0; border-radius: 8px; display: flex; align-items: center; gap: 12px;
-  background: #111e2d; border-left: 6px solid #444;
+  padding: 12px 18px; margin: 10px 0; border-radius: 10px; display: flex; align-items: center; gap: 15px;
+  background: #111e2d; border-left: 8px solid #444; font-size: 20px;
 }
-.leader-badge { border-left-color: var(--leader-gold); background: rgba(255, 215, 0, 0.05); }
+.leader-badge { border-left-color: var(--leader-gold); background: rgba(255, 215, 0, 0.08); }
 .member-badge { border-left-color: var(--highlight); }
 
-.attr-tag { font-size: 13px; padding: 3px 8px; border-radius: 5px; font-weight: 900; min-width: 70px; text-align: center; color: #fff; }
+.attr-tag { font-size: 16px; padding: 5px 10px; border-radius: 6px; font-weight: 900; min-width: 80px; text-align: center; color: #fff; }
 .attr-護理師 { background: var(--attr-rn); }
 .attr-EMT-2 { background: var(--attr-emt2); }
 .attr-EMT-1 { background: var(--attr-emt1); color: #000; }
 .attr-BLS { background: var(--attr-bls); }
 
-.name-txt { font-weight: bold; color: #fff; font-size: 18px; }
-.station-txt { color: #88b0c0; font-size: 15px; margin-left: auto; }
-.remove-btn { color: var(--danger); font-size: 20px; cursor: pointer; padding: 0 10px; font-weight: bold; }
+.name-txt { font-weight: 900; color: #fff; font-size: 22px; }
+.station-txt { color: #88b0c0; font-size: 18px; margin-left: auto; }
+.remove-btn { color: var(--danger); font-size: 24px; cursor: pointer; padding: 0 10px; font-weight: bold; }
 
-.mission-box { margin-top: 12px; background: rgba(0,0,0,0.4); padding: 15px; border-radius: 10px; border: 1px solid #3d5a80; }
+.mission-box { margin-top: 15px; background: rgba(0,0,0,0.4); padding: 18px; border-radius: 12px; border: 1px solid #3d5a80; }
 
-.time-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 10px; }
-.time-label { font-size: 13px; color: #aaa; text-align: center; font-weight: bold; margin-bottom: 4px; display: block; }
+.time-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-top: 15px; }
+.time-label { font-size: 16px; color: #aaa; text-align: center; font-weight: bold; margin-bottom: 6px; display: block; }
 
-/* ⏱️ 錶盤輸入框 */
-.time-picker-ui {
-  text-align: center; cursor: pointer; background: #000 !important; font-weight: bold;
-  font-size: 16px; border-color: #2a4a6a; letter-spacing: 1px; color: var(--accent);
-}
+.time-picker-ui { text-align: center; cursor: pointer; background: #000 !important; font-weight: bold; font-size: 18px; border-color: #2a4a6a; letter-spacing: 1px; color: var(--accent); }
 
-/* 🎨 Clocklet 圓形錶盤深色樣式 */
+/* Clocklet 樣式 */
 .custom-clocklet { background-color: #0d1520 !important; border: 2px solid #00f2ff !important; border-radius: 15px !important; z-index: 9999 !important; }
 .custom-clocklet .clocklet-dial { background-color: #02060c !important; }
-.custom-clocklet .clocklet-tick { color: #b0d4de !important; font-size: 16px !important; font-family: sans-serif; }
+.custom-clocklet .clocklet-tick { color: #b0d4de !important; font-size: 18px !important; font-family: sans-serif; }
 .custom-clocklet .clocklet-tick:hover { color: #00f2ff !important; font-weight: bold; }
 .custom-clocklet .clocklet-tick.clocklet-active { background-color: #00ff88 !important; color: #000 !important; font-weight: bold; }
 .custom-clocklet .clocklet-hand, .custom-clocklet .clocklet-hand-origin { background-color: #00ff88 !important; }
 
-/* 🚨 警報動畫 */
 .alarm-active { animation: blinker 1.2s linear infinite; border: 2px solid var(--danger); }
-@keyframes blinker { 50% { background: rgba(255, 0, 0, 0.15); box-shadow: 0 0 10px var(--danger); } }
+@keyframes blinker { 50% { background: rgba(255, 0, 0, 0.15); box-shadow: 0 0 15px var(--danger); } }
 
-.equip-area { margin-top: 15px; padding: 12px; background: #000; border: 1px solid #444; border-radius: 10px; }
-.equip-table td { padding: 10px 8px; border-bottom: 1px solid #1a1a1a; font-size: 14px; }
-.btn-danger { background: linear-gradient(to bottom, #600, #400); color: #fff; margin-top: 15px; font-size: 16px; width: 100%; border-radius: 8px; padding: 12px;}
+.equip-area { margin-top: 15px; padding: 15px; background: #000; border: 1px solid #444; border-radius: 12px; }
+.equip-table td { padding: 12px 10px; border-bottom: 1px solid #1a1a1a; font-size: 16px; }
+.btn-danger { background: linear-gradient(to bottom, #600, #400); color: #fff; margin-top: 18px; font-size: 18px; width: 100%; border-radius: 10px; padding: 15px; cursor: pointer;}
 
-/* 💾 找回來的記錄按鈕專屬樣式 */
-.btn-record-silent {
-  background-color: #00C853; 
-  color: #000; 
-  font-weight: 900; 
-  border: none; 
-  border-radius: 8px; 
-  padding: 0 18px; 
-  cursor: pointer;
-  white-space: nowrap;
-  font-size: 15px;
-  margin-top: 6px;
-}
-.btn-record-silent:disabled { background-color: #444; color: #888; cursor: not-allowed; }
+/* 獨立記錄按鈕 */
+.btn-record-silent { background-color: var(--highlight); color: #000; font-weight: 900; border: none; border-radius: 10px; padding: 12px 20px; cursor: pointer; white-space: nowrap; font-size: 18px; margin-top: 6px; box-shadow: 0 4px 10px rgba(0,255,136,0.3); }
+.btn-record-silent:disabled { background-color: #444; color: #888; cursor: not-allowed; box-shadow: none; }
 </style>
 </head>
 
@@ -157,6 +137,8 @@ button:active { transform: scale(0.97); }
       <button class="btn-leader" onclick="assign('leader')">👑 指派為組長</button>
       <button class="btn-member" onclick="assign('member')">➕ 加入為組員</button>
     </div>
+    
+    <button class="btn-share" onclick="shareToLine()">📲 將目前排班表傳送至 LINE 群組</button>
   </div>
 
   <div id="groupsDisplay"></div>
@@ -168,7 +150,7 @@ button:active { transform: scale(0.97); }
 const API_URL = "https://script.google.com/macros/s/AKfycby3BSIVXhhPzBoJXIL9GMId54ZfGBm3BOEeiRyQd4wsk7ZWTY4zuwlUUMNaMyi8XJX3/exec";
 const attrWeight = { "護理師": 1, "EMT-2": 2, "EMT-1": 3, "BLS": 4 };
 
-// ✅ 讀取相同的 localStorage Key，保證資料不遺失
+// ☁️ 初始化本地資料
 let groups = JSON.parse(localStorage.getItem("ems_v12_15groups_stable"));
 if (!groups || !Array.isArray(groups)) {
   groups = Array.from({length:15},()=>({
@@ -180,7 +162,26 @@ if (!groups || !Array.isArray(groups)) {
 let staffData = [];
 let equipData = [];
 
-function save() { localStorage.setItem("ems_v12_15groups_stable", JSON.stringify(groups)); }
+// ☁️ 雲端與本地同步儲存函式
+function save() { 
+  // 1. 存本地防呆
+  localStorage.setItem("ems_v12_15groups_stable", JSON.stringify(groups)); 
+  
+  // 2. 存雲端 (換人登入不會不見)
+  if (typeof google !== 'undefined' && google.script) {
+    google.script.run.saveGlobalGroups(JSON.stringify(groups));
+  }
+}
+
+// ☁️ 開機時優先讀取雲端排班表
+if (typeof google !== 'undefined' && google.script) {
+  google.script.run.withSuccessHandler(function(serverData) {
+    if (serverData && serverData.length > 10) {
+      groups = JSON.parse(serverData);
+      refreshUI();
+    }
+  }).getGlobalGroups();
+}
 
 async function loadData() {
   try {
@@ -188,9 +189,7 @@ async function loadData() {
     const data = await res.json();
     staffData = (data.staff || []).map(s => ({
       姓名: String(s.姓名 || "").trim(),
-      站別: s.站別 || "",
-      屬性: s.屬性 || "隊員",
-      狀態: s.狀態 || "" 
+      站別: s.站別 || "", 屬性: s.屬性 || "隊員", 狀態: s.狀態 || "" 
     }));
     equipData = (data.equips || []).map(e => ({
       time: e.時間 || "", name: String(e.姓名 || "").trim(), action: e.動作 || "", 
@@ -230,37 +229,50 @@ function removePerson(groupIdx, name, isLeader) {
   save(); refreshUI();
 }
 
-// 💾 背景靜默寫入 Google Sheets 的函數
+// 📲 傳送至 LINE 功能
+function shareToLine() {
+  let text = "🚑 DPCA 現場出勤排班戰報 🚑\n";
+  text += `📅 更新時間: ${new Date().toLocaleTimeString()}\n\n`;
+  
+  let hasData = false;
+  groups.forEach((g, i) => {
+    if(g.leader || g.members.length > 0) {
+      hasData = true;
+      text += `【第 ${i+1} 組】📍 ${g.station || '未定'}\n`;
+      text += `👑 組長: ${g.leader ? g.leader : '無'}\n`;
+      if(g.members.length > 0) { text += `👥 隊員: ${g.members.join(', ')}\n`; }
+      
+      const m = g.missions[0];
+      if(m.loc || m.dispatchTime) {
+        text += `任務: ${m.loc||'未定'} | 出勤: ${m.dispatchTime||'--:--'}\n`;
+      }
+      text += `------------------\n`;
+    }
+  });
+
+  if(!hasData) { alert("目前尚無排班資料可分享！"); return; }
+  
+  const lineUrl = `https://line.me/R/msg/text/?${encodeURIComponent(text)}`;
+  window.open(lineUrl, '_blank');
+}
+
 function recordSilent(gIdx, mIdx, btn) {
-  const g = groups[gIdx];
-  const m = g.missions[mIdx];
+  const g = groups[gIdx]; const m = g.missions[mIdx];
   const taskName = m.loc || "未命名任務";
+  btn.innerText = "⏳ 寫入中..."; btn.disabled = true;
 
-  btn.innerText = "⏳ 寫入中...";
-  btn.disabled = true;
-
-  const payload = {
-    group: `第 ${gIdx+1} 組`,
-    station: g.station || "未定",
-    leader: g.leader || "無",
-    members: g.members.join(", "),
-    task: taskName,
-    dispatchTime: m.dispatchTime,
-    expectedReturn: m.expectedReturn,
-    actualReturn: m.actualReturn
-  };
+  const payload = { group: `第 ${gIdx+1} 組`, station: g.station || "未定", leader: g.leader || "無", members: g.members.join(", "), task: taskName, dispatchTime: m.dispatchTime, expectedReturn: m.expectedReturn, actualReturn: m.actualReturn };
 
   try {
-    google.script.run.withSuccessHandler(function() {
-      btn.innerText = "✅ 已記錄";
-      setTimeout(() => { btn.innerText = "💾 記錄"; btn.disabled = false; }, 2500);
-    }).withFailureHandler(function() {
-      btn.innerText = "❌ 失敗";
-      setTimeout(() => { btn.innerText = "💾 記錄"; btn.disabled = false; }, 2500);
-    }).saveMissionRecord(payload);
+    if (typeof google !== 'undefined' && google.script) {
+      google.script.run.withSuccessHandler(function() {
+        btn.innerText = "✅ 已記錄"; setTimeout(() => { btn.innerText = "💾 記錄"; btn.disabled = false; }, 2500);
+      }).withFailureHandler(function() {
+        btn.innerText = "❌ 失敗"; setTimeout(() => { btn.innerText = "💾 記錄"; btn.disabled = false; }, 2500);
+      }).saveMissionRecord(payload);
+    } else { throw new Error("Local"); }
   } catch(e) {
-    // 預防如果在本地端測試沒有 Google 環境也不會當機
-    setTimeout(() => { btn.innerText = "✅ 已記錄"; setTimeout(() => { btn.innerText = "💾 記錄"; btn.disabled = false; }, 2000); }, 1000);
+    setTimeout(() => { btn.innerText = "✅ 已記錄(單機)"; setTimeout(() => { btn.innerText = "💾 記錄"; btn.disabled = false; }, 2000); }, 1000);
   }
 }
 
@@ -277,14 +289,14 @@ function renderGroups() {
       <div class="group">
         <div class="group-title">
           <span>第 ${i+1} 組</span>
-          <span style="font-size:15px; color:var(--accent); border: 1px solid var(--accent); padding: 2px 10px; border-radius: 6px;">📍 ${g.station || "待定"}</span>
+          <span style="font-size:20px; color:var(--accent); border: 2px solid var(--accent); padding: 5px 12px; border-radius: 8px;">📍 ${g.station || "待定"}</span>
         </div>
-        ${body || "<div style='color:#555; padding:8px; font-style:italic;'>（等待指派人員）</div>"}
+        ${body || "<div style='color:#555; padding:10px; font-style:italic; font-size:18px;'>（等待指派人員）</div>"}
         
         ${(g.leader || g.members.length) ? `
-          <div style="margin-top:15px; border-top:1px dashed #444; padding-top:12px;">
+          <div style="margin-top:20px; border-top:2px dashed #444; padding-top:15px;">
             <label style="display:inline; color:#fff;">📋 任務分段數：</label>
-            <select style="width:auto; display:inline; padding:5px; font-size:15px;" onchange="updateCount(${i},this.value)">
+            <select style="width:auto; display:inline; padding:8px; font-size:18px;" onchange="updateCount(${i},this.value)">
               ${[1,2,3].map(n => `<option ${g.missionCount==n?"selected":""}>${n}</option>`).join("")}
             </select>
             
@@ -292,8 +304,7 @@ function renderGroups() {
               const isAlarm = m.expectedReturn && !m.actualReturn && nowStr >= m.expectedReturn;
               return `
               <div class="mission-box ${isAlarm ? 'alarm-active' : ''}">
-                
-                <div style="display:flex; gap:8px; align-items: flex-start;">
+                <div style="display:flex; gap:12px; align-items: flex-start;">
                     <div style="flex:1;">
                         <select onchange="updateMission(${i},${mi},'loc',this.value)">
                             <option value="">-- 🗺️ 選擇任務地點 --</option>
@@ -306,7 +317,6 @@ function renderGroups() {
                         <input placeholder="輸入自訂地點" value="${m.loc}" style="display:${(!['','機巡','步巡','天后宮內','遶境'].includes(m.loc))?'block':'none'};" 
                                id="customLoc_${i}_${mi}" onchange="updateMission(${i},${mi},'loc',this.value)">
                     </div>
-                    
                     <button class="btn-record-silent" onclick="recordSilent(${i}, ${mi}, this)">💾 記錄</button>
                 </div>
 
@@ -367,18 +377,18 @@ function renderEquipSection(g, idx) {
   const records = equipData.filter(e => e.name === g.assignedEquipUser);
   return `
     <div class="equip-area">
-      <label style="margin-top:0; color:var(--accent); font-size:14px;">🎒 裝備領用狀態</label>
-      <select onchange="updateEquipUser(${idx}, this.value)" style="border-color:#555; padding:6px; font-size:15px;">
+      <label style="margin-top:0; color:var(--accent); font-size:18px;">🎒 裝備領用狀態</label>
+      <select onchange="updateEquipUser(${idx}, this.value)" style="border-color:#555; padding:10px; font-size:18px;">
         <option value="">-- 指定此組裝備領用人 --</option>
         ${users.map(n => `<option value="${n}" ${g.assignedEquipUser === n ? "selected" : ""}>${n}</option>`).join("")}
       </select>
-      <table width="100%" style="margin-top:8px; border-collapse:collapse;">
+      <table width="100%" style="margin-top:10px; border-collapse:collapse;">
         ${records.length ? records.map(e => `
           <tr>
-            <td style="color:var(--accent); font-family:monospace; width:60px; font-size:13px;">${e.time}</td>
+            <td style="color:var(--accent); font-family:monospace; width:70px; font-size:16px;">${e.time}</td>
             <td style="color:#fff;"><b>${e.item}</b> <small style="color:#888">(${e.action} ${e.status})</small></td>
           </tr>
-        `).join("") : "<tr><td colspan='2' style='color:#555; text-align:center; padding:5px; font-size:13px;'>查無領用紀錄</td></tr>"}
+        `).join("") : "<tr><td colspan='2' style='color:#555; text-align:center; padding:10px; font-size:16px;'>查無領用紀錄</td></tr>"}
       </table>
     </div>
   `;
@@ -390,13 +400,9 @@ function updateMission(i, m, k, v) {
       const input = document.getElementById(`customLoc_${i}_${m}`);
       if(input) {
          if (v === '其他') {
-            input.style.display = 'block';
-            groups[i].missions[m][k] = ''; 
-            input.value = '';
-            input.focus();
-         } else {
-            input.style.display = 'none';
-         }
+            input.style.display = 'block'; groups[i].missions[m][k] = ''; 
+            input.value = ''; input.focus();
+         } else { input.style.display = 'none'; }
       }
   }
   save(); 
@@ -407,9 +413,7 @@ function updateCount(i, v) { groups[i].missionCount = Number(v); save(); refresh
 
 function refreshUI() {
   const assigned = groups.flatMap(g => {
-    let names = [...g.members];
-    if(g.leader) names.push(g.leader);
-    return names;
+    let names = [...g.members]; if(g.leader) names.push(g.leader); return names;
   });
   
   let avail = staffData.filter(p => p.狀態 === "已報到" && !assigned.includes(p.姓名));
