@@ -14,6 +14,11 @@
   --orange: #ff9100;
   --red: #ff3131;
   --text: #ffffff;
+  --purple: #b822ff;
+  
+  /* 🌟 新增修正：更醒目的中大字體基礎 */
+  --font-base: 20px;
+  --font-sw: 16px; /* 統計小字 */
 }
 
 body {
@@ -22,33 +27,42 @@ body {
   font-family: -apple-system, "Segoe UI", "Microsoft JhengHei", sans-serif;
   padding: 12px;
   line-height: 1.5;
-  font-size: 18px; /* 🌟 中大字體基礎 */
+  font-size: var(--font-base); /* ✅ 修正後中大字體 */
 }
 
+/* 🌟 美化：霓虹燈效果標題 */
 h2 { 
-  text-align: center; color: var(--blue); font-size: 28px; 
+  text-align: center; color: var(--blue); font-size: 32px; 
   margin: 10px 0 20px 0; letter-spacing: 2px; font-weight: 900; 
-  text-shadow: 0 0 12px rgba(0, 229, 255, 0.6);
+  text-shadow: 0 0 10px rgba(0, 229, 255, 0.7), 0 0 20px rgba(0, 229, 255, 0.4);
 }
 
-/* ⭐ 狀態區塊 (高對比加粗邊框) */
+/* ⭐ 狀態區塊基本樣式 (高對比加粗邊框) */
 .section {
   margin-bottom: 20px;
   padding: 15px 18px;
-  border-radius: 12px;
+  border-radius: 15px;
+  box-shadow: 0 4px 15px rgba(255,255,255,0.05);
 }
 
-.in-box { border: 3px solid var(--green); background: rgba(57, 255, 20, 0.08); }
-.out-box { border: 3px solid var(--orange); background: rgba(255, 145, 0, 0.08); }
+/* 🌟 新增：最上層 SYSTEM 統計概況樣式 */
+.system-box {
+  border: 4px solid var(--blue); /* ✅ 高對比粗邊框 */
+  background: rgba(0, 229, 255, 0.05);
+  margin-top: 10px;
+}
+
+.in-box { border: 4px solid var(--green); background: rgba(57, 255, 20, 0.08); }
+.out-box { border: 4px solid var(--orange); background: rgba(255, 145, 0, 0.08); }
 .pending-box { 
-  border: 3px solid var(--red); 
+  border: 4px solid var(--red); 
   background: rgba(255, 49, 49, 0.1); 
   animation: blink 2s infinite; 
 }
 
 @keyframes blink {
   0% { box-shadow: 0 0 5px rgba(255, 49, 49, 0.2); }
-  50% { box-shadow: 0 0 15px rgba(255, 49, 49, 0.6); }
+  50% { box-shadow: 0 0 20px rgba(255, 49, 49, 0.6); }
   100% { box-shadow: 0 0 5px rgba(255, 49, 49, 0.2); }
 }
 
@@ -61,20 +75,38 @@ h2 {
   padding-bottom: 12px;
   border-bottom: 2px dashed #444;
 }
+
+/* 🌟 新增：全局統計專用樣式 */
+.global-stats-row {
+  justify-content: center;
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
 .stat-badge {
-  font-size: 16px;
-  font-weight: 900;
+  font-size: var(--font-sw);
+  font-weight: bold;
   padding: 4px 10px;
-  border-radius: 6px;
+  border-radius: 8px;
   background: #1a1a1a;
   border: 1px solid #444;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* 🌟 新增：全局大統計牌 */
+.global-badge {
+  font-size: 20px;
+  padding: 8px 16px;
+  border-width: 2px;
 }
 
 /* 內部站別分組樣式 */
 .group-title {
   color: #00e5ff;
   border-bottom: 2px solid #333;
-  margin: 15px 0 8px 0;
+  margin: 18px 0 10px 0;
   padding-bottom: 8px;
   display: flex;
   flex-direction: column; /* 垂直排列以容納更多統計資訊 */
@@ -82,7 +114,7 @@ h2 {
 }
 
 .group-title-top {
-  font-size: 20px;
+  font-size: 22px; /* ✅ 放大站名 */
   font-weight: 900;
   display: flex;
   justify-content: space-between;
@@ -93,37 +125,39 @@ h2 {
 
 .group-title-sub {
   display: flex;
-  gap: 10px;
-  font-size: 14px;
+  gap: 8px;
+  font-size: var(--font-sw);
   font-weight: bold;
   flex-wrap: wrap;
-  background: rgba(255,255,255,0.05);
-  padding: 4px 8px;
-  border-radius: 6px;
+  background: rgba(255,255,255,0.03);
+  padding: 6px;
+  border-radius: 8px;
 }
 
-/* 🌟 新增：各站獨立統計標籤 */
+/* 各站獨立統計標籤 */
 .station-stats {
-  font-size: 16px;
+  font-size: var(--font-sw);
   font-weight: bold;
   background: rgba(0,0,0,0.6);
   padding: 4px 10px;
   border-radius: 8px;
   border: 1px solid #444;
   color: #fff;
+  display: flex;
+  gap: 5px;
 }
 
 .person-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 6px;
+  padding: 10px 6px; /* ✅ 增加間距 */
   border-bottom: 1px solid #222;
 }
 .person-row:hover { background: rgba(255,255,255,0.08); }
 
-.person-info { font-weight: bold; color: #fff; font-size: 20px; }
-.person-attr { font-weight: 900; font-size: 16px; letter-spacing: 1px; }
+.person-info { font-weight: bold; color: #fff; font-size: 22px; } /* ✅ 放大姓名 */
+.person-attr { font-weight: 900; font-size: 18px; letter-spacing: 1px; }
 
 /* 特殊職級顏色 (高對比) */
 .attr-nurse { color: #ff33ff; text-shadow: 0 0 5px rgba(255,0,255,0.5); } 
@@ -135,36 +169,39 @@ h2 {
 
 /* 搜尋與表格 */
 .search-box {
-  width: 100%; padding: 15px; font-size: 18px; margin-bottom: 20px; font-weight: bold;
+  width: 100%; padding: 15px; font-size: 20px; margin-bottom: 25px; font-weight: bold;
   background: #0a0a0a; border: 2px solid #444; color: #fff;
-  border-radius: 10px; box-sizing: border-box; outline: none;
+  border-radius: 12px; box-sizing: border-box; outline: none;
 }
 .search-box:focus { border-color: var(--blue); box-shadow: 0 0 10px rgba(0, 229, 255, 0.4); }
 
-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 16px; }
-th { background: #1a1a1a; color: var(--blue); padding: 12px; font-size: 18px; border-bottom: 2px solid #333;}
-td { padding: 12px; border-bottom: 1px solid #222; text-align: center; }
+table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 18px; }
+th { background: #1a1a1a; color: var(--blue); padding: 14px; font-size: 20px; border-bottom: 3px solid #333;}
+td { padding: 14px; border-bottom: 1px solid #222; text-align: center; }
 
 .status-in { color: var(--green); font-weight: 900; }
 .status-out { color: var(--orange); font-weight: 900; }
 .status-pending { color: var(--red); font-weight: 900; }
 
 .section-header {
-  font-size: 24px;
+  font-size: 26px; /* ✅ 放大區塊標題 */
   font-weight: 900;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
 }
 </style>
 </head>
 
 <body>
 
+<div id="systemOverview" class="section system-box">
+    </div>
+
 <h2>📋 DPCA 現場戰力名單</h2>
 
-<input id="search-input" class="search-box" placeholder="🔍 搜尋站別、姓名、屬性..." onkeyup="renderTable()">
+<input id="search-input" class="search-box" placeholder="🔍 搜尋站別、姓名、專業屬性..." onkeyup="renderTable()">
 
 <div id="inBox" class="section in-box"></div>
 <div id="pendingBox" class="section pending-box"></div>
@@ -178,6 +215,7 @@ td { padding: 12px; border-bottom: 1px solid #222; text-align: center; }
 </table>
 
 <script>
+// ⚠️ 請確保此網址為您最新部署的 GAS 網址
 const API = "https://script.google.com/macros/s/AKfycbwFMuR1LuYeMZyK7D7Ym1n7-4sZ97ThD_5v52j_zsxIvpScfgAoEx-DAWLJB_d8Vmbf/exec";
 let allData = [];
 
@@ -207,12 +245,21 @@ function getAttrClass(a) {
 /* ⭐ 站點優先權定義 (鹿港彰濱衛生所 > 埔鹽鄉衛生所 > 溪州國小 > 福興鄉衛生所 > 埤頭鄉衛生所) */
 function getStationRank(s) {
   s = s || "";
-  if (s.includes("鹿港彰濱衛生所")) return 1;
-  if (s.includes("埔鹽鄉衛生所")) return 2;
-  if (s.includes("溪州國小")) return 3;
-  if (s.includes("福興鄉衛生所")) return 4;
-  if (s.includes("埤頭鄉衛生所")) return 5;
-  return 99;
+  // 精準匹配優先排序站點
+  if (s === "鹿港彰濱衛生所") return 1;
+  if (s === "埔鹽鄉衛生所") return 2;
+  if (s === "溪州國小") return 3;
+  if (s === "福興鄉衛生所") return 4;
+  if (s === "埤頭鄉衛生所") return 5;
+  
+  // 模糊匹配（防止資料輸入有些微差異）
+  if (s.includes("鹿港彰濱")) return 1.1;
+  if (s.includes("埔鹽鄉")) return 2.1;
+  if (s.includes("溪州國小")) return 3.1;
+  if (s.includes("福興鄉")) return 4.1;
+  if (s.includes("埤頭鄉")) return 5.1;
+  
+  return 99; // 其他站別
 }
 
 /* 狀態判斷 */
@@ -235,17 +282,63 @@ function sortMaster(data) {
   });
 }
 
+// 🌟 ✅ 新增：渲染全域系統統計區塊
+function renderSystemOverview(data) {
+  const overviewEl = document.getElementById("systemOverview");
+  
+  let globalStats = { total: data.length, in: 0, pending: 0, out: 0 };
+  let roleStats = { rn: 0, emt2: 0, emt1: 0, bls: 0, eru: 0 };
+  const stationsSet = new Set();
+
+  data.forEach(r => {
+    // 統計狀態
+    const type = getType(r.status);
+    if (type === "in") globalStats.in++;
+    else if (type === "pending") globalStats.pending++;
+    else if (type === "out") globalStats.out++;
+    
+    // 統計站點數
+    if (r.station) stationsSet.add(r.station);
+
+    // 統計專業屬性
+    const attrUpper = (r.attr || "").toUpperCase();
+    if (attrUpper.includes("護理師")) roleStats.rn++;
+    else if (attrUpper.includes("EMT-2") || attrUpper.includes("EMT2")) roleStats.emt2++;
+    else if (attrUpper.includes("EMT-1") || attrUpper.includes("EMT1")) roleStats.emt1++;
+    else if (attrUpper.includes("BLS")) roleStats.bls++;
+    else if (attrUpper.includes("ERU")) roleStats.eru++;
+  });
+
+  overviewEl.innerHTML = `
+    <div class="section-header" style="color:var(--blue)">
+        <span>⚙️ SYSTEM 統計概況</span>
+    </div>
+    <div class="stats-row global-stats-row">
+        <span class="stat-badge global-badge" style="color:var(--text); border-color:#555;">👥 編制總人數: ${globalStats.total}</span>
+        <span class="stat-badge global-badge" style="color:var(--purple); border-color:var(--purple);">📍 部署站點數: ${stationsSet.size}</span>
+    </div>
+    <div class="stats-row global-stats-row">
+        <span class="stat-badge attr-nurseglobal">🏥 護理師: ${roleStats.rn}</span>
+        <span class="stat-badge attr-emt2global">🚑 EMT-2: ${roleStats.emt2}</span>
+        <span class="stat-badge attr-emt1global">🚑 EMT-1: ${roleStats.emt1}</span>
+        <span class="stat-badge attr-blsglobal">🩺 BLS: ${roleStats.bls}</span>
+        <span class="stat-badge attr-eruglobal">🚨 ERU: ${roleStats.eru}</span>
+      </div>
+  `;
+}
+
 /* 渲染分組區塊 */
 function renderSections(data) {
+  // ✅ 美化：增加圖示
   const sections = {
-    in: { id: "inBox", title: "🟢 已報到", color: "var(--green)" },
-    pending: { id: "pendingBox", title: "🔴 未報到", color: "var(--red)" },
-    out: { id: "outBox", title: "🟡 已報退", color: "var(--orange)" }
+    in: { id: "inBox", title: "🟢 已報到執勤中", color: "var(--green)" },
+    pending: { id: "pendingBox", title: "🔴 尚未報到人屬", color: "var(--red)" },
+    out: { id: "outBox", title: "🟠 已報退下哨", color: "var(--orange)" }
   };
 
   const grouped = { in: {}, out: {}, pending: {} };
   
-  // 🌟 計算全域各站點的「所有屬性與報到」總人數
+  // 計算全域各站點的「所有屬性與報到」總人數，用於站點標題統計
   const globalStationStats = {};
 
   data.forEach(r => {
@@ -262,7 +355,7 @@ function renderSections(data) {
     grouped[type][station].push(r);
     globalStationStats[station][type]++; // 累加該站狀態人數
 
-    // 累加該站的全域屬性戰力 (無論是否報到都在這計算全體編制，或也可依需求拆分)
+    // 累加該站的全域屬性戰力 (不論是否報到)
     if (attrUpper.includes("護理師")) globalStationStats[station].rn++;
     else if (attrUpper.includes("EMT-2") || attrUpper.includes("EMT2")) globalStationStats[station].emt2++;
     else if (attrUpper.includes("EMT-1") || attrUpper.includes("EMT1")) globalStationStats[station].emt1++;
@@ -293,22 +386,22 @@ function renderSections(data) {
       // 取出該站的總計數據
       const stStats = globalStationStats[stName] || { in: 0, pending: 0, rn: 0, emt2: 0, emt1: 0, bls: 0, eru: 0 };
       
-      // 站別標題與專屬戰力明細
+      // ✅ ✅ 保留原版本邏輯：新增每一站別 站已報到和未報到人數和 專業統計
       html += `
         <div class="group-title">
           <div class="group-title-top">
             <span>📍 ${stName}</span>
             <span class="station-stats">
-               <span style="color:var(--green)">🟢 報到:${stStats.in}</span> | 
-               <span style="color:var(--red)">🔴 未報:${stStats.pending}</span>
+               <span style="color:var(--green)">🟢 ${stStats.in}</span> | 
+               <span style="color:var(--red)">🔴 ${stStats.pending}</span>
             </span>
           </div>
           <div class="group-title-sub">
-            <span class="attr-nurse">🏥 護理:${stStats.rn}</span>
-            <span class="attr-emt2">🚑 EMT2:${stStats.emt2}</span>
-            <span class="attr-emt1">🚑 EMT1:${stStats.emt1}</span>
-            <span class="attr-bls">🩺 BLS:${stStats.bls}</span>
-            <span class="attr-eru">🚨 ERU:${stStats.eru}</span>
+            <span class="attr-nurse">🏥 ${stStats.rn}</span>
+            <span class="attr-emt2">🚑 ${stStats.emt2}</span>
+            <span class="attr-emt1">🚑 ${stStats.emt1}</span>
+            <span class="attr-bls">🩺 ${stStats.bls}</span>
+            <span class="attr-eru">🚨 ${stStats.eru}</span>
           </div>
         </div>`;
       
@@ -330,10 +423,10 @@ function renderSections(data) {
       });
     });
 
-    // 大區塊戰力統計列 HTML
+    // 大區塊戰力統計列 HTML (保留原版本邏輯)
     const statsHtml = totalCount > 0 ? `
       <div class="stats-row">
-        <span class="stat-badge" style="color:var(--text); border-color:#555;">📊 總計: ${totalCount} 人</span>
+        <span class="stat-badge" style="color:var(--text); border-color:#555;">📊 區塊總計: ${totalCount} 人</span>
         <span class="stat-badge attr-nurse">🏥 護理: ${stats.rn}</span>
         <span class="stat-badge attr-emt2">🚑 EMT-2: ${stats.emt2}</span>
         <span class="stat-badge attr-emt1">🚑 EMT-1: ${stats.emt1}</span>
@@ -347,7 +440,7 @@ function renderSections(data) {
         <span>${config.title}</span>
       </div>
       ${statsHtml}
-      ${totalCount > 0 ? html : '<div style="color:#666; font-size:16px; margin-top:15px; text-align:center;">此區間目前無人員</div>'}
+      ${totalCount > 0 ? html : '<div style="color:#666; font-size:var(--font-base); margin-top:15px; text-align:center;">此區間目前無人員</div>'}
     `;
   });
 }
@@ -357,9 +450,11 @@ function renderTable() {
   const q = document.getElementById("search-input").value.toLowerCase();
   const sorted = sortMaster(allData);
 
-  renderSections(sorted);
+  // ✅ 不破壞 UI 架構：先渲染上方區塊，再渲染下方表格
+  renderSystemOverview(allData); // 渲染系統概況
+  renderSections(sorted); // 渲染分組區塊
 
-  const filtered = sorted.filter(r => 
+  const filtered = sorted.filter(r => 
     (r.name || "").toLowerCase().includes(q) ||
     (r.station || "").toLowerCase().includes(q) ||
     (r.attr || "").toLowerCase().includes(q)
@@ -372,8 +467,7 @@ function renderTable() {
     return `
       <tr>
         <td style="color:#aaa;">${r.station}</td>
-        <td style="font-weight:bold; font-size:18px;">${r.name}</td>
-        <td class="${attrInfo.cls}" style="font-weight:900;">${attrInfo.icon} ${r.attr || ''}</td>
+        <td style="font-weight:bold; font-size:22px;">${r.name}</td> <td class="${attrInfo.cls}" style="font-weight:900;">${attrInfo.icon} ${r.attr || ''}</td>
         <td class="${cls}">${r.status || "未報到"}</td>
       </tr>`;
   }).join("");
@@ -389,6 +483,7 @@ async function loadList() {
     }
   } catch (e) {
     console.error("Fetch Error");
+    // 可以在這裡添加 UI 提示，例如在 SYSTEM 統計區顯示網路錯誤
   }
 }
 
