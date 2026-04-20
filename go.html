@@ -3,191 +3,158 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>🚑 DPCA 出勤排班戰情室</title>
+<title>🚑 DPCA 戰情室 (中小字體 LINE 旗艦版)</title>
 
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/clocklet@0.3.0/css/clocklet.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
 <style>
 :root {
-  --bg: #02060c;         
-  --card: #0d1520;       
+  --bg: #02060c;
+  --card: #0d1520;
   --text: #ffffff;
-  --accent: #00f2ff;     
-  --warn: #ffff00;       
-  --highlight: #00ff88;  
-  --danger: #ff2d55;     
+  --accent: #00f2ff;
+  --warn: #ffff00;
+  --highlight: #00ff88;
+  --danger: #ff2d55;
+  --line-green: #00B900;
   --leader-gold: #ffd700;
   --attr-rn: #ff007f; --attr-emt2: #ff8c00; --attr-emt1: #ffcc00; --attr-bls: #00e600;
 }
 
-* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-
+* { box-sizing: border-box; }
 body {
-  font-family: "Segoe UI", "PingFang TC", "Microsoft JhengHei", sans-serif;
-  background: var(--bg); color: var(--text);
-  font-size: 20px; /* 🔠 中大字體 */
-  padding: 15px; margin: 0; line-height: 1.5;
+  font-family: "Segoe UI", "Microsoft JhengHei", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 15px; /* ✅ 中小字體設定 */
+  padding: 10px;
+  margin: 0;
+  line-height: 1.4;
 }
 
-.container { max-width: 1000px; margin: 0 auto; }
+.container { max-width: 950px; margin: 0 auto; }
 
-h1 {
-  text-align: center; color: var(--accent);
-  border-bottom: 5px solid var(--accent);
-  padding-bottom: 15px; margin: 10px 0 25px 0;
-  text-shadow: 0 0 15px rgba(0, 242, 255, 0.8);
-  font-size: 36px; font-weight: 900;
+h1 { 
+  text-align: center; color: var(--accent); border-bottom: 2px solid var(--accent); 
+  padding-bottom: 10px; font-size: 24px; text-shadow: 0 0 8px rgba(0,242,255,0.4); 
+  margin: 10px 0 15px 0;
 }
 
-.panel {
-  background: var(--card); padding: 25px; margin-bottom: 30px;
-  border-radius: 20px; border: 2px solid #1e2e3e;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+.panel { 
+  background: var(--card); padding: 15px; margin-bottom: 15px; 
+  border-radius: 12px; border: 1px solid #1e2e3e; box-shadow: 0 5px 20px rgba(0,0,0,0.6); 
 }
 
-label { display: block; margin-top: 15px; font-weight: 900; color: #b0d4de; font-size: 24px; }
+label { display: block; margin-top: 8px; font-weight: 900; color: #b0d4de; font-size: 15px; }
 
 select, input {
-  padding: 18px; font-size: 22px; font-weight: bold; width: 100%; 
-  border-radius: 12px; border: 3px solid #3d5a80; 
-  background: #000; color: #fff; margin-top: 10px; outline: none;
+  padding: 10px; font-size: 15px; width: 100%; border-radius: 6px; border: 1px solid #3d5a80;
+  background: #000; color: #fff; margin-top: 5px; outline: none; font-weight: bold;
 }
-select:focus, input:focus { border-color: var(--warn); }
 
-.btn-row { display: flex; gap: 15px; margin-top: 25px; }
-button { flex: 1; padding: 22px; font-size: 24px; font-weight: 900; border-radius: 15px; cursor: pointer; border: none; transition: 0.2s; }
+/* 圓形時鐘專用欄位樣式 */
+.tp-input { text-align: center; cursor: pointer; border-color: var(--accent); color: var(--accent); }
+
+.btn-row { display: flex; gap: 8px; margin-top: 15px; flex-wrap: wrap; }
+button { 
+  flex: 1; padding: 12px; font-size: 16px; font-weight: 900; 
+  border-radius: 8px; cursor: pointer; border: none; transition: 0.2s; 
+  min-width: 120px;
+}
+button:active { transform: scale(0.96); }
 
 .btn-leader { background: linear-gradient(135deg, #ffd700, #b8860b); color: #000; }
 .btn-member { background: linear-gradient(135deg, var(--accent), #00a8cc); color: #000; }
-.btn-share { background: linear-gradient(135deg, #00c300, #008800); color: #fff; margin-top: 20px; width: 100%; font-size: 26px; }
+.btn-line { background: var(--line-green); color: #fff; flex: 100%; margin-top: 8px; box-shadow: 0 4px 10px rgba(0, 185, 0, 0.3); }
 
-.group {
-  border: 3px solid #2a4a6a; padding: 25px; margin: 30px 0;
-  background: rgba(13, 21, 32, 0.98); border-radius: 20px;
+.group { 
+  border: 1px solid #2a4a6a; padding: 15px; margin: 15px 0; 
+  background: rgba(13, 21, 32, 0.9); border-radius: 12px; 
 }
-.group-title {
-  font-size: 30px; color: var(--warn); font-weight: 900;
-  border-bottom: 2px solid #3d5a80; padding-bottom: 12px; margin-bottom: 20px;
-  display: flex; justify-content: space-between;
+.group-title { 
+  font-size: 20px; color: var(--warn); font-weight: 900; margin-bottom: 12px; 
+  display: flex; justify-content: space-between; align-items: center;
+  border-bottom: 1px solid #334; padding-bottom: 8px; 
 }
 
-.badge {
-  padding: 18px 22px; margin: 12px 0; border-radius: 12px; display: flex; align-items: center; gap: 15px;
-  background: #111e2d; border-left: 10px solid #444;
+.badge { 
+  padding: 8px 12px; margin: 6px 0; border-radius: 6px; display: flex; 
+  align-items: center; gap: 10px; background: #111e2d; border-left: 5px solid #444; 
 }
-.leader-badge { border-left-color: var(--leader-gold); background: rgba(255, 215, 0, 0.08); }
+.leader-badge { border-left-color: var(--leader-gold); background: rgba(255, 215, 0, 0.03); }
 .member-badge { border-left-color: var(--highlight); }
 
-.attr-tag { font-size: 18px; padding: 6px 14px; border-radius: 8px; font-weight: 900; color: #fff; min-width: 90px; text-align: center; }
+.attr-tag { 
+  font-size: 12px; padding: 3px 6px; border-radius: 4px; color: #fff; 
+  font-weight: 900; min-width: 65px; text-align: center; 
+}
 .attr-護理師 { background: var(--attr-rn); }
 .attr-EMT-2 { background: var(--attr-emt2); }
 .attr-EMT-1 { background: var(--attr-emt1); color: #000; }
 .attr-BLS { background: var(--attr-bls); }
 
-.name-txt { font-weight: 900; color: #fff; font-size: 26px; }
-.station-txt { color: #88b0c0; font-size: 20px; margin-left: auto; }
-.remove-btn { color: var(--danger); font-size: 32px; cursor: pointer; padding: 0 10px; }
-
-.mission-box { margin-top: 15px; background: rgba(0,0,0,0.5); padding: 20px; border-radius: 15px; border: 2px solid #3d5a80; }
-.time-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-top: 15px; }
-.time-label { font-size: 16px; color: #aaa; text-align: center; font-weight: bold; }
-.time-input { text-align: center; cursor: pointer; color: var(--accent); background: #000 !important; font-size: 24px; font-weight: 900; border-radius: 8px; }
-
-.btn-danger { background: linear-gradient(to bottom, #700, #400); color: #fff; margin-top: 20px; font-size: 22px; border-radius: 12px; width:100%; padding:15px; }
-.btn-save-record { background: var(--highlight); color: #000; font-weight: 900; font-size: 22px; margin-top: 15px; width: 100%; border-radius: 10px; padding: 12px; }
-
-/* 🕒 Clocklet 黑暗模式客製化 (解決白色圓盤與層級問題) */
-.clocklet {
-  --clocklet-background-color: #0d1520 !important; /* 彈出視窗背景 */
-  --clocklet-border-color: #00f2ff !important;     /* 邊框顏色 */
-  --clocklet-dial-background-color: #02060c !important; /* 圓盤背景 */
-  --clocklet-color: #ffffff !important;            /* 數字顏色 */
-  --clocklet-hand-color: #00f2ff !important;       /* 指針顏色 */
-  --clocklet-hover-background-color: #3d5a80 !important; /* 滑過顏色 */
-  --clocklet-selected-background-color: #00ff88 !important; /* 選中背景 */
-  --clocklet-selected-color: #000000 !important;   /* 選中數字顏色 */
-  border-radius: 15px !important;
-  border-width: 3px !important;
-  font-family: inherit !important;
-  font-size: 20px !important;
-  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.9), 0 0 20px rgba(0, 242, 255, 0.3) !important;
+.mission-box { 
+  margin-top: 10px; background: rgba(0,0,0,0.4); padding: 12px; 
+  border-radius: 10px; border: 1px solid #334; 
 }
-/* 確保圓盤彈出時位於最上層 */
-.clocklet.clocklet-visible {
-  z-index: 99999 !important;
-}
+.time-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 10px; }
+.time-label { font-size: 13px; color: #aaa; text-align: center; display: block; margin-bottom: 4px; font-weight: bold; }
+
+.btn-danger { background: #400; color: #fff; margin-top: 15px; font-size: 14px; width: 100%; opacity: 0.7; }
+.alarm-active { animation: blinker 1.2s linear infinite; border: 1px solid var(--danger); }
+@keyframes blinker { 50% { background: rgba(255, 0, 0, 0.15); } }
+
+/* 選時插件自定義：高對比 */
+.flatpickr-calendar.dark { background: #111; border: 1px solid var(--accent); font-size: 14px; }
 </style>
 </head>
 
 <body>
-
 <div class="container">
-  <h1>🚑 DPCA 出勤排班戰情室</h1>
+  <h1>🚑 DPCA 勤務排班戰情室</h1>
 
   <div class="panel">
-    <label>📍 分配組別</label>
+    <label>📍 分配至組別 (1-15組)</label>
     <select id="groupSelect">
       <script>for(let i=1; i<=15; i++) document.write(`<option value="${i-1}">第 ${i} 組</option>`);</script>
     </select>
-
+    
     <label>👤 選擇已報到人員</label>
-    <select id="staffSelect"><option value="">-- ☁️ 正在連線伺服器... --</option></select>
-
+    <select id="staffSelect"><option value="">讀取人員中...</option></select>
+    
     <div class="btn-row">
       <button class="btn-leader" onclick="assign('leader')">👑 指派組長</button>
       <button class="btn-member" onclick="assign('member')">➕ 加入組員</button>
+      <button class="btn-line" onclick="sendToLine()">📲 傳送排班表至 LINE (含任務時間)</button>
     </div>
-    
-    <button class="btn-share" onclick="shareToLine()">📲 傳送排班表至 LINE</button>
   </div>
 
   <div id="groupsDisplay"></div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/clocklet@0.3.0"></script>
-
 <script>
-/**
- * ⚠️ GAS Web App 網址
- */
-const API_URL = "https://script.google.com/macros/s/AKfycbwRrA9FF7M6ymDm3sx-WCdOIYolGK3IUvznuanTc6MBSFl5VTWciw1WyhZG-CYeYYVm/exec";
-
+const API_URL = "https://script.google.com/macros/s/AKfycby3BSIVXhhPzBoJXIL9GMId54ZfGBm3BOEeiRyQd4wsk7ZWTY4zuwlUUMNaMyi8XJX3/exec";
 const attrWeight = { "護理師": 1, "EMT-2": 2, "EMT-1": 3, "BLS": 4 };
+
 let staffData = [];
-let groups = Array.from({length:15},()=>({
-    leader: null, members: [], station: null, 
-    missions: [{loc:"", dispatchTime:"", expectedReturn:"", actualReturn:""}]
+let groups = JSON.parse(localStorage.getItem("ems_v12_15groups_stable")) || Array.from({length:15}, () => ({
+  leader: null, members: [], station: null, missionCount: 1,
+  missions: [...Array(3)].map(() => ({loc:"", dispatchTime:"", expectedReturn:"", actualReturn:"", notified: false}))
 }));
 
-// 1. 初始化讀取
+function save() { localStorage.setItem("ems_v12_15groups_stable", JSON.stringify(groups)); }
+
 async function loadData() {
   try {
-    const response = await fetch(API_URL);
-    if (!response.ok) throw new Error();
-    const data = await response.json();
-    
-    staffData = data.staff || [];
-    
-    if (data.globalGroups) {
-      try {
-        const cloud = JSON.parse(data.globalGroups);
-        if (Array.isArray(cloud)) groups = cloud;
-      } catch(e) { console.log("雲端無舊紀錄"); }
-    }
+    const res = await fetch(API_URL);
+    const data = await res.json();
+    staffData = (data.staff || []).map(s => ({
+      姓名: String(s.姓名 || "").trim(), 站別: s.站別 || "", 屬性: s.屬性 || "隊員", 狀態: s.狀態 || ""
+    }));
     refreshUI();
-  } catch (err) {
-    document.getElementById("staffSelect").innerHTML = "<option>❌ 無法連線，請檢查 API 網址與權限</option>";
-  }
-}
-
-// 2. 同步資料到雲端
-async function syncToCloud() {
-  try {
-    await fetch(API_URL, {
-      method: "POST",
-      body: JSON.stringify({ action: "saveGroups", data: groups })
-    });
-  } catch(e) { console.error("同步失敗"); }
+  } catch(e) { console.error("API Error", e); }
 }
 
 function assign(type) {
@@ -196,126 +163,144 @@ function assign(type) {
   const idx = Number(document.getElementById("groupSelect").value);
   const p = staffData.find(x => x.姓名 === name);
   const g = groups[idx];
-  
-  if (g.station && g.station !== p.站別) return alert("站別不符！");
-  
-  if (type === 'leader') g.leader = name;
-  else { if (g.members.length >= 5) return; g.members.push(name); }
-  
+  if (g.station && g.station !== p.站別) { alert(`⛔ 站別不符：該組鎖定為 ${g.station}`); return; }
+  if (type === 'leader') g.leader = name; 
+  else { if(g.members.length < 5) g.members.push(name); else alert("組員已滿"); }
   g.station = p.站別;
-  syncToCloud(); refreshUI();
+  save(); refreshUI();
 }
 
-function removePerson(gIdx, name, isLeader) {
+function removePerson(gIdx, name, isL) {
   const g = groups[gIdx];
-  if (isLeader) g.leader = null; else g.members = g.members.filter(m => m !== name);
+  if (isL) g.leader = null; else g.members = g.members.filter(m => m !== name);
   if (!g.leader && g.members.length === 0) g.station = null;
-  syncToCloud(); refreshUI();
+  save(); refreshUI();
+}
+
+function initTP() {
+  flatpickr(".tp-input", {
+    enableTime: true, noCalendar: true, dateFormat: "H:i", time_24hr: true,
+    disableMobile: "true", // 強制使用圓形錶盤而非手機原生捲軸
+    onClose: function(sel, str, ins) {
+      const { g, m, k } = ins.element.dataset;
+      groups[g].missions[m][k] = str;
+      if(k !== 'actualReturn') groups[g].missions[m].notified = false;
+      save(); renderGroups();
+    }
+  });
+}
+
+// ✅ 傳送至 LINE 邏輯 (包含出勤與預計回時間)
+function sendToLine() {
+  const timeStr = new Date().toLocaleTimeString('zh-TW', { hour12: false, hour: '2-digit', minute: '2-digit' });
+  let msg = `🚑 DPCA 現場排班報表 (${timeStr})\n`;
+  msg += `━━━━━━━━━━━━━━\n`;
+
+  let hasContent = false;
+  groups.forEach((g, i) => {
+    if (g.leader || g.members.length > 0) {
+      hasContent = true;
+      msg += `【第 ${i+1} 組】📍 ${g.station || '未定'}\n`;
+      if (g.leader) msg += `👑 組長: ${g.leader}\n`;
+      if (g.members.length > 0) msg += `👤 組員: ${g.members.join(', ')}\n`;
+
+      let missionText = "";
+      g.missions.slice(0, g.missionCount).forEach((m, mi) => {
+        if (m.loc || m.dispatchTime || m.expectedReturn) {
+          missionText += `  🔹 任務${mi+1}: ${m.loc || '待命'}\n`;
+          if (m.dispatchTime) missionText += `    🚀出勤: ${m.dispatchTime}\n`;
+          if (m.expectedReturn) missionText += `    ⏱️預計回: ${m.expectedReturn}\n`;
+        }
+      });
+      msg += missionText || `  🔹 任務: 待命中\n`;
+      msg += `──────────────\n`;
+    }
+  });
+
+  if (!hasContent) { alert("目前沒有排班資料可傳送"); return; }
+  window.open(`https://line.me/R/msg/text/?${encodeURIComponent(msg)}`, "_blank");
 }
 
 function renderGroups() {
+  const nowStr = new Date().getHours().toString().padStart(2,'0') + ":" + new Date().getMinutes().toString().padStart(2,'0');
   let html = "";
+
   groups.forEach((g, i) => {
-    if (!g.leader && g.members.length === 0) return;
-    
-    let membersHtml = (g.leader ? renderBadge(g.leader, true, i) : "") + 
-                      g.members.map(m => renderBadge(m, false, i)).join("");
-    
-    let loc = g.missions[0].loc || "";
-    let isCustom = !['', '機巡', '路巡', '繞境'].includes(loc) && loc !== '';
+    let pList = "";
+    if (g.leader) pList += renderBadge(g.leader, true, i);
+    g.members.forEach(m => pList += renderBadge(m, false, i));
 
     html += `
       <div class="group">
-        <div class="group-title">第 ${i+1} 組 <span style="font-size:24px;">📍 ${g.station}</span></div>
-        ${membersHtml}
-        <div class="mission-box">
-          
-          <select onchange="
-            const customInput = this.nextElementSibling;
-            if(this.value === '其他') {
-              customInput.style.display = 'block';
-              customInput.focus();
-              updateMission(${i},'loc','');
-            } else {
-              customInput.style.display = 'none';
-              updateMission(${i},'loc',this.value);
-            }
-          ">
-            <option value="" ${loc === '' ? 'selected' : ''}>-- 🚩 選擇勤務地點 --</option>
-            <option value="機巡" ${loc === '機巡' ? 'selected' : ''}>🏍️ 機巡</option>
-            <option value="路巡" ${loc === '路巡' ? 'selected' : ''}>🚶 路巡</option>
-            <option value="繞境" ${loc === '繞境' ? 'selected' : ''}>🏮 繞境</option>
-            <option value="其他" ${isCustom ? 'selected' : ''}>➕ 自訂其他...</option>
-          </select>
-          
-          <input type="text" placeholder="✏️ 請輸入自訂地點" 
-                 style="display: ${isCustom ? 'block' : 'none'}; border-color: var(--highlight);"
-                 value="${isCustom ? loc : ''}" 
-                 onchange="updateMission(${i},'loc',this.value)">
-
-          <div class="time-grid">
-            <div><div class="time-label">🚀 出站</div><input class="time-input" data-clocklet="format: HH:mm" value="${g.missions[0].dispatchTime}" onchange="updateMission(${i},'dispatchTime',this.value)"></div>
-            <div><div class="time-label">⏱️ 預回</div><input class="time-input" data-clocklet="format: HH:mm" value="${g.missions[0].expectedReturn}" onchange="updateMission(${i},'expectedReturn',this.value)"></div>
-            <div><div class="time-label">✅ 回站</div><input class="time-input" data-clocklet="format: HH:mm" value="${g.missions[0].actualReturn}" onchange="updateMission(${i},'actualReturn',this.value)"></div>
-          </div>
-          <button class="btn-save-record" onclick="recordMission(${i}, this)">💾 記錄到任務紀錄表</button>
+        <div class="group-title">
+          <span>🚩 第 ${i+1} 組</span> 
+          <span style="font-size:14px; color:var(--accent);">📍 ${g.station || "未分配"}</span>
         </div>
-        <button class="btn-danger" onclick="clearGroup(${i})">🗑 清空此組資料</button>
+        ${pList || "<div style='color:#555; font-size:13px; padding:5px;'>尚未加入人員...</div>"}
+        
+        ${(g.leader || g.members.length) ? `
+          <div class="mission-box">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+              <span style="font-weight:900; font-size:14px;">📝 任務指派</span>
+              <select style="width:auto; margin:0; padding:3px 5px; font-size:13px;" onchange="groups[${i}].missionCount=this.value; save(); refreshUI();">
+                ${[1,2,3].map(n => `<option ${g.missionCount==n?"selected":""} value="${n}">${n} 段任務</option>`).join("")}
+              </select>
+            </div>
+            
+            ${g.missions.slice(0, g.missionCount).map((m, mi) => {
+              const isAlarm = m.expectedReturn && !m.actualReturn && nowStr >= m.expectedReturn;
+              return `
+              <div style="margin-bottom:12px; border-bottom:1px solid #222; padding-bottom:12px;" class="${isAlarm?'alarm-active':''}">
+                <input type="text" placeholder="🗺️ 輸入地點 (如：五福路巡邏)" value="${m.loc}" onchange="groups[${i}].missions[${mi}].loc=this.value; save();">
+                <div class="time-grid">
+                  <div>
+                    <span class="time-label">🚀 出勤</span>
+                    <input type="text" class="tp-input" placeholder="--:--" data-g="${i}" data-m="${mi}" data-k="dispatchTime" value="${m.dispatchTime}" readonly>
+                  </div>
+                  <div>
+                    <span class="time-label" style="color:var(--warn);">⏱️ 預計回</span>
+                    <input type="text" class="tp-input" placeholder="--:--" data-g="${i}" data-m="${mi}" data-k="expectedReturn" value="${m.expectedReturn}" readonly>
+                  </div>
+                  <div>
+                    <span class="time-label" style="color:var(--highlight);">✅ 實際回</span>
+                    <input type="text" class="tp-input" placeholder="--:--" data-g="${i}" data-m="${mi}" data-k="actualReturn" value="${m.actualReturn}" readonly>
+                  </div>
+                </div>
+              </div>`;
+            }).join("")}
+            <button class="btn-danger" onclick="if(confirm('清空第 ${i+1} 組？')){groups[${i}]={leader:null,members:[],station:null,missionCount:1,missions:[...Array(3)].map(()=>({loc:'',dispatchTime:'',expectedReturn:'',actualReturn:'',notified:false}))}; save(); refreshUI();}">🗑 清空此組</button>
+          </div>` : ""}
       </div>`;
   });
-  document.getElementById("groupsDisplay").innerHTML = html || "<div style='text-align:center; color:#555; padding:20px;'>-- 暫無編組 --</div>";
+  document.getElementById("groupsDisplay").innerHTML = html;
+  initTP();
 }
 
 function renderBadge(name, isL, gIdx) {
-  const p = staffData.find(s => s.姓名 === name) || { 屬性: "隊員", 站別: "未知" };
-  const attrCls = `attr-${p.屬性.includes("護理")?"護理師":p.屬性.includes("EMT-2")?"EMT-2":p.屬性.includes("EMT-1")?"EMT-1":"BLS"}`;
-  return `<div class="badge ${isL?'leader-badge':'member-badge'}">
-    <span class="attr-tag ${attrCls}">${p.屬性}</span>
-    <span class="name-txt">${isL?'👑 ':''}${name}</span>
-    <span class="station-txt">(${p.站別})</span>
-    <span class="remove-btn" onclick="removePerson(${gIdx},'${name}',${isL})">✖</span>
-  </div>`;
-}
-
-function updateMission(i, k, v) { groups[i].missions[0][k] = v; syncToCloud(); }
-
-async function recordMission(i, btn) {
-  const g = groups[i]; const m = g.missions[0];
-  const payload = { action: "saveRecord", data: { group: `第 ${i+1} 組`, station: g.station, leader: g.leader, members: g.members.join(", "), task: m.loc, dispatchTime: m.dispatchTime, expectedReturn: m.expectedReturn, actualReturn: m.actualReturn } };
-  btn.innerText = "⏳ 傳送中...";
-  await fetch(API_URL, { method: "POST", body: JSON.stringify(payload) });
-  btn.innerText = "✅ 紀錄成功";
-  setTimeout(() => btn.innerText = "💾 記錄到任務紀錄表", 2000);
-}
-
-function clearGroup(i) {
-  if(!confirm("確定清空第 " + (i+1) + " 組的編組嗎？")) return;
-  groups[i] = {leader:null, members:[], station:null, missions:[{loc:"", dispatchTime:"", expectedReturn:"", actualReturn:""}]};
-  syncToCloud(); refreshUI();
+  const p = staffData.find(s => s.姓名 === name) || {姓名:name, 屬性:"隊員", 站別:"未知"};
+  const cls = `attr-${p.屬性.includes("護理師")?"護理師":p.屬性.includes("EMT-2")?"EMT-2":p.屬性.includes("EMT-1")?"EMT-1":"BLS"}`;
+  return `
+    <div class="badge ${isL?'leader-badge':'member-badge'}">
+      <span class="attr-tag ${cls}">${p.屬性}</span>
+      <b style="font-size:16px;">${isL ? '👑 ' : ''}${p.姓名}</b>
+      <span style="color:#666; font-size:13px;">${p.站別}</span>
+      <button style="margin-left:auto; background:none; color:var(--danger); font-size:18px;" onclick="removePerson(${gIdx},'${p.姓名}',${isL})">✖</button>
+    </div>`;
 }
 
 function refreshUI() {
-  const assigned = groups.flatMap(g => [g.leader, ...g.members].filter(Boolean));
-  const avail = staffData.filter(p => p.狀態 === "已報到" && !assigned.includes(p.姓名))
+  const busy = groups.flatMap(g => { let a = [...g.members]; if(g.leader) a.push(g.leader); return a; });
+  const avail = staffData.filter(p => p.狀態 === "已報到" && !busy.includes(p.姓名))
                  .sort((a,b) => (attrWeight[a.屬性]||99) - (attrWeight[b.屬性]||99));
   
-  const sel = document.getElementById("staffSelect");
-  sel.innerHTML = avail.length ? avail.map(p => `<option value="${p.姓名}">[${p.屬性}] ${p.姓名} (${p.站別})</option>`).join("") : "<option value=''>-- 無可用人員 --</option>";
+  document.getElementById("staffSelect").innerHTML = avail.length 
+    ? avail.map(p => `<option value="${p.姓名}">[${p.屬性}] ${p.姓名} (${p.站別})</option>`).join("") 
+    : "<option value=''>❌ 無剩餘報到人員</option>";
   renderGroups();
 }
 
-function shareToLine() {
-  let t = "🚑 DPCA 勤務編組表\n";
-  groups.forEach((g, i) => {
-    if(g.leader) t += `\n【第 ${i+1} 組】📍${g.station}\n👑組長: ${g.leader}\n👥組員: ${g.members.join(", ")}\n🚩任務: ${g.missions[0].loc || "待命"}\n`;
-  });
-  window.open(`https://line.me/R/msg/text/?${encodeURIComponent(t)}`, '_blank');
-}
-
-// 啟動載入
 loadData();
-setInterval(loadData, 45000); // 每 45 秒自動同步雲端資料
+setInterval(loadData, 30000);
 </script>
-
 </body>
 </html>
