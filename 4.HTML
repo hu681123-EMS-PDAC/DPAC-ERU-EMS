@@ -219,15 +219,14 @@ td { padding: 14px; border-bottom: 1px solid #222; text-align: center; }
 const API = "https://script.google.com/macros/s/AKfycbwFMuR1LuYeMZyK7D7Ym1n7-4sZ97ThD_5v52j_zsxIvpScfgAoEx-DAWLJB_d8Vmbf/exec";
 let allData = [];
 
-/* ⭐ 屬性權重定義 (嚴格遵守：護理師 > EMT-2 > EMT-1 > BLS > ERU) */
+/* ⭐ 屬性權重定義 (嚴格遵守：帶隊官 > 檢傷員 >創傷彩妝 應變員) */
 function getAttrRank(a) {
   a = (a || "").toUpperCase();
-  if (a.includes("護理師")) return 1;
-  if (a.includes("EMT-2") || a.includes("EMT2")) return 2;
-  if (a.includes("EMT-1") || a.includes("EMT1")) return 3;
-  if (a.includes("BLS")) return 4;
-  if (a.includes("ERU")) return 5;
-  if (a.includes("防災士")) return 6;
+  if (a.includes("帶隊官")) return 1;
+  if (a.includes("檢傷員") || a.includes("檢傷員")) return 2;
+  if (a.includes("創傷彩妝") || a.includes("創傷彩妝")) return 3;
+  if (a.includes("應變員")) return 4;
+
   return 99; // 其他
 }
 
