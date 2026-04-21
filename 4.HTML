@@ -16,7 +16,7 @@
   --text: #ffffff;
   --purple: #b822ff;
   
-  /* 🌟 新增修正：更醒目的中大字體基礎 */
+  /* 🌟 更醒目的中大字體基礎 */
   --font-base: 20px;
   --font-sw: 16px; /* 統計小字 */
 }
@@ -27,7 +27,7 @@ body {
   font-family: -apple-system, "Segoe UI", "Microsoft JhengHei", sans-serif;
   padding: 12px;
   line-height: 1.5;
-  font-size: var(--font-base); /* ✅ 修正後中大字體 */
+  font-size: var(--font-base);
 }
 
 /* 🌟 美化：霓虹燈效果標題 */
@@ -45,9 +45,9 @@ h2 {
   box-shadow: 0 4px 15px rgba(255,255,255,0.05);
 }
 
-/* 🌟 新增：最上層 SYSTEM 統計概況樣式 */
+/* 🌟 最上層 SYSTEM 統計概況樣式 */
 .system-box {
-  border: 4px solid var(--blue); /* ✅ 高對比粗邊框 */
+  border: 4px solid var(--blue);
   background: rgba(0, 229, 255, 0.05);
   margin-top: 10px;
 }
@@ -76,7 +76,7 @@ h2 {
   border-bottom: 2px dashed #444;
 }
 
-/* 🌟 新增：全局統計專用樣式 */
+/* 🌟 全局統計專用樣式 */
 .global-stats-row {
   justify-content: center;
   border-bottom: none;
@@ -95,7 +95,7 @@ h2 {
   gap: 4px;
 }
 
-/* 🌟 新增：全局大統計牌 */
+/* 🌟 全局大統計牌 */
 .global-badge {
   font-size: 20px;
   padding: 8px 16px;
@@ -109,12 +109,12 @@ h2 {
   margin: 18px 0 10px 0;
   padding-bottom: 8px;
   display: flex;
-  flex-direction: column; /* 垂直排列以容納更多統計資訊 */
+  flex-direction: column;
   gap: 8px;
 }
 
 .group-title-top {
-  font-size: 22px; /* ✅ 放大站名 */
+  font-size: 22px;
   font-weight: 900;
   display: flex;
   justify-content: space-between;
@@ -151,21 +151,20 @@ h2 {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 6px; /* ✅ 增加間距 */
+  padding: 10px 6px;
   border-bottom: 1px solid #222;
 }
 .person-row:hover { background: rgba(255,255,255,0.08); }
 
-.person-info { font-weight: bold; color: #fff; font-size: 22px; } /* ✅ 放大姓名 */
+.person-info { font-weight: bold; color: #fff; font-size: 22px; }
 .person-attr { font-weight: 900; font-size: 18px; letter-spacing: 1px; }
 
-/* 特殊職級顏色 (高對比) */
-.attr-nurse { color: #ff33ff; text-shadow: 0 0 5px rgba(255,0,255,0.5); } 
-.attr-emt2 { color: #00e5ff; text-shadow: 0 0 5px rgba(0,229,255,0.5); }  
-.attr-emt1 { color: #39ff14; text-shadow: 0 0 5px rgba(57,255,20,0.5); }  
-.attr-bls { color: #ffffff; }   
-.attr-eru { color: #b822ff; text-shadow: 0 0 5px rgba(184,34,255,0.5); } /* ERU 專屬色 */
-.attr-other { color: #aaaaaa; } 
+/* ⭐ 全新專屬職級顏色 (高對比搭配) */
+.attr-leader    { color: #ff33ff; text-shadow: 0 0 5px rgba(255,51,255,0.5); }  /* 帶隊官: 霓虹粉 */
+.attr-makeup    { color: #b822ff; text-shadow: 0 0 5px rgba(184,34,255,0.5); }  /* 創傷彩妝: 霓虹紫 */
+.attr-triage    { color: #00e5ff; text-shadow: 0 0 5px rgba(0,229,255,0.5); }   /* 檢傷員: 霓虹青 */
+.attr-responder { color: #39ff14; text-shadow: 0 0 5px rgba(57,255,20,0.5); }   /* 應變員: 霓虹綠 */
+.attr-other     { color: #aaaaaa; } 
 
 /* 搜尋與表格 */
 .search-box {
@@ -184,7 +183,7 @@ td { padding: 14px; border-bottom: 1px solid #222; text-align: center; }
 .status-pending { color: var(--red); font-weight: 900; }
 
 .section-header {
-  font-size: 26px; /* ✅ 放大區塊標題 */
+  font-size: 26px;
   font-weight: 900;
   display: flex;
   justify-content: space-between;
@@ -218,12 +217,12 @@ td { padding: 14px; border-bottom: 1px solid #222; text-align: center; }
 const API = "https://script.google.com/macros/s/AKfycbwFMuR1LuYeMZyK7D7Ym1n7-4sZ97ThD_5v52j_zsxIvpScfgAoEx-DAWLJB_d8Vmbf/exec";
 let allData = [];
 
-/* ⭐ 屬性權重定義 (嚴格遵守：帶隊官 > 檢傷員 >創傷彩妝 應變員) */
+/* ⭐ 屬性權重定義 (修改為：帶隊官 > 創傷彩妝 > 檢傷員 > 應變員) */
 function getAttrRank(a) {
   a = (a || "").toUpperCase();
   if (a.includes("帶隊官")) return 1;
-  if (a.includes("檢傷員")) return 2;
-  if (a.includes("創傷彩妝")) return 3;
+  if (a.includes("創傷彩妝")) return 2;
+  if (a.includes("檢傷員")) return 3;
   if (a.includes("應變員")) return 4;
   return 99; // 其他
 }
@@ -231,30 +230,30 @@ function getAttrRank(a) {
 /* 取得屬性對應樣式與圖示 */
 function getAttrClass(a) {
   a = (a || "").toUpperCase();
-  if (a.includes("帶隊官")) return { cls: "attr-nurse", icon: "🏥" };
-  if (a.includes("檢傷員") || a.includes("檢傷員")) return { cls: "attr-檢傷員", icon: "🚑" };
-  if (a.includes("創傷彩妝") || a.includes("創傷彩妝")) return { cls: "attr-創傷彩妝", icon: "🚑" };
-  if (a.includes("應變員")) return { cls: "attr-應變員", icon: "🩺" };
+  if (a.includes("帶隊官")) return { cls: "attr-leader", icon: "🚩" };
+  if (a.includes("創傷彩妝")) return { cls: "attr-makeup", icon: "🎨" };
+  if (a.includes("檢傷員")) return { cls: "attr-triage", icon: "🚑" };
+  if (a.includes("應變員")) return { cls: "attr-responder", icon: "🛡️" };
   return { cls: "attr-other", icon: "👤" };
 }
 
-/* ⭐ 站點優先權定義 (A1.鹿港彰濱秀傳(急診室門口) > A2.鹿港衛生所 > B.福興鄉衛生所>C.埔鹽鄉衛生所 > D.溪州國小 > E.埤頭埤頭鄉衛生所) */
+/* ⭐ 站點優先權定義 */
 function getStationRank(s) {
   s = s || "";
   // 精準匹配優先排序站點
   if (s === "A1.鹿港彰濱秀傳(急診室門口)") return 1;
   if (s === "A2.鹿港衛生所") return 2;
   if (s === "B.福興鄉衛生所") return 3;
-	if (s === "C.埔鹽鄉衛生所") return 4;
+  if (s === "C.埔鹽鄉衛生所") return 4;
   if (s === "D.溪州國小") return 5;
   if (s === "E.埤頭埤頭鄉衛生所") return 6;
   
   // 模糊匹配（防止資料輸入有些微差異）
   if (s.includes("鹿港彰濱")) return 1.1;
-  if (s.includes("埔鹽鄉")) return 2.1;
-  if (s.includes("溪州國小")) return 3.1;
-  if (s.includes("福興鄉")) return 4.1;
-  if (s.includes("埤頭鄉")) return 5.1;
+  if (s.includes("福興鄉")) return 3.1;
+  if (s.includes("埔鹽鄉")) return 4.1;
+  if (s.includes("溪州國小")) return 5.1;
+  if (s.includes("埤頭鄉")) return 6.1;
   
   return 99; // 其他站別
 }
@@ -279,12 +278,12 @@ function sortMaster(data) {
   });
 }
 
-// 🌟 ✅ 新增：渲染全域系統統計區塊
+// 🌟 新增：渲染全域系統統計區塊
 function renderSystemOverview(data) {
   const overviewEl = document.getElementById("systemOverview");
   
   let globalStats = { total: data.length, in: 0, pending: 0, out: 0 };
-  let roleStats = { rn: 0, emt2: 0, emt1: 0, bls: 0, eru: 0 };
+  let roleStats = { leader: 0, makeup: 0, triage: 0, responder: 0 };
   const stationsSet = new Set();
 
   data.forEach(r => {
@@ -299,11 +298,10 @@ function renderSystemOverview(data) {
 
     // 統計專業屬性
     const attrUpper = (r.attr || "").toUpperCase();
-    if (attrUpper.includes("帶隊官")) roleStats.rn++;
-    else if (attrUpper.includes("檢傷員") || attrUpper.includes("檢傷員")) roleStats.emt2++;
-    else if (attrUpper.includes("創傷彩妝") || attrUpper.includes("創傷彩妝")) roleStats.emt1++;
-    else if (attrUpper.includes("應變員")) roleStats.bls++;
-  
+    if (attrUpper.includes("帶隊官")) roleStats.leader++;
+    else if (attrUpper.includes("創傷彩妝")) roleStats.makeup++;
+    else if (attrUpper.includes("檢傷員")) roleStats.triage++;
+    else if (attrUpper.includes("應變員")) roleStats.responder++;
   });
 
   overviewEl.innerHTML = `
@@ -315,17 +313,16 @@ function renderSystemOverview(data) {
         <span class="stat-badge global-badge" style="color:var(--purple); border-color:var(--purple);">📍 部署站點數: ${stationsSet.size}</span>
     </div>
     <div class="stats-row global-stats-row">
-        <span class="stat-badge global-badge attr-nurse">🏥 帶隊官: ${roleStats.rn}</span>
-        <span class="stat-badge global-badge attr-emt2">🚑 檢傷員: ${roleStats.emt2}</span>
-        <span class="stat-badge global-badge attr-emt1">🚑 創傷彩妝: ${roleStats.emt1}</span>
-        <span class="stat-badge global-badge attr-bls">🩺應變員: ${roleStats.bls}</span>
+        <span class="stat-badge global-badge attr-leader">🚩 帶隊官: ${roleStats.leader}</span>
+        <span class="stat-badge global-badge attr-makeup">🎨 創傷彩妝: ${roleStats.makeup}</span>
+        <span class="stat-badge global-badge attr-triage">🚑 檢傷員: ${roleStats.triage}</span>
+        <span class="stat-badge global-badge attr-responder">🛡️ 應變員: ${roleStats.responder}</span>
       </div>
   `;
 }
 
 /* 渲染分組區塊 */
 function renderSections(data) {
-  // ✅ 美化：增加圖示
   const sections = {
     in: { id: "inBox", title: "🟢 已報到執勤中", color: "var(--green)" },
     pending: { id: "pendingBox", title: "🔴 尚未報到人員", color: "var(--red)" },
@@ -333,8 +330,6 @@ function renderSections(data) {
   };
 
   const grouped = { in: {}, out: {}, pending: {} };
-  
-  // 計算全域各站點的「所有屬性與報到」總人數，用於站點標題統計
   const globalStationStats = {};
 
   data.forEach(r => {
@@ -342,27 +337,24 @@ function renderSections(data) {
     const station = r.station || "未分類";
     const attrUpper = (r.attr || "").toUpperCase();
     
-    // 初始化分組與統計
     if (!grouped[type][station]) grouped[type][station] = [];
     if (!globalStationStats[station]) {
-      globalStationStats[station] = { in: 0, pending: 0, out: 0, rn: 0, emt2: 0, emt1: 0, bls: 0, eru: 0 };
+      globalStationStats[station] = { in: 0, pending: 0, out: 0, leader: 0, makeup: 0, triage: 0, responder: 0 };
     }
     
     grouped[type][station].push(r);
-    globalStationStats[station][type]++; // 累加該站狀態人數
+    globalStationStats[station][type]++; 
 
-    // 累加該站的全域屬性戰力 (不論是否報到)
-    if (attrUpper.includes("帶隊官")) globalStationStats[station].rn++;
-    else if (attrUpper.includes("檢傷員") || attrUpper.includes("檢傷員")) globalStationStats[station].emt2++;
-    else if (attrUpper.includes("創傷彩妝") || attrUpper.includes("應變員")) globalStationStats[station].emt1++;
-    else if (attrUpper.includes("應變員")) globalStationStats[station].bls++;
+    if (attrUpper.includes("帶隊官")) globalStationStats[station].leader++;
+    else if (attrUpper.includes("創傷彩妝")) globalStationStats[station].makeup++;
+    else if (attrUpper.includes("檢傷員")) globalStationStats[station].triage++;
+    else if (attrUpper.includes("應變員")) globalStationStats[station].responder++;
   });
 
   Object.keys(sections).forEach(type => {
     const config = sections[type];
     const stationData = grouped[type];
     
-    // 站名排序(套用優先權)
     const stationNames = Object.keys(stationData).sort((a, b) => {
       const rankA = getStationRank(a);
       const rankB = getStationRank(b);
@@ -371,17 +363,13 @@ function renderSections(data) {
     });
     
     let totalCount = 0;
-    let stats = { rn: 0, emt2: 0, emt1: 0, bls: 0, eru: 0 };
+    let stats = { leader: 0, makeup: 0, triage: 0, responder: 0 };
     let html = '';
 
     stationNames.forEach(stName => {
-      // 屬性權重 > 姓名 排序
       const people = stationData[stName].sort((a, b) => getAttrRank(a.attr) - getAttrRank(b.attr) || (a.name || "").localeCompare(b.name || "", 'zh-Hant'));
+      const stStats = globalStationStats[stName] || { in: 0, pending: 0, leader: 0, makeup: 0, triage: 0, responder: 0 };
       
-      // 取出該站的總計數據
-      const stStats = globalStationStats[stName] || { in: 0, pending: 0, rn: 0, emt2: 0, emt1: 0, bls: 0, eru: 0 };
-      
-      // ✅ ✅ 保留原版本邏輯：新增每一站別 站已報到和未報到人數和 專業統計
       html += `
         <div class="group-title">
           <div class="group-title-top">
@@ -392,22 +380,20 @@ function renderSections(data) {
             </span>
           </div>
           <div class="group-title-sub">
-            <span class="attr-nurse">🏥 ${stStats.rn}</span>
-            <span class="attr-emt2">🚑 ${stStats.emt2}</span>
-            <span class="attr-emt1">🚑 ${stStats.emt1}</span>
-            <span class="attr-bls">🩺 ${stStats.bls}</span>
-            <span class="attr-eru">🚨 ${stStats.eru}</span>
+            <span class="attr-leader">🚩 ${stStats.leader}</span>
+            <span class="attr-makeup">🎨 ${stStats.makeup}</span>
+            <span class="attr-triage">🚑 ${stStats.triage}</span>
+            <span class="attr-responder">🛡️ ${stStats.responder}</span>
           </div>
         </div>`;
       
       people.forEach(p => {
         totalCount++;
         const attrUpper = (p.attr || "").toUpperCase();
-        if (attrUpper.includes("帶隊官")) stats.rn++;
-        else if (attrUpper.includes("檢傷員") || attrUpper.includes("檢傷員")) stats.emt2++;
-        else if (attrUpper.includes("創傷彩妝") || attrUpper.includes("創傷彩妝")) stats.emt1++;
-        else if (attrUpper.includes("應變員")) stats.bls++;
-      
+        if (attrUpper.includes("帶隊官")) stats.leader++;
+        else if (attrUpper.includes("創傷彩妝")) stats.makeup++;
+        else if (attrUpper.includes("檢傷員")) stats.triage++;
+        else if (attrUpper.includes("應變員")) stats.responder++;
 
         const attrInfo = getAttrClass(p.attr);
         html += `
@@ -418,15 +404,13 @@ function renderSections(data) {
       });
     });
 
-    // 大區塊戰力統計列 HTML (保留原版本邏輯)
     const statsHtml = totalCount > 0 ? `
       <div class="stats-row">
         <span class="stat-badge" style="color:var(--text); border-color:#555;">📊 區塊總計: ${totalCount} 人</span>
-        <span class="stat-badge attr-nurse">🏥 帶隊官: ${stats.rn}</span>
-        <span class="stat-badge attr-emt2">🚑 檢傷員: ${stats.emt2}</span>
-        <span class="stat-badge attr-emt1">🚑 創傷彩妝: ${stats.emt1}</span>
-        <span class="stat-badge attr-bls">🩺 應變員: ${stats.bls}</span>
-    
+        <span class="stat-badge attr-leader">🚩 帶隊官: ${stats.leader}</span>
+        <span class="stat-badge attr-makeup">🎨 創妝: ${stats.makeup}</span>
+        <span class="stat-badge attr-triage">🚑 檢傷: ${stats.triage}</span>
+        <span class="stat-badge attr-responder">🛡️ 應變: ${stats.responder}</span>
       </div>
     ` : '';
 
@@ -445,9 +429,8 @@ function renderTable() {
   const q = document.getElementById("search-input").value.toLowerCase();
   const sorted = sortMaster(allData);
 
-  // ✅ 不破壞 UI 架構：先渲染上方區塊，再渲染下方表格
-  renderSystemOverview(allData); // 渲染系統概況
-  renderSections(sorted); // 渲染分組區塊
+  renderSystemOverview(allData); 
+  renderSections(sorted); 
 
   const filtered = sorted.filter(r => 
     (r.name || "").toLowerCase().includes(q) ||
@@ -462,7 +445,8 @@ function renderTable() {
     return `
       <tr>
         <td style="color:#aaa;">${r.station}</td>
-        <td style="font-weight:bold; font-size:22px;">${r.name}</td> <td class="${attrInfo.cls}" style="font-weight:900;">${attrInfo.icon} ${r.attr || ''}</td>
+        <td style="font-weight:bold; font-size:22px;">${r.name}</td> 
+        <td class="${attrInfo.cls}" style="font-weight:900;">${attrInfo.icon} ${r.attr || ''}</td>
         <td class="${cls}">${r.status || "未報到"}</td>
       </tr>`;
   }).join("");
@@ -478,7 +462,6 @@ async function loadList() {
     }
   } catch (e) {
     console.error("Fetch Error");
-    // 可以在這裡添加 UI 提示，例如在 SYSTEM 統計區顯示網路錯誤
   }
 }
 
