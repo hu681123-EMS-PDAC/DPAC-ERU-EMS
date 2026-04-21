@@ -196,8 +196,7 @@ td { padding: 14px; border-bottom: 1px solid #222; text-align: center; }
 
 <body>
 
-<div id="systemOverview" class="section system-box">
-    </div>
+<div id="systemOverview" class="section system-box"></div>
 
 <h2>📋 DPCA 現場戰力名單</h2>
 
@@ -223,33 +222,32 @@ let allData = [];
 function getAttrRank(a) {
   a = (a || "").toUpperCase();
   if (a.includes("帶隊官")) return 1;
-  if (a.includes("檢傷員") || a.includes("檢傷員")) return 2;
-  if (a.includes("創傷彩妝") || a.includes("創傷彩妝")) return 3;
+  if (a.includes("檢傷員")) return 2;
+  if (a.includes("創傷彩妝")) return 3;
   if (a.includes("應變員")) return 4;
-
   return 99; // 其他
 }
 
 /* 取得屬性對應樣式與圖示 */
 function getAttrClass(a) {
   a = (a || "").toUpperCase();
-  if (a.includes("護理師")) return { cls: "attr-nurse", icon: "🏥" };
-  if (a.includes("EMT-2") || a.includes("EMT2")) return { cls: "attr-emt2", icon: "🚑" };
-  if (a.includes("EMT-1") || a.includes("EMT1")) return { cls: "attr-emt1", icon: "🚑" };
-  if (a.includes("BLS")) return { cls: "attr-bls", icon: "🩺" };
-  if (a.includes("ERU")) return { cls: "attr-eru", icon: "🚨" };
+  if (a.includes("帶隊官")) return { cls: "attr-nurse", icon: "🏥" };
+  if (a.includes("檢傷員") || a.includes("檢傷員")) return { cls: "attr-檢傷員", icon: "🚑" };
+  if (a.includes("創傷彩妝") || a.includes("創傷彩妝")) return { cls: "attr-創傷彩妝", icon: "🚑" };
+  if (a.includes("應變員")) return { cls: "attr-應變員", icon: "🩺" };
   return { cls: "attr-other", icon: "👤" };
 }
 
-/* ⭐ 站點優先權定義 (鹿港彰濱衛生所 > 埔鹽鄉衛生所 > 溪州國小 > 福興鄉衛生所 > 埤頭鄉衛生所) */
+/* ⭐ 站點優先權定義 (A1.鹿港彰濱秀傳(急診室門口) > A2.鹿港衛生所 > B.福興鄉衛生所>C.埔鹽鄉衛生所 > D.溪州國小 > E.埤頭埤頭鄉衛生所) */
 function getStationRank(s) {
   s = s || "";
   // 精準匹配優先排序站點
-  if (s === "鹿港彰濱衛生所") return 1;
-  if (s === "埔鹽鄉衛生所") return 2;
-  if (s === "溪州國小") return 3;
-  if (s === "福興鄉衛生所") return 4;
-  if (s === "埤頭鄉衛生所") return 5;
+  if (s === "A1.鹿港彰濱秀傳(急診室門口)") return 1;
+  if (s === "A2.鹿港衛生所") return 2;
+  if (s === "B.福興鄉衛生所") return 3;
+	if (s === "C.埔鹽鄉衛生所") return 4;
+  if (s === "D.溪州國小") return 5;
+  if (s === "E.埤頭埤頭鄉衛生所") return 6;
   
   // 模糊匹配（防止資料輸入有些微差異）
   if (s.includes("鹿港彰濱")) return 1.1;
@@ -301,11 +299,11 @@ function renderSystemOverview(data) {
 
     // 統計專業屬性
     const attrUpper = (r.attr || "").toUpperCase();
-    if (attrUpper.includes("護理師")) roleStats.rn++;
-    else if (attrUpper.includes("EMT-2") || attrUpper.includes("EMT2")) roleStats.emt2++;
-    else if (attrUpper.includes("EMT-1") || attrUpper.includes("EMT1")) roleStats.emt1++;
-    else if (attrUpper.includes("BLS")) roleStats.bls++;
-    else if (attrUpper.includes("ERU")) roleStats.eru++;
+    if (attrUpper.includes("帶隊官")) roleStats.rn++;
+    else if (attrUpper.includes("檢傷員") || attrUpper.includes("檢傷員")) roleStats.emt2++;
+    else if (attrUpper.includes("創傷彩妝") || attrUpper.includes("創傷彩妝")) roleStats.emt1++;
+    else if (attrUpper.includes("應變員")) roleStats.bls++;
+  
   });
 
   overviewEl.innerHTML = `
@@ -317,11 +315,10 @@ function renderSystemOverview(data) {
         <span class="stat-badge global-badge" style="color:var(--purple); border-color:var(--purple);">📍 部署站點數: ${stationsSet.size}</span>
     </div>
     <div class="stats-row global-stats-row">
-        <span class="stat-badge attr-nurseglobal">🏥 護理師: ${roleStats.rn}</span>
-        <span class="stat-badge attr-emt2global">🚑 EMT-2: ${roleStats.emt2}</span>
-        <span class="stat-badge attr-emt1global">🚑 EMT-1: ${roleStats.emt1}</span>
-        <span class="stat-badge attr-blsglobal">🩺 BLS: ${roleStats.bls}</span>
-        <span class="stat-badge attr-eruglobal">🚨 ERU: ${roleStats.eru}</span>
+        <span class="stat-badge global-badge attr-nurse">🏥 帶隊官: ${roleStats.rn}</span>
+        <span class="stat-badge global-badge attr-emt2">🚑 檢傷員: ${roleStats.emt2}</span>
+        <span class="stat-badge global-badge attr-emt1">🚑 創傷彩妝: ${roleStats.emt1}</span>
+        <span class="stat-badge global-badge attr-bls">🩺應變員: ${roleStats.bls}</span>
       </div>
   `;
 }
@@ -331,7 +328,7 @@ function renderSections(data) {
   // ✅ 美化：增加圖示
   const sections = {
     in: { id: "inBox", title: "🟢 已報到執勤中", color: "var(--green)" },
-    pending: { id: "pendingBox", title: "🔴 尚未報到人屬", color: "var(--red)" },
+    pending: { id: "pendingBox", title: "🔴 尚未報到人員", color: "var(--red)" },
     out: { id: "outBox", title: "🟠 已報退下哨", color: "var(--orange)" }
   };
 
@@ -355,11 +352,10 @@ function renderSections(data) {
     globalStationStats[station][type]++; // 累加該站狀態人數
 
     // 累加該站的全域屬性戰力 (不論是否報到)
-    if (attrUpper.includes("護理師")) globalStationStats[station].rn++;
-    else if (attrUpper.includes("EMT-2") || attrUpper.includes("EMT2")) globalStationStats[station].emt2++;
-    else if (attrUpper.includes("EMT-1") || attrUpper.includes("EMT1")) globalStationStats[station].emt1++;
-    else if (attrUpper.includes("BLS")) globalStationStats[station].bls++;
-    else if (attrUpper.includes("ERU")) globalStationStats[station].eru++;
+    if (attrUpper.includes("帶隊官")) globalStationStats[station].rn++;
+    else if (attrUpper.includes("檢傷員") || attrUpper.includes("檢傷員")) globalStationStats[station].emt2++;
+    else if (attrUpper.includes("創傷彩妝") || attrUpper.includes("應變員")) globalStationStats[station].emt1++;
+    else if (attrUpper.includes("應變員")) globalStationStats[station].bls++;
   });
 
   Object.keys(sections).forEach(type => {
@@ -391,7 +387,7 @@ function renderSections(data) {
           <div class="group-title-top">
             <span>📍 ${stName}</span>
             <span class="station-stats">
-               <span style="color:var(--green)">🟢 ${stStats.in}</span> | 
+               <span style="color:var(--green)">🟢 ${stStats.in}</span> | 
                <span style="color:var(--red)">🔴 ${stStats.pending}</span>
             </span>
           </div>
@@ -407,11 +403,11 @@ function renderSections(data) {
       people.forEach(p => {
         totalCount++;
         const attrUpper = (p.attr || "").toUpperCase();
-        if (attrUpper.includes("護理師")) stats.rn++;
-        else if (attrUpper.includes("EMT-2") || attrUpper.includes("EMT2")) stats.emt2++;
-        else if (attrUpper.includes("EMT-1") || attrUpper.includes("EMT1")) stats.emt1++;
-        else if (attrUpper.includes("BLS")) stats.bls++;
-        else if (attrUpper.includes("ERU")) stats.eru++;
+        if (attrUpper.includes("帶隊官")) stats.rn++;
+        else if (attrUpper.includes("檢傷員") || attrUpper.includes("檢傷員")) stats.emt2++;
+        else if (attrUpper.includes("創傷彩妝") || attrUpper.includes("創傷彩妝")) stats.emt1++;
+        else if (attrUpper.includes("應變員")) stats.bls++;
+      
 
         const attrInfo = getAttrClass(p.attr);
         html += `
@@ -426,11 +422,11 @@ function renderSections(data) {
     const statsHtml = totalCount > 0 ? `
       <div class="stats-row">
         <span class="stat-badge" style="color:var(--text); border-color:#555;">📊 區塊總計: ${totalCount} 人</span>
-        <span class="stat-badge attr-nurse">🏥 護理: ${stats.rn}</span>
-        <span class="stat-badge attr-emt2">🚑 EMT-2: ${stats.emt2}</span>
-        <span class="stat-badge attr-emt1">🚑 EMT-1: ${stats.emt1}</span>
-        <span class="stat-badge attr-bls">🩺 BLS: ${stats.bls}</span>
-        <span class="stat-badge attr-eru">🚨 ERU: ${stats.eru}</span>
+        <span class="stat-badge attr-nurse">🏥 帶隊官: ${stats.rn}</span>
+        <span class="stat-badge attr-emt2">🚑 檢傷員: ${stats.emt2}</span>
+        <span class="stat-badge attr-emt1">🚑 創傷彩妝: ${stats.emt1}</span>
+        <span class="stat-badge attr-bls">🩺 應變員: ${stats.bls}</span>
+    
       </div>
     ` : '';
 
@@ -453,7 +449,7 @@ function renderTable() {
   renderSystemOverview(allData); // 渲染系統概況
   renderSections(sorted); // 渲染分組區塊
 
-  const filtered = sorted.filter(r => 
+  const filtered = sorted.filter(r => 
     (r.name || "").toLowerCase().includes(q) ||
     (r.station || "").toLowerCase().includes(q) ||
     (r.attr || "").toLowerCase().includes(q)
