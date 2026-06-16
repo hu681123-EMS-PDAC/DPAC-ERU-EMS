@@ -13,14 +13,12 @@
         .form-control, .form-select { font-size: 0.95rem; padding: 10px; border-radius: 8px; }
         .problem-area { display: none; padding: 12px; border-radius: 8px; background-color: #fff; border: 1px dashed #ccc; margin-bottom: 15px; }
         
-        /* 按鈕樣式優化 & 視覺標籤化 */
         .btn-check:checked + .btn-outline-danger { background-color: #dc3545; color: white; }
         .btn-check:checked + .btn-outline-primary { background-color: #0d6efd; color: white; }
         .btn-check:checked + .btn-outline-dark { background-color: #495057; color: white; }
         .btn-check:checked + .btn-outline-success { background-color: #198754; color: white; }
         .btn-check:checked + .btn-outline-warning { background-color: #ffc107; color: black; }
         
-        /* START 檢傷專用色 */
         .btn-start-green:checked + label { background-color: #198754 !important; color: white !important; }
         .btn-start-yellow:checked + label { background-color: #ffc107 !important; color: black !important; }
         .btn-start-red:checked + label { background-color: #dc3545 !important; color: white !important; }
@@ -34,7 +32,6 @@
         .gcs-select { background-color: #f8f9fa; }
         .input-group-text { font-size: 0.8rem; background-color: #e9ecef; border-radius: 0 8px 8px 0; min-width: 65px; justify-content: center; }
         
-        /* 照片槽位優化樣式 */
         .photo-slot { background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 8px; text-align: center; display: flex; flex-direction: column; justify-content: space-between; height: 100%; }
         .preview-box { width: 100%; aspect-ratio: 1; border-radius: 6px; background: #f9f9f9; border: 1px dashed #ccc; display: flex; align-items: center; justify-content: center; color: #999; font-size: 0.75rem; cursor: pointer; overflow: hidden; margin-bottom: 6px; }
         .preview-img { width: 100%; height: 100%; object-fit: cover; }
@@ -44,9 +41,21 @@
 <body>
 
 <div class="card p-3">
-    <h4 class="text-center mb-4">🚑 救護紀錄系統</h4>
+    <h4 class="text-center mb-3">🚑 救護紀錄系統</h4>
+
+    <div class="input-group mb-3 shadow-sm border rounded-3 p-1 bg-white">
+        <input type="text" id="searchName" class="form-control border-0" placeholder="🔍 輸入姓名搜尋舊紀錄以修改...">
+        <button class="btn btn-primary rounded-3" type="button" onclick="searchByName()" id="searchBtn">查詢</button>
+    </div>
+
+    <div id="editModeBanner" class="alert alert-warning d-none text-center fw-bold mb-3 py-2 shadow-sm" style="font-size:0.9rem;">
+        ⚠️ 目前為修改模式：正在編輯舊紀錄
+        <br><button type="button" class="btn btn-sm btn-dark mt-2" onclick="cancelEdit()">❌ 取消修改 (改為新增資料)</button>
+    </div>
     
     <form id="emsForm">
+        <input type="hidden" id="rowIndex" value="">
+
         <div class="section-title">1. 基本資料</div>
         <div class="row g-2 mb-2">
             <div class="col-6"><label class="label-sm">📅 日期</label><input type="date" id="date" class="form-control"></div>
@@ -60,10 +69,15 @@
             <div class="col-7"><label class="label-sm">🏢 所屬團隊</label><input type="text" id="team" class="form-control" placeholder="分隊/單位名稱"></div>
             <div class="col-5"><label class="label-sm">🆔 號碼牌編號</label><input type="text" id="plateNum" class="form-control" placeholder="No."></div>
         </div>
+        
         <div class="row g-2 mb-2">
             <div class="col-5"><label class="label-sm">👤 患者姓名</label><input type="text" id="name" class="form-control" placeholder="姓名"></div>
-            <div class="col-3"><label class="label-sm">👫 性別</label><select id="gender" class="form-select"><option value="男">男</option><option value="女">女</option></select></div>
-            <div class="col-4"><label class="label-sm">🎂 年紀</label><input type="number" id="age" class="form-control" placeholder="歲"></div>
+            <div class="col-7"><label class="label-sm">🏷️ 檢傷編號</label><input type="text" id="triageNum" class="form-control" placeholder="編號"></div>
+        </div>
+        
+        <div class="row g-2 mb-2">
+            <div class="col-6"><label class="label-sm">👫 性別</label><select id="gender" class="form-select"><option value="男">男</option><option value="女">女</option></select></div>
+            <div class="col-6"><label class="label-sm">🎂 年紀</label><input type="number" id="age" class="form-control" placeholder="歲"></div>
         </div>
         
         <div class="mb-2">
@@ -378,7 +392,7 @@
         <div class="section-title">9. 其他備註與現場照片</div>
         <textarea id="memo" class="form-control mb-3" rows="2" placeholder="請輸入額外觀察資訊..."></textarea>
         
-        <label class="label-sm mb-1">📸 現場/傷情照片 (各槽位可獨立拍照或選圖，最多 3 張)</label>
+        <label class="label-sm mb-1">📸 現場/傷情照片 (若為修改模式，未重新上傳將保留原圖)</label>
         <div class="row g-2 mb-3">
             
             <div class="col-4">
@@ -442,7 +456,6 @@
     const GAS_URL = "https://script.google.com/macros/s/AKfycbynFAoTDBW7pDpaVOChSzXJVkHoG1jsHadJom-Zm8lVHKu66mj5N3MN2U6g5U3Af5lORw/exec"; 
     const LIFF_ID = "2009198292-oRMLEX95";
     
-    // 全局變數存放 Base64 照片 (對應三個槽位)
     let photoData = { 1: "", 2: "", 3: "" };
 
     window.onload = function() {
@@ -456,44 +469,145 @@
         document.getElementById('contactTime').value = now.toTimeString().slice(0,5);
     }
 
+    // ========== 新增：姓名搜尋功能 ==========
+    async function searchByName() {
+        const name = document.getElementById('searchName').value.trim();
+        if(!name) { alert("請輸入病患姓名！"); return; }
+        
+        const btn = document.getElementById('searchBtn');
+        btn.disabled = true; 
+        btn.innerText = "搜尋中...";
+        
+        try {
+            // 利用 GET 請求向後端尋找資料
+            const res = await fetch(GAS_URL + "?action=search&name=" + encodeURIComponent(name));
+            const result = await res.json();
+            
+            if(result.status === "success" && result.data) {
+                populateForm(result.data);
+                alert("✅ 成功找到該病患紀錄，已為您載入！\n(⚠️ 目前切換為「修改模式」，送出時會覆寫舊資料)");
+            } else {
+                alert("❌ 找不到該姓名的紀錄！將繼續以新增模式填寫。");
+                cancelEdit();
+            }
+        } catch(e) {
+            alert("搜尋失敗，請確認網路連線或 GAS 網址設定：" + e);
+        }
+        btn.disabled = false; 
+        btn.innerText = "查詢";
+    }
+
+    // ========== 新增：回填表單邏輯 ==========
+    function populateForm(data) {
+        const setVal = (id, val) => { if(document.getElementById(id)) document.getElementById(id).value = val || ''; };
+        const setRadio = (name, val) => {
+            const el = document.querySelector(`input[name="${name}"][value="${val}"]`);
+            if(el) el.checked = true;
+        };
+
+        // 啟動修改模式 UI
+        document.getElementById('rowIndex').value = data.rowIndex;
+        document.getElementById('editModeBanner').classList.remove('d-none');
+        document.getElementById('submitBtn').innerText = "🔄 更新救護紀錄";
+        document.getElementById('submitBtn').classList.replace('btn-submit', 'btn-primary');
+
+        // 回填文字與選單
+        setVal('date', data.date);
+        setVal('contactTime', data.time);
+        setVal('emsStaff', data.emsStaff);
+        setVal('phone', data.phone);
+        setVal('team', data.team);
+        setVal('plateNum', data.plateNum);
+        setVal('name', data.name);
+        setVal('triageNum', data.triageNum);
+        setVal('gender', data.gender);
+        setVal('age', data.age);
+        setVal('accidentLoc', data.accidentLoc);
+        setVal('treatLoc', data.treatLoc);
+        setVal('caseType', data.caseType);
+        
+        setRadio('isCritical', data.isCritical);
+        setRadio('startTriage', data.startTriage);
+        
+        setVal('avpu', data.avpu);
+        setVal('obs1', data.obs1);
+        setVal('obs2', data.obs2);
+        setVal('obs3', data.obs3);
+        setVal('memo', data.memo);
+
+        // 如果後端有存到 rawState，則將各種細節與勾選框完美還原
+        if(data.rawState) {
+            setVal('traumaDetail', data.rawState.traumaDetail);
+            setVal('nonTraumaDetail', data.rawState.nonTraumaDetail);
+            setVal('injuryPartsDetail', data.rawState.injuryPartsDetail);
+            setVal('treatmentsDetail', data.rawState.treatmentsDetail);
+            setVal('historyDetail', data.rawState.historyDetail);
+            setVal('allergyDetail', data.rawState.allergyDetail);
+            setVal('transportModeDetail', data.rawState.transportModeDetail);
+            setVal('transportMode', data.rawState.transportMode);
+            
+            setVal('gcsE', data.rawState.gcsE);
+            setVal('gcsV', data.rawState.gcsV);
+            setVal('gcsM', data.rawState.gcsM);
+            setVal('bp', data.rawState.bp);
+            setVal('pr', data.rawState.pr);
+            setVal('rr', data.rawState.rr);
+            setVal('spo2', data.rawState.spo2);
+            setVal('glu', data.rawState.glu);
+            setVal('bt', data.rawState.bt);
+            setVal('pupilL', data.rawState.pupilL);
+            setVal('pupilR', data.rawState.pupilR);
+            setVal('skin', data.rawState.skin);
+
+            // 清除所有 checkbox
+            document.querySelectorAll('input[type="checkbox"]').forEach(el => el.checked = false);
+
+            // 依據陣列還原勾選
+            const checkIds = (ids) => {
+                if(!ids) return;
+                ids.forEach(id => { const el = document.getElementById(id); if(el) el.checked = true; });
+            };
+            checkIds(data.rawState.tProb);
+            checkIds(data.rawState.ntProb);
+            checkIds(data.rawState.iCheck);
+            checkIds(data.rawState.treatCheck);
+            checkIds(data.rawState.hCheck);
+            checkIds(data.rawState.aCheck);
+        }
+
+        toggleProblems(); // 更新區域顯示
+        window.scrollTo(0, 0); 
+    }
+
+    // 取消修改模式，回到新增模式
+    function cancelEdit() {
+        document.getElementById('rowIndex').value = "";
+        document.getElementById('editModeBanner').classList.add('d-none');
+        document.getElementById('submitBtn').innerText = "✅ 確認上傳紀錄";
+        document.getElementById('submitBtn').classList.replace('btn-primary', 'btn-submit');
+    }
+
     function getLocation() {
         const locInput = document.getElementById('accidentLoc');
         const status = document.getElementById('locationStatus');
         const btn = document.getElementById('btnLoc');
 
-        if (!navigator.geolocation) {
-            status.innerText = "❌ 瀏覽器不支援定位功能";
-            status.className = "text-danger";
-            return;
-        }
-
-        btn.disabled = true;
-        btn.innerText = "⌛...";
-        status.innerText = "正在連線 GPS 取得座標...";
-        status.className = "text-primary";
+        if (!navigator.geolocation) { status.innerText = "❌ 瀏覽器不支援定位功能"; status.className = "text-danger"; return; }
+        btn.disabled = true; btn.innerText = "⌛..."; status.innerText = "正在連線 GPS 取得座標..."; status.className = "text-primary";
 
         navigator.geolocation.getCurrentPosition(
             (position) => {
                 const lat = position.coords.latitude.toFixed(6);
                 const lng = position.coords.longitude.toFixed(6);
-                const mapUrl = `https://maps.google.com/?q=${lat},${lng}`;
-                
-                locInput.value = mapUrl;
-                status.innerText = "✅ 定位成功！已填入導航連結";
-                status.className = "text-success";
-                
-                btn.disabled = false;
-                btn.innerText = "🌐 定位";
+                locInput.value = `https://maps.google.com/?q=$${lat},${lng}`;
+                status.innerText = "✅ 定位成功！已填入導航連結"; status.className = "text-success";
+                btn.disabled = false; btn.innerText = "🌐 定位";
             },
             (error) => {
                 let errorMsg = "❌ 定位失敗";
                 if(error.code === 1) errorMsg = "❌ 請允許瀏覽器存取位置權限";
                 if(error.code === 3) errorMsg = "❌ 定位連線逾時";
-                
-                status.innerText = errorMsg;
-                status.className = "text-danger";
-                btn.disabled = false;
-                btn.innerText = "🌐 定位";
+                status.innerText = errorMsg; status.className = "text-danger"; btn.disabled = false; btn.innerText = "🌐 定位";
             },
             { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 } 
         );
@@ -503,43 +617,26 @@
         const type = document.getElementById('caseType').value;
         const traumaArea = document.getElementById('traumaArea');
         const nonTraumaArea = document.getElementById('nonTraumaArea');
-
-        document.querySelectorAll('.t-prob, .nt-prob').forEach(el => el.checked = false);
-
-        if (type === '創傷') {
-            traumaArea.style.display = 'block'; nonTraumaArea.style.display = 'none';
-        } else if (type === '非創傷') {
-            traumaArea.style.display = 'none'; nonTraumaArea.style.display = 'block';
-        } else if (type === '綜合') {
-            traumaArea.style.display = 'block'; nonTraumaArea.style.display = 'block';
-        } else {
-            traumaArea.style.display = 'none'; nonTraumaArea.style.display = 'none';
-        }
+        if (type === '創傷') { traumaArea.style.display = 'block'; nonTraumaArea.style.display = 'none'; } 
+        else if (type === '非創傷') { traumaArea.style.display = 'none'; nonTraumaArea.style.display = 'block'; } 
+        else if (type === '綜合') { traumaArea.style.display = 'block'; nonTraumaArea.style.display = 'block'; } 
+        else { traumaArea.style.display = 'none'; nonTraumaArea.style.display = 'none'; }
     }
 
-    // 處理單一槽位的照片上傳與壓縮
     async function handleSingleFile(inputElement, slot) {
         const file = inputElement.files[0];
         if (!file) return;
-
         try {
             const base64Str = await processFileToB64(file);
             photoData[slot] = base64Str;
-            
-            // 更新 UI 預覽
             document.getElementById(`txt-${slot}`).style.display = 'none';
             const imgEl = document.getElementById(`img-${slot}`);
             imgEl.src = base64Str;
             imgEl.style.display = 'block';
-        } catch (error) {
-            alert("照片處理失敗，請重試");
-        }
-
-        // 清空 input，允許使用者重複選取同一張照片
+        } catch (error) { alert("照片處理失敗，請重試"); }
         inputElement.value = '';
     }
 
-    // 清除指定槽位的照片
     function clearSlot(slot) {
         photoData[slot] = "";
         document.getElementById(`img-${slot}`).style.display = 'none';
@@ -549,7 +646,6 @@
         document.getElementById(`alb-${slot}`).value = '';
     }
 
-    // 照片壓縮核心邏輯
     function processFileToB64(file) {
         return new Promise((resolve) => {
             const reader = new FileReader();
@@ -569,30 +665,19 @@
         });
     }
 
-    // 一鍵重置所有表單
     function resetForm() {
         if (!confirm("確定要清空所有填寫的資料嗎？(此操作無法復原)")) return;
-        
         document.getElementById('emsForm').reset();
-        
-        // 清除三個照片槽
-        clearSlot(1);
-        clearSlot(2);
-        clearSlot(3);
-        
+        document.getElementById('searchName').value = '';
+        clearSlot(1); clearSlot(2); clearSlot(3);
         setInitialDateTime(); 
-        
-        // 隱藏問題細項區域
         document.getElementById('traumaArea').style.display = 'none';
         document.getElementById('nonTraumaArea').style.display = 'none';
-        
-        // 清除定位狀態文字
         document.getElementById('locationStatus').innerText = '';
-        
+        cancelEdit(); // 同時清除修改模式
         window.scrollTo(0, 0); 
     }
 
-    // 傳送資料到後端 GAS
     async function send() {
         const btn = document.getElementById('submitBtn');
         const caseType = document.getElementById('caseType').value;
@@ -602,23 +687,23 @@
         btn.innerText = "資料上傳中 (含照片)...";
         
         const getVals = (cls) => Array.from(document.querySelectorAll(cls + ':checked')).map(c => c.value).join(", ");
-        // 【優化】直接使用 getElementById 抓值，避免因 value 為字串而誤判的問題
         const getValByDOM = (id) => { const el = document.getElementById(id); return el ? el.value.trim() : ""; };
-        const getRadio = (name) => {
-            const el = document.querySelector(`input[name="${name}"]:checked`);
-            return el ? el.value : '';
-        };
+        const getRadio = (name) => { const el = document.querySelector(`input[name="${name}"]:checked`); return el ? el.value : ''; };
 
         const combinedProblems = [getVals('.t-prob'), getVals('.nt-prob')].filter(Boolean).join(", ");
         const probDetail = [getValByDOM('traumaDetail'), getValByDOM('nonTraumaDetail')].filter(Boolean).join(" / ");
         
-        // 抓取後送處置模式與其補充說明並合併
         const transportBase = document.getElementById('transportMode').value;
         const transportDetail = getValByDOM('transportModeDetail');
         const transportFull = transportDetail ? transportBase + " (補充: " + transportDetail + ")" : transportBase;
 
-        // 完整組合 Payload
+        // 抓取欲新增的欄位資訊並封裝 RAW state 給後端備份
+        const isUpdateMode = document.getElementById('rowIndex').value !== "";
+        
         const payload = {
+            action: isUpdateMode ? 'update' : 'insert',
+            rowIndex: document.getElementById('rowIndex').value,
+
             date: getValByDOM('date'),
             time: getValByDOM('contactTime'),
             emsStaff: getValByDOM('emsStaff'),
@@ -626,6 +711,7 @@
             team: getValByDOM('team'),
             plateNum: getValByDOM('plateNum'),
             name: getValByDOM('name'),
+            triageNum: getValByDOM('triageNum'), // 新增：檢傷編號
             gender: getValByDOM('gender'),
             age: getValByDOM('age'),
             accidentLoc: getValByDOM('accidentLoc'),
@@ -647,57 +733,53 @@
             allergy: getValByDOM('allergyDetail') ? getVals('.a-check') + " (補充: " + getValByDOM('allergyDetail') + ")" : getVals('.a-check'),
             memo: getValByDOM('memo'),
             
-            // 【修正重點】精確抓取留觀欄位，若沒填則為空字串
             obs1: getValByDOM('obs1'),
             obs2: getValByDOM('obs2'),
             obs3: getValByDOM('obs3'),
             
             photo1: photoData[1],
             photo2: photoData[2],
-            photo3: photoData[3]
+            photo3: photoData[3],
+
+            // 【進階技巧】保留所有的勾選與填寫狀態給後端存 JSON 供下次查詢完美回填
+            rawState: {
+                traumaDetail: getValByDOM('traumaDetail'), nonTraumaDetail: getValByDOM('nonTraumaDetail'), injuryPartsDetail: getValByDOM('injuryPartsDetail'),
+                treatmentsDetail: getValByDOM('treatmentsDetail'), historyDetail: getValByDOM('historyDetail'), allergyDetail: getValByDOM('allergyDetail'),
+                transportModeDetail: getValByDOM('transportModeDetail'), transportMode: getValByDOM('transportMode'),
+                gcsE: getValByDOM('gcsE'), gcsV: getValByDOM('gcsV'), gcsM: getValByDOM('gcsM'), bp: getValByDOM('bp'), pr: getValByDOM('pr'), rr: getValByDOM('rr'),
+                spo2: getValByDOM('spo2'), glu: getValByDOM('glu'), bt: getValByDOM('bt'), pupilL: getValByDOM('pupilL'), pupilR: getValByDOM('pupilR'), skin: getValByDOM('skin'),
+                tProb: Array.from(document.querySelectorAll('.t-prob:checked')).map(c => c.id),
+                ntProb: Array.from(document.querySelectorAll('.nt-prob:checked')).map(c => c.id),
+                iCheck: Array.from(document.querySelectorAll('.i-check:checked')).map(c => c.id),
+                treatCheck: Array.from(document.querySelectorAll('.treat-check:checked')).map(c => c.id),
+                hCheck: Array.from(document.querySelectorAll('.h-check:checked')).map(c => c.id),
+                aCheck: Array.from(document.querySelectorAll('.a-check:checked')).map(c => c.id)
+            }
         };
 
         try {
             await fetch(GAS_URL, { 
                 method: 'POST', 
                 mode: 'no-cors',
-                headers: {
-                    'Content-Type': 'text/plain;charset=utf-8',
-                },
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                 body: JSON.stringify(payload) 
             });
             
-            const locUri = payload.accidentLoc.startsWith('http') ? payload.accidentLoc : `https://maps.google.com/?q=${encodeURIComponent(payload.accidentLoc)}`;
-            
-            // 整理留觀紀錄以便顯示在 LINE 訊息中
+            const locUri = payload.accidentLoc.startsWith('http') ? payload.accidentLoc : `https://maps.google.com/?q=$${encodeURIComponent(payload.accidentLoc)}`;
             let obsLogs = [payload.obs1, payload.obs2, payload.obs3].filter(v => v !== "");
             
             if (liff.isInClient()) {
-                // 構建 Flex Message 內容陣列
                 const flexContents = [
                     {
-                        "type": "box",
-                        "layout": "horizontal",
-                        "contents": [
+                        "type": "box", "layout": "horizontal", "contents": [
                             { "type": "text", "text": "狀態", "size": "xs", "color": "#aaaaaa", "flex": 1 },
-                            { 
-                                "type": "text", 
-                                "text": payload.isCritical === 'OHCA' ? '💔 OHCA' : (payload.isCritical === '是' ? '🚨 危急' : '🛡️ 穩定'), 
-                                "size": "xs", 
-                                "color": payload.isCritical === 'OHCA' ? '#000000' : (payload.isCritical === '是' ? '#ff0000' : '#28a745'), 
-                                "flex": 3, 
-                                "weight": "bold", 
-                                "align": "end" 
-                            }
+                            { "type": "text", "text": payload.isCritical === 'OHCA' ? '💔 OHCA' : (payload.isCritical === '是' ? '🚨 危急' : '🛡️ 穩定'), "size": "xs", "color": payload.isCritical === 'OHCA' ? '#000000' : (payload.isCritical === '是' ? '#ff0000' : '#28a745'), "flex": 3, "weight": "bold", "align": "end" }
                         ]
                     },
                     { "type": "separator" },
                     {
-                        "type": "box",
-                        "layout": "vertical",
-                        "spacing": "xs",
-                        "contents": [
-                            { "type": "text", "text": `患者：${payload.name || '未知'} (${payload.gender}/${payload.age || '?'}歲)`, "size": "sm", "weight": "bold" },
+                        "type": "box", "layout": "vertical", "spacing": "xs", "contents": [
+                            { "type": "text", "text": `患者：${payload.name || '未知'} (${payload.gender}/${payload.age || '?'}歲) [檢傷:${payload.triageNum || '無'}]`, "size": "sm", "weight": "bold" },
                             { "type": "box", "layout": "horizontal", "contents": [
                                 { "type": "text", "text": "地點", "size": "sm", "color": "#aaaaaa", "flex": 1 },
                                 { "type": "text", "text": "📍 點我導航", "size": "sm", "color": "#0000ff", "flex": 3, "align": "end", "action": { "type": "uri", "label": "導航", "uri": locUri } }
@@ -708,20 +790,14 @@
                     }
                 ];
 
-                // 【修正重點】如果留觀紀錄有填寫，自動加入 Flex Message 中
                 if(obsLogs.length > 0) {
                     flexContents.push({ "type": "separator", "margin": "md" });
                     flexContents.push({ "type": "text", "text": "📋 留觀紀錄:", "size": "xs", "color": "#aaaaaa", "margin": "sm" });
                     flexContents.push({ "type": "text", "text": obsLogs.join("\n"), "size": "sm", "wrap": true });
                 }
 
-                // 加入生命徵象
                 flexContents.push({
-                    "type": "box",
-                    "layout": "vertical",
-                    "backgroundColor": "#f0f0f0",
-                    "paddingAll": "8px",
-                    "margin": "md",
+                    "type": "box", "layout": "vertical", "backgroundColor": "#f0f0f0", "paddingAll": "8px", "margin": "md",
                     "contents": [
                         { "type": "text", "text": `BP: ${payload.bp || '--'} | PR: ${payload.pr || '--'} | RR: ${payload.rr || '--'}`, "size": "xs", "margin": "xs" },
                         { "type": "text", "text": `SpO2: ${payload.spo2 || '--'}% | GCS: ${payload.gcs}`, "size": "xs" }
@@ -729,45 +805,25 @@
                 });
 
                 await liff.sendMessages([{
-                    "type": "flex",
-                    "altText": "🚑 救護紀錄摘要-" + payload.name,
+                    "type": "flex", "altText": "🚑 救護紀錄摘要-" + payload.name,
                     "contents": {
                         "type": "bubble",
-                        "header": {
-                            "type": "box",
-                            "layout": "vertical",
-                            "contents": [{ "type": "text", "text": "🚑 EMS 救護任務摘要", "weight": "bold", "color": "#ffffff", "size": "md" }],
-                            "backgroundColor": payload.isCritical === 'OHCA' ? "#212529" : (payload.isCritical === '是' ? "#d9534f" : "#2c3e50")
-                        },
-                        "body": {
-                            "type": "box",
-                            "layout": "vertical",
-                            "spacing": "md",
-                            "contents": flexContents // 注入上面整理好的陣列
-                        },
-                        "footer": {
-                            "type": "box",
-                            "layout": "vertical",
-                            "contents": [{ "type": "text", "text": "回報人：" + payload.emsStaff, "size": "xxs", "color": "#aaaaaa", "align": "center" }]
-                        }
+                        "header": { "type": "box", "layout": "vertical", "contents": [{ "type": "text", "text": isUpdateMode ? "🔄 EMS 紀錄更新" : "🚑 EMS 救護任務", "weight": "bold", "color": "#ffffff", "size": "md" }], "backgroundColor": payload.isCritical === 'OHCA' ? "#212529" : (payload.isCritical === '是' ? "#d9534f" : "#2c3e50") },
+                        "body": { "type": "box", "layout": "vertical", "spacing": "md", "contents": flexContents },
+                        "footer": { "type": "box", "layout": "vertical", "contents": [{ "type": "text", "text": "回報人：" + payload.emsStaff, "size": "xxs", "color": "#aaaaaa", "align": "center" }] }
                     }
                 }]);
                 liff.closeWindow();
             } else {
-                alert("✅ 資料已成功上傳！\n\n(提示：因不在 LINE App 內，無法發送對話框訊息)");
-                if(confirm("上傳成功！是否要清空表單以填寫下一筆紀錄？")) {
-                    resetForm();
-                }
-                btn.disabled = false; 
-                btn.innerText = "✅ 確認上傳紀錄"; 
+                alert(`✅ 資料已成功${isUpdateMode ? '更新' : '上傳'}！`);
+                if(confirm(`是否要清空表單以填寫下一筆紀錄？`)) { resetForm(); }
+                cancelEdit(); 
             }
         } catch (e) { 
             alert("系統錯誤: " + e.message); 
-            btn.disabled = false; 
-            btn.innerText = "✅ 確認上傳紀錄"; 
+            cancelEdit();
         }
     }
 </script>
 </body>
 </html>
-
