@@ -56,6 +56,11 @@
     <form id="emsForm">
         <input type="hidden" id="rowIndex" value="">
 
+        <div class="mb-3 p-2 rounded-3 shadow-sm" style="background-color: #fff3cd; border: 2px solid #ffc107;">
+            <label class="label-sm text-dark fw-bold mb-1">🏷️ 檢傷編號 (系統自動給號，可修改)</label>
+            <input type="text" id="triageNum" class="form-control fw-bold text-danger fs-5 text-center" placeholder="⏳ 自動產生中...">
+        </div>
+
         <div class="section-title">1. 基本資料</div>
         <div class="row g-2 mb-2">
             <div class="col-6"><label class="label-sm">📅 日期</label><input type="date" id="date" class="form-control"></div>
@@ -70,9 +75,9 @@
             <div class="col-5"><label class="label-sm">🆔 號碼牌編號</label><input type="text" id="plateNum" class="form-control" placeholder="No."></div>
         </div>
         
-        <div class="row g-2 mb-2">
-            <div class="col-6"><label class="label-sm">👤 患者姓名</label><input type="text" id="name" class="form-control" placeholder="姓名"></div>
-            <div class="col-6"><label class="label-sm">🏷️ 檢傷編號</label><input type="text" id="triageNum" class="form-control" placeholder="編號"></div>
+        <div class="mb-2">
+            <label class="label-sm">👤 患者姓名</label>
+            <input type="text" id="name" class="form-control" placeholder="患者姓名">
         </div>
         
         <div class="row g-2 mb-2">
@@ -452,14 +457,15 @@
 
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <script>
-    // ！！！務必替換為您「重新發布後」的新 GAS 網址！！！
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbwGJfn7InuzMFZeITkSuT3OyObTLjGiJshzP1xgNLgmZnd6yCkUxkKlu2Po1rhZ7DQvKQ/exec"; 
+    // ！！！請將此處替換為「剛剛更新部署」產生的新 GAS URL！！！
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbwiBslUZW0I98Wthnfpx2CP9GIMs4Qr_J2xzY-ABAOKEPmgxwCofjpWSNESadOoqwt4Zg/exec"; 
     const LIFF_ID = "2009198292-oRMLEX95";
     
     let photoData = { 1: "", 2: "", 3: "" };
 
     window.onload = function() {
         setInitialDateTime();
+        fetchNewTriageNum(); // 網頁開啟自動索取最新的檢傷編號
         try { liff.init({ liffId: LIFF_ID }); } catch (err) {}
     };
 
@@ -467,6 +473,19 @@
         const now = new Date();
         document.getElementById('date').value = now.toISOString().split('T')[0];
         document.getElementById('contactTime').value = now.toTimeString().slice(0,5);
+    }
+
+    // ========== 自動獲取系統流水編號 ==========
+    async function fetchNewTriageNum() {
+        try {
+            const res = await fetch(GAS_URL + "?action=getSerial");
+            const result = await res.json();
+            if (result.status === "success") {
+                document.getElementById('triageNum').value = result.triageNum;
+            }
+        } catch (err) {
+            console.error("無法取得檢傷編號", err);
+        }
     }
 
     // ========== 多條件搜尋功能 (姓名、檢傷編號或號碼牌) ==========
@@ -484,13 +503,13 @@
             
             if(result.status === "success" && result.data) {
                 populateForm(result.data);
-                alert("✅ 成功找到紀錄，已為您載入！\n(⚠️ 目前切換為「修改模式」，送出時將覆寫舊資料)");
+                alert("✅ 成功找到紀錄，已為您載入所有欄位！\n(⚠️ 目前切換為「修改模式」，送出時將覆寫舊資料)");
             } else {
                 alert("❌ 找不到符合條件的紀錄！將繼續以新增模式填寫。");
                 cancelEdit();
             }
         } catch(e) {
-            alert("搜尋失敗，請確認網路或 GAS 網址是否正確：" + e);
+            alert("搜尋失敗，請確認網路或 GAS 網址是否已更新部署：" + e);
         }
         btn.disabled = false; 
         btn.innerText = "查詢";
@@ -510,7 +529,7 @@
         document.getElementById('submitBtn').innerText = "🔄 更新救護紀錄";
         document.getElementById('submitBtn').classList.replace('btn-submit', 'btn-primary');
 
-        // 回填一般欄位
+        // 回填來自後端的所有欄位 (之前空白的問題已修復)
         setVal('date', data.date);
         setVal('contactTime', data.time);
         setVal('emsStaff', data.emsStaff);
@@ -583,6 +602,7 @@
         document.getElementById('editModeBanner').classList.add('d-none');
         document.getElementById('submitBtn').innerText = "✅ 確認上傳紀錄";
         document.getElementById('submitBtn').classList.replace('btn-primary', 'btn-submit');
+        fetchNewTriageNum(); // 切換回新增模式時，再次抓取新的檢傷編號
     }
 
     function getLocation() {
