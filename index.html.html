@@ -7,154 +7,139 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body { 
-            background-color: #0f172a; 
+            background-color: #0b1329; 
             padding: 10px; 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
-            color: #020617;
+            color: #ffffff;
             line-height: 1.5;
         }
         .card { 
             border-radius: 12px; 
             border: 2px solid #64748b; 
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4); 
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6); 
             margin-bottom: 15px; 
-            background-color: #ffffff; 
+            background-color: #1e293b; 
         }
         .section-title { 
-            background: #991b1b; 
+            background: #b91c1c; 
             color: #ffffff; 
             padding: 10px 14px; 
             border-radius: 6px; 
-            font-weight: 800; 
+            font-weight: 900; 
             margin-bottom: 12px; 
-            font-size: 1.15rem; 
-            letter-spacing: 0.5px; 
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8); 
-            border-bottom: 3px solid #7f1d1d;
+            font-size: 1.25rem; 
+            letter-spacing: 0.6px; 
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.9); 
+            border: 2px solid #ef4444;
         }
         .label-sm { 
-            font-size: 0.95rem; 
+            font-size: 1rem; 
             font-weight: 800; 
-            color: #020617; 
-            margin-bottom: 5px; 
+            color: #f1f5f9; 
+            margin-bottom: 6px; 
             display: block; 
-            letter-spacing: 0.3px; 
+            letter-spacing: 0.5px; 
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
         }
         .form-control, .form-select { 
-            font-size: 0.98rem; 
-            font-weight: 700; 
+            font-size: 1.1rem; 
+            font-weight: 800; 
             padding: 10px 12px; 
             border-radius: 8px; 
-            border: 2px solid #334155; 
-            color: #000000; 
-            background-color: #ffffff; 
+            border: 2.5px solid #94a3b8; 
+            color: #ffffff; 
+            background-color: #0f172a; 
             line-height: 1.4;
         }
         .form-control::placeholder { 
-            color: #475569; 
-            font-weight: 600; 
+            color: #cbd5e1; 
+            font-weight: 700; 
             opacity: 1;
         }
         .form-control:focus, .form-select:focus { 
-            border-color: #1d4ed8; 
-            box-shadow: 0 0 0 0.25rem rgba(29, 78, 216, 0.4); 
-            color: #000000; 
-            background-color: #ffffff; 
+            border-color: #38bdf8; 
+            box-shadow: 0 0 0 0.3rem rgba(56, 189, 248, 0.5); 
+            color: #ffffff; 
+            background-color: #0284c7; 
         }
         .problem-area { 
             display: none; 
             padding: 12px; 
             border-radius: 8px; 
-            background-color: #f1f5f9; 
-            border: 2.5px dashed #1e293b; 
+            background-color: #0f172a; 
+            border: 2.5px dashed #94a3b8; 
             margin-bottom: 15px; 
         }
         
         /* 按鈕樣式優化 & 視覺標籤化 */
-        .btn-outline-danger { color: #991b1b; border-color: #dc2626; border-width: 2px; font-weight: 800; background-color: #ffffff; }
-        .btn-outline-primary { color: #1e40af; border-color: #2563eb; border-width: 2px; font-weight: 800; background-color: #ffffff; }
-        .btn-outline-dark { color: #020617; border-color: #1e293b; border-width: 2px; font-weight: 800; background-color: #ffffff; }
-        .btn-outline-success { color: #166534; border-color: #16a34a; border-width: 2px; font-weight: 800; background-color: #ffffff; }
-        .btn-outline-warning { color: #78350f; border-color: #d97706; border-width: 2px; font-weight: 800; background-color: #fffbeb; }
+        .btn-outline-danger { color: #fca5a5; border-color: #f87171; border-width: 2.5px; font-weight: 800; background-color: #1e293b; }
+        .btn-outline-primary { color: #93c5fd; border-color: #60a5fa; border-width: 2.5px; font-weight: 800; background-color: #1e293b; }
+        .btn-outline-dark { color: #ffffff; border-color: #94a3b8; border-width: 2.5px; font-weight: 800; background-color: #334155; }
+        .btn-outline-success { color: #86efac; border-color: #4ade80; border-width: 2.5px; font-weight: 800; background-color: #1e293b; }
+        .btn-outline-warning { color: #fef08a; border-color: #facc15; border-width: 2.5px; font-weight: 800; background-color: #1e293b; }
 
-        .btn-check:checked + .btn-outline-danger { background-color: #dc2626; color: #ffffff; font-weight: 800; border-color: #7f1d1d; }
-        .btn-check:checked + .btn-outline-primary { background-color: #1d4ed8; color: #ffffff; font-weight: 800; border-color: #1e3a8a; }
-        .btn-check:checked + .btn-outline-dark { background-color: #0f172a; color: #ffffff; font-weight: 800; border-color: #020617; }
-        .btn-check:checked + .btn-outline-success { background-color: #15803d; color: #ffffff; font-weight: 800; border-color: #14532d; }
-        .btn-check:checked + .btn-outline-warning { background-color: #d97706; color: #ffffff; font-weight: 800; border-color: #78350f; }
+        .btn-check:checked + .btn-outline-danger { background-color: #dc2626; color: #ffffff; font-weight: 900; border-color: #fca5a5; box-shadow: 0 0 10px rgba(220, 38, 38, 0.8); }
+        .btn-check:checked + .btn-outline-primary { background-color: #2563eb; color: #ffffff; font-weight: 900; border-color: #93c5fd; box-shadow: 0 0 10px rgba(37, 99, 235, 0.8); }
+        .btn-check:checked + .btn-outline-dark { background-color: #475569; color: #ffffff; font-weight: 900; border-color: #ffffff; box-shadow: 0 0 10px rgba(255, 255, 255, 0.4); }
+        .btn-check:checked + .btn-outline-success { background-color: #16a34a; color: #ffffff; font-weight: 900; border-color: #86efac; box-shadow: 0 0 10px rgba(22, 163, 74, 0.8); }
+        .btn-check:checked + .btn-outline-warning { background-color: #ca8a04; color: #ffffff; font-weight: 900; border-color: #fde047; box-shadow: 0 0 10px rgba(202, 138, 4, 0.8); }
         
         /* START 檢傷專用色 */
-        .btn-start-green:checked + label { background-color: #15803d !important; color: #ffffff !important; font-weight: 800 !important; border-color: #14532d !important; }
-        .btn-start-yellow:checked + label { background-color: #d97706 !important; color: #ffffff !important; font-weight: 800 !important; border-color: #78350f !important; }
-        .btn-start-red:checked + label { background-color: #dc2626 !important; color: #ffffff !important; font-weight: 800 !important; border-color: #7f1d1d !important; }
-        .btn-start-black:checked + label { background-color: #0f172a !important; color: #ffffff !important; font-weight: 800 !important; border-color: #020617 !important; }
+        .btn-start-green:checked + label { background-color: #15803d !important; color: #ffffff !important; font-weight: 900 !important; border-color: #86efac !important; }
+        .btn-start-yellow:checked + label { background-color: #a16207 !important; color: #ffffff !important; font-weight: 900 !important; border-color: #fde047 !important; }
+        .btn-start-red:checked + label { background-color: #b91c1c !important; color: #ffffff !important; font-weight: 900 !important; border-color: #fca5a5 !important; }
+        .btn-start-black:checked + label { background-color: #020617 !important; color: #ffffff !important; font-weight: 900 !important; border-color: #ffffff !important; }
 
-        .btn-group-toggle .btn { margin-bottom: 8px; margin-right: 5px; border-radius: 20px !important; font-size: 0.95rem; padding: 7px 15px; letter-spacing: 0.3px; }
-        .w-100-group .btn { border-radius: 8px !important; margin-right: 0; margin-bottom: 0; font-size: 0.95rem; padding: 8px 10px; }
+        .btn-group-toggle .btn { margin-bottom: 8px; margin-right: 5px; border-radius: 20px !important; font-size: 1.05rem; padding: 8px 16px; letter-spacing: 0.5px; }
+        .w-100-group .btn { border-radius: 8px !important; margin-right: 0; margin-bottom: 0; font-size: 1.05rem; padding: 10px 10px; }
         
-        .btn-submit { background: #b91c1c; color: #ffffff; width: 100%; padding: 15px; font-weight: 800; border-radius: 10px; border: none; font-size: 1.3rem; margin-top: 15px; letter-spacing: 0.8px; box-shadow: 0 4px 12px rgba(185, 28, 28, 0.45); }
-        .btn-submit:active { background: #881337; }
-        .btn-reset { background: #1e293b; color: #ffffff; width: 100%; padding: 11px; font-weight: 800; border-radius: 10px; border: none; font-size: 1.08rem; margin-top: 10px; letter-spacing: 0.4px; }
-        .gcs-select { background-color: #ffffff; font-weight: 800; border: 2px solid #334155; color: #000000; font-size: 0.95rem; }
-        .input-group-text { font-size: 0.95rem; font-weight: 800; background-color: #cbd5e1; color: #020617; border: 2px solid #334155; border-left: none; border-radius: 0 8px 8px 0; min-width: 68px; justify-content: center; }
+        .btn-submit { background: #dc2626; color: #ffffff; width: 100%; padding: 15px; font-weight: 900; border-radius: 10px; border: 2.5px solid #fca5a5; font-size: 1.4rem; margin-top: 15px; letter-spacing: 1px; box-shadow: 0 4px 20px rgba(220, 38, 38, 0.7); }
+        .btn-submit:active { background: #991b1b; }
+        .btn-reset { background: #475569; color: #ffffff; width: 100%; padding: 11px; font-weight: 800; border-radius: 10px; border: 2px solid #cbd5e1; font-size: 1.15rem; margin-top: 10px; letter-spacing: 0.5px; }
+        .gcs-select { background-color: #0f172a; font-weight: 800; border: 2.5px solid #94a3b8; color: #ffffff; font-size: 1.05rem; }
+        .input-group-text { font-size: 1rem; font-weight: 900; background-color: #334155; color: #ffffff; border: 2.5px solid #94a3b8; border-left: none; border-radius: 0 8px 8px 0; min-width: 75px; justify-content: center; }
         
         /* 照片槽位優化樣式 */
-        .photo-slot { background: #ffffff; border: 2px solid #475569; border-radius: 8px; padding: 8px; text-align: center; display: flex; flex-direction: column; justify-content: space-between; height: 100%; }
-        .preview-box { width: 100%; aspect-ratio: 1; border-radius: 6px; background: #e2e8f0; border: 2px dashed #334155; display: flex; align-items: center; justify-content: center; color: #020617; font-size: 0.95rem; font-weight: 800; cursor: pointer; overflow: hidden; margin-bottom: 6px; }
+        .photo-slot { background: #0f172a; border: 2.5px solid #94a3b8; border-radius: 8px; padding: 8px; text-align: center; display: flex; flex-direction: column; justify-content: space-between; height: 100%; }
+        .preview-box { width: 100%; aspect-ratio: 1; border-radius: 6px; background: #1e293b; border: 2.5px dashed #94a3b8; display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 1.05rem; font-weight: 900; cursor: pointer; overflow: hidden; margin-bottom: 6px; }
         .preview-img { width: 100%; height: 100%; object-fit: cover; }
-        .photo-btns .btn { font-size: 0.9rem; font-weight: 800; padding: 6px 4px; }
+        .photo-btns .btn { font-size: 1rem; font-weight: 900; padding: 6px 4px; }
 
-        .text-muted { color: #020617 !important; font-weight: 800; }
-        .badge { font-size: 0.92rem; font-weight: 800; padding: 7px 12px; letter-spacing: 0.3px; }
+        .text-muted { color: #e2e8f0 !important; font-weight: 800; }
+        .badge { font-size: 1rem; font-weight: 900; padding: 8px 12px; letter-spacing: 0.5px; }
 
         /* 模式切換與狀態提示標籤 */
-        .status-banner { display: flex; justify-content: space-between; align-items: center; background-color: #cbd5e1; border: 2px solid #475569; padding: 9px 12px; border-radius: 8px; margin-bottom: 12px; }
-        .status-badge { font-size: 0.9rem; font-weight: 800; padding: 5px 10px; border-radius: 6px; letter-spacing: 0.3px; }
-        .mode-new { background-color: #0284c7; color: #ffffff; }
-        .mode-edit { background-color: #c2410c; color: #ffffff; }
+        .status-banner { display: flex; justify-content: space-between; align-items: center; background-color: #0f172a; border: 2.5px solid #94a3b8; padding: 10px 14px; border-radius: 8px; margin-bottom: 12px; }
+        .status-badge { font-size: 1rem; font-weight: 900; padding: 6px 12px; border-radius: 6px; letter-spacing: 0.5px; }
+        .mode-new { background-color: #0284c7; color: #ffffff; border: 1.5px solid #7dd3fc; }
+        .mode-edit { background-color: #ea580c; color: #ffffff; border: 1.5px solid #fdba74; }
 
-        /* --- 高對比優化與強化樣式 --- */
-        .bg-light {
-            background-color: #f8fafc !important;
-            border-color: #94a3b8 !important;
-        }
-        .border-secondary-subtle {
-            border-color: #64748b !important;
-        }
-        .badge.bg-secondary {
-            background-color: #334155 !important;
-            color: #ffffff !important;
-        }
-        .badge.bg-warning {
-            background-color: #d97706 !important;
-            color: #ffffff !important;
-        }
-        .label-sm.text-primary, .text-primary {
-            color: #1e40af !important;
-        }
-        .label-sm.text-danger, .text-danger {
-            color: #b91c1c !important;
-        }
-        .form-control-sm, .input-group-sm .form-control, .input-group-sm .input-group-text {
-            font-size: 0.92rem;
-            font-weight: 700;
-        }
+        /* 覆蓋專用修正顏色 */
+        .text-primary { color: #38bdf8 !important; text-shadow: 0 1px 2px rgba(0,0,0,0.8); }
+        .text-danger { color: #f87171 !important; text-shadow: 0 1px 2px rgba(0,0,0,0.8); }
+        .text-dark { color: #ffffff !important; }
+        .bg-light { background-color: #0f172a !important; color: #ffffff !important; }
+        .border-secondary-subtle { border-color: #64748b !important; }
+        .border-danger { border-color: #f87171 !important; }
+        .border-primary { border-color: #38bdf8 !important; }
+        .btn-primary { background-color: #0284c7; border-color: #38bdf8; color: #ffffff; font-weight: 900; }
+        .btn-primary:hover { background-color: #0369a1; border-color: #7dd3fc; }
     </style>
 </head>
 <body>
 
 <div class="card p-3">
-    <h4 class="text-center mb-3 fw-bold">🚑 救護紀錄系統</h4>
+    <h4 class="text-center mb-3 fw-bold">🚑<strong> 救護紀錄系</strong>統</h4>
 
     <div class="status-banner">
         <div>
-            <span class="fw-bold" style="font-size: 0.9rem;">當前狀態：</span>
+            <span class="fw-bold" style="font-size: 0.95rem;">當前狀態：</span>
             <span id="modeBadge" class="status-badge mode-new">✨ 新增模式</span>
-        </div>
+      </div>
         <button type="button" class="btn btn-sm btn-outline-dark" onclick="switchToAddMode()">➕ 切換為新增資料</button>
-    </div>
+  </div>
     
     <form id="emsForm">
         <div class="section-title">1. 基本資料</div>
@@ -164,7 +149,7 @@
             <div class="col-12">
                 <label class="label-sm text-primary">🏷️ 檢傷編號 (輸入編號可載入舊資料)</label>
                 <div class="input-group">
-                    <input type="text" id="team" class="form-control fw-bold border-primary" placeholder="請輸入或掃描檢傷編號">
+                  <input type="text" id="team" class="form-control fw-bold border-primary" placeholder="請輸入或掃描檢傷編號">
                     <button class="btn btn-primary fw-bold" type="button" id="btnLoad" onclick="loadOldData()">🔍 載入舊檔</button>
                 </div>
             </div>
@@ -177,7 +162,7 @@
         </div>
         <div class="row g-2 mb-2">
             <div class="col-6"><label class="label-sm">🧑‍⚕️ 救護人員姓名</label><input type="text" id="emsStaff" class="form-control" placeholder="姓名"></div>
-            <div class="col-6"><label class="label-sm">📞 患者追蹤電話</label><input type="tel" id="phone" class="form-control" placeholder="患者聯絡電話"></div>
+            <div class="col-6"><label class="label-sm">📞 追蹤電話</label><input type="tel" id="phone" class="form-control" placeholder="聯絡電話"></div>
         </div>
         <div class="row g-2 mb-2">
             <div class="col-5"><label class="label-sm">👤 患者姓名</label><input type="text" id="name" class="form-control" placeholder="姓名"></div>
@@ -191,7 +176,7 @@
                 <input type="text" id="accidentLoc" class="form-control" placeholder="輸入地址或點擊右側定位">
                 <button class="btn btn-outline-primary" type="button" onclick="getLocation()" id="btnLoc">🌐 定位</button>
             </div>
-            <small id="locationStatus" class="text-muted" style="font-size: 0.8rem; margin-top: 4px; display: block; font-weight: 700;"></small>
+            <small id="locationStatus" class="text-muted" style="font-size: 0.9rem; margin-top: 4px; display: block; font-weight: 800;"></small>
         </div>
         
         <div class="mb-3">
@@ -201,7 +186,7 @@
 
         <div class="section-title">2. 傷病問題 (分類)</div>
         <div class="mb-3">
-            <label class="label-sm text-danger" style="font-size: 0.95rem;">⚠️ 請先選擇案件類型</label>
+            <label class="label-sm text-danger" style="font-size: 1rem;">⚠️ 請先選擇案件類型</label>
             <select id="caseType" class="form-select fw-bold border-danger shadow-sm" onchange="toggleProblems()">
                 <option value="">-- 點擊選擇 (創傷/非創傷/綜合) --</option>
                 <option value="創傷">🔴 創傷案件 (Trauma)</option>
@@ -425,7 +410,7 @@
             
             <input type="text" id="transportModeDetail" class="form-control form-control-sm mb-2" placeholder="✍️ 後送補充 (例如：送往中山醫院、留觀時間)">
 
-            <p class="text-dark mb-1 fw-bold" style="font-size: 0.85rem;">📋 留觀/追蹤紀錄 (例如: 14:20 A 清醒 120/80)：</p>
+            <p class="text-dark mb-1 fw-bold" style="font-size: 0.95rem;">📋 留觀/追蹤紀錄 (例如: 14:20 A 清醒 120/80)：</p>
             <div class="input-group input-group-sm mb-1">
                 <span class="input-group-text">一</span>
                 <input type="text" id="obs1" class="form-control" placeholder="時分 / 意識 / 生命徵象">
@@ -512,7 +497,7 @@
                     </div>
                     <input type="file" id="cam-1" accept="image/*" capture="environment" style="display:none" onchange="handleSingleFile(this, 1)">
                     <input type="file" id="alb-1" accept="image/*" style="display:none" onchange="handleSingleFile(this, 1)">
-                    <button type="button" class="btn btn-link text-danger w-100 mt-1 p-0 fw-bold" style="font-size:0.8rem; text-decoration:none;" onclick="clearSlot(1)">❌ 清除</button>
+                    <button type="button" class="btn btn-link text-danger w-100 mt-1 p-0 fw-bold" style="font-size:0.85rem; text-decoration:none;" onclick="clearSlot(1)">❌ 清除</button>
                 </div>
             </div>
 
@@ -528,7 +513,7 @@
                     </div>
                     <input type="file" id="cam-2" accept="image/*" capture="environment" style="display:none" onchange="handleSingleFile(this, 2)">
                     <input type="file" id="alb-2" accept="image/*" style="display:none" onchange="handleSingleFile(this, 2)">
-                    <button type="button" class="btn btn-link text-danger w-100 mt-1 p-0 fw-bold" style="font-size:0.8rem; text-decoration:none;" onclick="clearSlot(2)">❌ 清除</button>
+                    <button type="button" class="btn btn-link text-danger w-100 mt-1 p-0 fw-bold" style="font-size:0.85rem; text-decoration:none;" onclick="clearSlot(2)">❌ 清除</button>
                 </div>
             </div>
 
@@ -544,7 +529,7 @@
                     </div>
                     <input type="file" id="cam-3" accept="image/*" capture="environment" style="display:none" onchange="handleSingleFile(this, 3)">
                     <input type="file" id="alb-3" accept="image/*" style="display:none" onchange="handleSingleFile(this, 3)">
-                    <button type="button" class="btn btn-link text-danger w-100 mt-1 p-0 fw-bold" style="font-size:0.8rem; text-decoration:none;" onclick="clearSlot(3)">❌ 清除</button>
+                    <button type="button" class="btn btn-link text-danger w-100 mt-1 p-0 fw-bold" style="font-size:0.85rem; text-decoration:none;" onclick="clearSlot(3)">❌ 清除</button>
                 </div>
             </div>
         </div>
@@ -556,7 +541,7 @@
 
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <script>
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbyxM0dm2_8HC02kuMMDTymdN__uOxAbYmtU3XEvw2YGdwBvu3NApkV6rAPrrmxSZIhQPQ/exec"; 
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbyzxO_uMALUcdzVWMH5156ouVQtqBov0-C4SREcCIng6jqa6vFlGGuDnVnKQjPEP3lNbA/exec"; 
     const LIFF_ID = "2009198292-oRMLEX95";
     
     let photoData = { 1: "", 2: "", 3: "" };
@@ -676,6 +661,7 @@
         [1, 2, 3].forEach(i => {
             if (record[`photo${i}`]) {
                 photoData[i] = record[`photo${i}`];
+
                 document.getElementById(`txt-${i}`).style.display = 'none';
                 const imgEl = document.getElementById(`img-${i}`);
                 imgEl.src = record[`photo${i}`];
@@ -977,4 +963,4 @@
     }
 </script>
 </body>
-</html
+</html>
