@@ -7,125 +7,125 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body { 
-            background-color: #0b1329; 
+            background-color: #f8fafc; 
             padding: 10px; 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
-            color: #ffffff;
+            color: #0f172a;
             line-height: 1.5;
         }
         .card { 
             border-radius: 12px; 
-            border: 2px solid #64748b; 
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6); 
+            border: 1px solid #cbd5e1; 
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06); 
             margin-bottom: 15px; 
-            background-color: #1e293b; 
+            background-color: #ffffff; 
         }
         .section-title { 
-            background: #b91c1c; 
+            background: #991b1b; 
             color: #ffffff; 
             padding: 10px 14px; 
             border-radius: 6px; 
-            font-weight: 900; 
+            font-weight: 800; 
             margin-bottom: 12px; 
             font-size: 1.25rem; 
-            letter-spacing: 0.6px; 
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.9); 
-            border: 2px solid #ef4444;
+            letter-spacing: 0.5px; 
+            text-shadow: none; 
+            border: 1px solid #7f1d1d;
         }
         .label-sm { 
-            font-size: 1rem; 
-            font-weight: 800; 
-            color: #f1f5f9; 
+            font-size: 0.95rem; 
+            font-weight: 700; 
+            color: #1e293b; 
             margin-bottom: 6px; 
             display: block; 
-            letter-spacing: 0.5px; 
-            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+            letter-spacing: 0.2px; 
+            text-shadow: none;
         }
         .form-control, .form-select { 
-            font-size: 1.1rem; 
-            font-weight: 800; 
+            font-size: 1.05rem; 
+            font-weight: 700; 
             padding: 10px 12px; 
             border-radius: 8px; 
-            border: 2.5px solid #94a3b8; 
-            color: #ffffff; 
-            background-color: #0f172a; 
+            border: 2px solid #64748b; 
+            color: #0f172a; 
+            background-color: #ffffff; 
             line-height: 1.4;
         }
         .form-control::placeholder { 
-            color: #cbd5e1; 
-            font-weight: 700; 
+            color: #64748b; 
+            font-weight: 600; 
             opacity: 1;
         }
         .form-control:focus, .form-select:focus { 
-            border-color: #38bdf8; 
-            box-shadow: 0 0 0 0.3rem rgba(56, 189, 248, 0.5); 
-            color: #ffffff; 
-            background-color: #0284c7; 
+            border-color: #0284c7; 
+            box-shadow: 0 0 0 0.25rem rgba(2, 132, 199, 0.25); 
+            color: #0f172a; 
+            background-color: #ffffff; 
         }
         .problem-area { 
             display: none; 
             padding: 12px; 
             border-radius: 8px; 
-            background-color: #0f172a; 
-            border: 2.5px dashed #94a3b8; 
+            background-color: #f1f5f9; 
+            border: 2px dashed #64748b; 
             margin-bottom: 15px; 
         }
         
         /* 按鈕樣式優化 & 視覺標籤化 */
-        .btn-outline-danger { color: #fca5a5; border-color: #f87171; border-width: 2.5px; font-weight: 800; background-color: #1e293b; }
-        .btn-outline-primary { color: #93c5fd; border-color: #60a5fa; border-width: 2.5px; font-weight: 800; background-color: #1e293b; }
-        .btn-outline-dark { color: #ffffff; border-color: #94a3b8; border-width: 2.5px; font-weight: 800; background-color: #334155; }
-        .btn-outline-success { color: #86efac; border-color: #4ade80; border-width: 2.5px; font-weight: 800; background-color: #1e293b; }
-        .btn-outline-warning { color: #fef08a; border-color: #facc15; border-width: 2.5px; font-weight: 800; background-color: #1e293b; }
+        .btn-outline-danger { color: #991b1b; border-color: #dc2626; border-width: 2px; font-weight: 700; background-color: #ffffff; }
+        .btn-outline-primary { color: #1d4ed8; border-color: #2563eb; border-width: 2px; font-weight: 700; background-color: #ffffff; }
+        .btn-outline-dark { color: #1e293b; border-color: #475569; border-width: 2px; font-weight: 700; background-color: #ffffff; }
+        .btn-outline-success { color: #15803d; border-color: #16a34a; border-width: 2px; font-weight: 700; background-color: #ffffff; }
+        .btn-outline-warning { color: #854d0e; border-color: #ca8a04; border-width: 2px; font-weight: 700; background-color: #ffffff; }
 
-        .btn-check:checked + .btn-outline-danger { background-color: #dc2626; color: #ffffff; font-weight: 900; border-color: #fca5a5; box-shadow: 0 0 10px rgba(220, 38, 38, 0.8); }
-        .btn-check:checked + .btn-outline-primary { background-color: #2563eb; color: #ffffff; font-weight: 900; border-color: #93c5fd; box-shadow: 0 0 10px rgba(37, 99, 235, 0.8); }
-        .btn-check:checked + .btn-outline-dark { background-color: #475569; color: #ffffff; font-weight: 900; border-color: #ffffff; box-shadow: 0 0 10px rgba(255, 255, 255, 0.4); }
-        .btn-check:checked + .btn-outline-success { background-color: #16a34a; color: #ffffff; font-weight: 900; border-color: #86efac; box-shadow: 0 0 10px rgba(22, 163, 74, 0.8); }
-        .btn-check:checked + .btn-outline-warning { background-color: #ca8a04; color: #ffffff; font-weight: 900; border-color: #fde047; box-shadow: 0 0 10px rgba(202, 138, 4, 0.8); }
+        .btn-check:checked + .btn-outline-danger { background-color: #dc2626; color: #ffffff; font-weight: 800; border-color: #b91c1c; box-shadow: 0 2px 6px rgba(220, 38, 38, 0.3); }
+        .btn-check:checked + .btn-outline-primary { background-color: #2563eb; color: #ffffff; font-weight: 800; border-color: #1d4ed8; box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3); }
+        .btn-check:checked + .btn-outline-dark { background-color: #334155; color: #ffffff; font-weight: 800; border-color: #0f172a; box-shadow: 0 2px 6px rgba(51, 65, 85, 0.3); }
+        .btn-check:checked + .btn-outline-success { background-color: #16a34a; color: #ffffff; font-weight: 800; border-color: #15803d; box-shadow: 0 2px 6px rgba(22, 163, 74, 0.3); }
+        .btn-check:checked + .btn-outline-warning { background-color: #ca8a04; color: #ffffff; font-weight: 800; border-color: #a16207; box-shadow: 0 2px 6px rgba(202, 138, 4, 0.3); }
         
         /* START 檢傷專用色 */
-        .btn-start-green:checked + label { background-color: #15803d !important; color: #ffffff !important; font-weight: 900 !important; border-color: #86efac !important; }
-        .btn-start-yellow:checked + label { background-color: #a16207 !important; color: #ffffff !important; font-weight: 900 !important; border-color: #fde047 !important; }
-        .btn-start-red:checked + label { background-color: #b91c1c !important; color: #ffffff !important; font-weight: 900 !important; border-color: #fca5a5 !important; }
-        .btn-start-black:checked + label { background-color: #020617 !important; color: #ffffff !important; font-weight: 900 !important; border-color: #ffffff !important; }
+        .btn-start-green:checked + label { background-color: #15803d !important; color: #ffffff !important; font-weight: 800 !important; border-color: #166534 !important; }
+        .btn-start-yellow:checked + label { background-color: #ca8a04 !important; color: #ffffff !important; font-weight: 800 !important; border-color: #a16207 !important; }
+        .btn-start-red:checked + label { background-color: #dc2626 !important; color: #ffffff !important; font-weight: 800 !important; border-color: #b91c1c !important; }
+        .btn-start-black:checked + label { background-color: #0f172a !important; color: #ffffff !important; font-weight: 800 !important; border-color: #020617 !important; }
 
-        .btn-group-toggle .btn { margin-bottom: 8px; margin-right: 5px; border-radius: 20px !important; font-size: 1.05rem; padding: 8px 16px; letter-spacing: 0.5px; }
-        .w-100-group .btn { border-radius: 8px !important; margin-right: 0; margin-bottom: 0; font-size: 1.05rem; padding: 10px 10px; }
+        .btn-group-toggle .btn { margin-bottom: 8px; margin-right: 5px; border-radius: 20px !important; font-size: 1rem; padding: 8px 16px; letter-spacing: 0.3px; }
+        .w-100-group .btn { border-radius: 8px !important; margin-right: 0; margin-bottom: 0; font-size: 1rem; padding: 10px 10px; }
         
-        .btn-submit { background: #dc2626; color: #ffffff; width: 100%; padding: 15px; font-weight: 900; border-radius: 10px; border: 2.5px solid #fca5a5; font-size: 1.4rem; margin-top: 15px; letter-spacing: 1px; box-shadow: 0 4px 20px rgba(220, 38, 38, 0.7); }
+        .btn-submit { background: #dc2626; color: #ffffff; width: 100%; padding: 15px; font-weight: 800; border-radius: 10px; border: 2px solid #b91c1c; font-size: 1.3rem; margin-top: 15px; letter-spacing: 0.5px; box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3); }
         .btn-submit:active { background: #991b1b; }
-        .btn-reset { background: #475569; color: #ffffff; width: 100%; padding: 11px; font-weight: 800; border-radius: 10px; border: 2px solid #cbd5e1; font-size: 1.15rem; margin-top: 10px; letter-spacing: 0.5px; }
-        .gcs-select { background-color: #0f172a; font-weight: 800; border: 2.5px solid #94a3b8; color: #ffffff; font-size: 1.05rem; }
-        .input-group-text { font-size: 1rem; font-weight: 900; background-color: #334155; color: #ffffff; border: 2.5px solid #94a3b8; border-left: none; border-radius: 0 8px 8px 0; min-width: 75px; justify-content: center; }
+        .btn-reset { background: #64748b; color: #ffffff; width: 100%; padding: 11px; font-weight: 700; border-radius: 10px; border: 2px solid #475569; font-size: 1.1rem; margin-top: 10px; letter-spacing: 0.3px; }
+        .gcs-select { background-color: #ffffff; font-weight: 700; border: 2px solid #64748b; color: #0f172a; font-size: 1rem; }
+        .input-group-text { font-size: 0.95rem; font-weight: 800; background-color: #e2e8f0; color: #0f172a; border: 2px solid #64748b; border-left: none; border-radius: 0 8px 8px 0; min-width: 75px; justify-content: center; }
         
         /* 照片槽位優化樣式 */
-        .photo-slot { background: #0f172a; border: 2.5px solid #94a3b8; border-radius: 8px; padding: 8px; text-align: center; display: flex; flex-direction: column; justify-content: space-between; height: 100%; }
-        .preview-box { width: 100%; aspect-ratio: 1; border-radius: 6px; background: #1e293b; border: 2.5px dashed #94a3b8; display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 1.05rem; font-weight: 900; cursor: pointer; overflow: hidden; margin-bottom: 6px; }
+        .photo-slot { background: #f8fafc; border: 2px solid #94a3b8; border-radius: 8px; padding: 8px; text-align: center; display: flex; flex-direction: column; justify-content: space-between; height: 100%; }
+        .preview-box { width: 100%; aspect-ratio: 1; border-radius: 6px; background: #ffffff; border: 2px dashed #94a3b8; display: flex; align-items: center; justify-content: center; color: #475569; font-size: 1rem; font-weight: 800; cursor: pointer; overflow: hidden; margin-bottom: 6px; }
         .preview-img { width: 100%; height: 100%; object-fit: cover; }
-        .photo-btns .btn { font-size: 1rem; font-weight: 900; padding: 6px 4px; }
+        .photo-btns .btn { font-size: 0.95rem; font-weight: 800; padding: 6px 4px; }
 
-        .text-muted { color: #e2e8f0 !important; font-weight: 800; }
-        .badge { font-size: 1rem; font-weight: 900; padding: 8px 12px; letter-spacing: 0.5px; }
+        .text-muted { color: #475569 !important; font-weight: 700; }
+        .badge { font-size: 0.95rem; font-weight: 800; padding: 8px 12px; letter-spacing: 0.3px; }
 
         /* 模式切換與狀態提示標籤 */
-        .status-banner { display: flex; justify-content: space-between; align-items: center; background-color: #0f172a; border: 2.5px solid #94a3b8; padding: 10px 14px; border-radius: 8px; margin-bottom: 12px; }
-        .status-badge { font-size: 1rem; font-weight: 900; padding: 6px 12px; border-radius: 6px; letter-spacing: 0.5px; }
-        .mode-new { background-color: #0284c7; color: #ffffff; border: 1.5px solid #7dd3fc; }
-        .mode-edit { background-color: #ea580c; color: #ffffff; border: 1.5px solid #fdba74; }
+        .status-banner { display: flex; justify-content: space-between; align-items: center; background-color: #f1f5f9; border: 2px solid #94a3b8; padding: 10px 14px; border-radius: 8px; margin-bottom: 12px; }
+        .status-badge { font-size: 0.95rem; font-weight: 800; padding: 6px 12px; border-radius: 6px; letter-spacing: 0.3px; }
+        .mode-new { background-color: #0284c7; color: #ffffff; border: 1px solid #0369a1; }
+        .mode-edit { background-color: #ea580c; color: #ffffff; border: 1px solid #c2410c; }
 
         /* 覆蓋專用修正顏色 */
-        .text-primary { color: #38bdf8 !important; text-shadow: 0 1px 2px rgba(0,0,0,0.8); }
-        .text-danger { color: #f87171 !important; text-shadow: 0 1px 2px rgba(0,0,0,0.8); }
-        .text-dark { color: #ffffff !important; }
-        .bg-light { background-color: #0f172a !important; color: #ffffff !important; }
-        .border-secondary-subtle { border-color: #64748b !important; }
-        .border-danger { border-color: #f87171 !important; }
-        .border-primary { border-color: #38bdf8 !important; }
-        .btn-primary { background-color: #0284c7; border-color: #38bdf8; color: #ffffff; font-weight: 900; }
-        .btn-primary:hover { background-color: #0369a1; border-color: #7dd3fc; }
+        .text-primary { color: #0369a1 !important; text-shadow: none; }
+        .text-danger { color: #b91c1c !important; text-shadow: none; }
+        .text-dark { color: #0f172a !important; }
+        .bg-light { background-color: #f1f5f9 !important; color: #0f172a !important; }
+        .border-secondary-subtle { border-color: #94a3b8 !important; }
+        .border-danger { border-color: #dc2626 !important; }
+        .border-primary { border-color: #0284c7 !important; }
+        .btn-primary { background-color: #0284c7; border-color: #0369a1; color: #ffffff; font-weight: 800; }
+        .btn-primary:hover { background-color: #0369a1; border-color: #075985; }
     </style>
 </head>
 <body>
@@ -549,8 +549,28 @@
 
     window.onload = function() {
         setInitialDateTime();
+        generateAutoTriageNo();
         try { liff.init({ liffId: LIFF_ID }); } catch (err) {}
     };
+
+    function generateAutoTriageNo() {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const dateStr = `${year}${month}${day}`;
+        
+        let counter = parseInt(localStorage.getItem('ems_triage_counter') || '1', 10);
+        const lastDate = localStorage.getItem('ems_triage_date');
+        
+        if (lastDate !== dateStr) {
+            counter = 1;
+            localStorage.setItem('ems_triage_date', dateStr);
+        }
+        
+        const seqStr = String(counter).padStart(2, '0');
+        document.getElementById('team').value = `${dateStr}${seqStr}`;
+    }
 
     function setInitialDateTime() {
         const now = new Date();
@@ -786,6 +806,7 @@
         clearSlot(3);
         
         setInitialDateTime(); 
+        generateAutoTriageNo();
         switchToAddMode();
         
         document.getElementById('traumaArea').style.display = 'none';
@@ -866,6 +887,11 @@
                 body: JSON.stringify(payload) 
             });
             
+            if (!isEditMode) {
+                let counter = parseInt(localStorage.getItem('ems_triage_counter') || '1', 10);
+                localStorage.setItem('ems_triage_counter', counter + 1);
+            }
+
             const locUri = payload.accidentLoc.startsWith('http') ? payload.accidentLoc : `https://maps.google.com/?q=${encodeURIComponent(payload.accidentLoc)}`;
             let obsLogs = [payload.obs1, payload.obs2, payload.obs3].filter(v => v !== "");
             
