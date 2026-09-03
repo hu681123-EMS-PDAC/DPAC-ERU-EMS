@@ -7,7 +7,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body { 
-            background-color: #e2e8f0; 
+            background-color: #0f172a; 
             padding: 10px; 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             -webkit-font-smoothing: antialiased;
@@ -17,26 +17,27 @@
         }
         .card { 
             border-radius: 12px; 
-            border: 2px solid #94a3b8; 
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18); 
+            border: 2px solid #64748b; 
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4); 
             margin-bottom: 15px; 
             background-color: #ffffff; 
         }
         .section-title { 
             background: #991b1b; 
             color: #ffffff; 
-            padding: 9px 14px; 
+            padding: 10px 14px; 
             border-radius: 6px; 
             font-weight: 800; 
             margin-bottom: 12px; 
             font-size: 1.15rem; 
             letter-spacing: 0.5px; 
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6); 
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8); 
+            border-bottom: 3px solid #7f1d1d;
         }
         .label-sm { 
             font-size: 0.95rem; 
             font-weight: 800; 
-            color: #0f172a; 
+            color: #020617; 
             margin-bottom: 5px; 
             display: block; 
             letter-spacing: 0.3px; 
@@ -46,7 +47,7 @@
             font-weight: 700; 
             padding: 10px 12px; 
             border-radius: 8px; 
-            border: 2px solid #475569; 
+            border: 2px solid #334155; 
             color: #000000; 
             background-color: #ffffff; 
             line-height: 1.4;
@@ -54,7 +55,7 @@
         .form-control::placeholder { 
             color: #475569; 
             font-weight: 600; 
-            opacity: 0.85;
+            opacity: 1;
         }
         .form-control:focus, .form-select:focus { 
             border-color: #1d4ed8; 
@@ -67,7 +68,7 @@
             padding: 12px; 
             border-radius: 8px; 
             background-color: #f1f5f9; 
-            border: 2.5px dashed #334155; 
+            border: 2.5px dashed #1e293b; 
             margin-bottom: 15px; 
         }
         
@@ -78,16 +79,16 @@
         .btn-outline-success { color: #166534; border-color: #16a34a; border-width: 2px; font-weight: 800; background-color: #ffffff; }
         .btn-outline-warning { color: #78350f; border-color: #d97706; border-width: 2px; font-weight: 800; background-color: #fffbeb; }
 
-        .btn-check:checked + .btn-outline-danger { background-color: #dc2626; color: #ffffff; font-weight: 800; border-color: #991b1b; }
-        .btn-check:checked + .btn-outline-primary { background-color: #1d4ed8; color: #ffffff; font-weight: 800; border-color: #1e40af; }
+        .btn-check:checked + .btn-outline-danger { background-color: #dc2626; color: #ffffff; font-weight: 800; border-color: #7f1d1d; }
+        .btn-check:checked + .btn-outline-primary { background-color: #1d4ed8; color: #ffffff; font-weight: 800; border-color: #1e3a8a; }
         .btn-check:checked + .btn-outline-dark { background-color: #0f172a; color: #ffffff; font-weight: 800; border-color: #020617; }
-        .btn-check:checked + .btn-outline-success { background-color: #15803d; color: #ffffff; font-weight: 800; border-color: #166534; }
-        .btn-check:checked + .btn-outline-warning { background-color: #d97706; color: #ffffff; font-weight: 800; border-color: #92400e; }
+        .btn-check:checked + .btn-outline-success { background-color: #15803d; color: #ffffff; font-weight: 800; border-color: #14532d; }
+        .btn-check:checked + .btn-outline-warning { background-color: #d97706; color: #ffffff; font-weight: 800; border-color: #78350f; }
         
         /* START 檢傷專用色 */
-        .btn-start-green:checked + label { background-color: #15803d !important; color: #ffffff !important; font-weight: 800 !important; border-color: #166534 !important; }
+        .btn-start-green:checked + label { background-color: #15803d !important; color: #ffffff !important; font-weight: 800 !important; border-color: #14532d !important; }
         .btn-start-yellow:checked + label { background-color: #d97706 !important; color: #ffffff !important; font-weight: 800 !important; border-color: #78350f !important; }
-        .btn-start-red:checked + label { background-color: #dc2626 !important; color: #ffffff !important; font-weight: 800 !important; border-color: #991b1b !important; }
+        .btn-start-red:checked + label { background-color: #dc2626 !important; color: #ffffff !important; font-weight: 800 !important; border-color: #7f1d1d !important; }
         .btn-start-black:checked + label { background-color: #0f172a !important; color: #ffffff !important; font-weight: 800 !important; border-color: #020617 !important; }
 
         .btn-group-toggle .btn { margin-bottom: 8px; margin-right: 5px; border-radius: 20px !important; font-size: 0.95rem; padding: 7px 15px; letter-spacing: 0.3px; }
@@ -95,24 +96,51 @@
         
         .btn-submit { background: #b91c1c; color: #ffffff; width: 100%; padding: 15px; font-weight: 800; border-radius: 10px; border: none; font-size: 1.3rem; margin-top: 15px; letter-spacing: 0.8px; box-shadow: 0 4px 12px rgba(185, 28, 28, 0.45); }
         .btn-submit:active { background: #881337; }
-        .btn-reset { background: #334155; color: #ffffff; width: 100%; padding: 11px; font-weight: 800; border-radius: 10px; border: none; font-size: 1.08rem; margin-top: 10px; letter-spacing: 0.4px; }
-        .gcs-select { background-color: #ffffff; font-weight: 800; border: 2px solid #475569; color: #000000; font-size: 0.95rem; }
-        .input-group-text { font-size: 0.95rem; font-weight: 800; background-color: #cbd5e1; color: #020617; border: 2px solid #475569; border-left: none; border-radius: 0 8px 8px 0; min-width: 68px; justify-content: center; }
+        .btn-reset { background: #1e293b; color: #ffffff; width: 100%; padding: 11px; font-weight: 800; border-radius: 10px; border: none; font-size: 1.08rem; margin-top: 10px; letter-spacing: 0.4px; }
+        .gcs-select { background-color: #ffffff; font-weight: 800; border: 2px solid #334155; color: #000000; font-size: 0.95rem; }
+        .input-group-text { font-size: 0.95rem; font-weight: 800; background-color: #cbd5e1; color: #020617; border: 2px solid #334155; border-left: none; border-radius: 0 8px 8px 0; min-width: 68px; justify-content: center; }
         
         /* 照片槽位優化樣式 */
-        .photo-slot { background: #ffffff; border: 2px solid #64748b; border-radius: 8px; padding: 8px; text-align: center; display: flex; flex-direction: column; justify-content: space-between; height: 100%; }
-        .preview-box { width: 100%; aspect-ratio: 1; border-radius: 6px; background: #e2e8f0; border: 2px dashed #475569; display: flex; align-items: center; justify-content: center; color: #0f172a; font-size: 0.95rem; font-weight: 800; cursor: pointer; overflow: hidden; margin-bottom: 6px; }
+        .photo-slot { background: #ffffff; border: 2px solid #475569; border-radius: 8px; padding: 8px; text-align: center; display: flex; flex-direction: column; justify-content: space-between; height: 100%; }
+        .preview-box { width: 100%; aspect-ratio: 1; border-radius: 6px; background: #e2e8f0; border: 2px dashed #334155; display: flex; align-items: center; justify-content: center; color: #020617; font-size: 0.95rem; font-weight: 800; cursor: pointer; overflow: hidden; margin-bottom: 6px; }
         .preview-img { width: 100%; height: 100%; object-fit: cover; }
         .photo-btns .btn { font-size: 0.9rem; font-weight: 800; padding: 6px 4px; }
 
-        .text-muted { color: #1e293b !important; font-weight: 800; }
+        .text-muted { color: #020617 !important; font-weight: 800; }
         .badge { font-size: 0.92rem; font-weight: 800; padding: 7px 12px; letter-spacing: 0.3px; }
 
         /* 模式切換與狀態提示標籤 */
-        .status-banner { display: flex; justify-content: space-between; align-items: center; background-color: #cbd5e1; border: 2px solid #64748b; padding: 9px 12px; border-radius: 8px; margin-bottom: 12px; }
+        .status-banner { display: flex; justify-content: space-between; align-items: center; background-color: #cbd5e1; border: 2px solid #475569; padding: 9px 12px; border-radius: 8px; margin-bottom: 12px; }
         .status-badge { font-size: 0.9rem; font-weight: 800; padding: 5px 10px; border-radius: 6px; letter-spacing: 0.3px; }
         .mode-new { background-color: #0284c7; color: #ffffff; }
         .mode-edit { background-color: #c2410c; color: #ffffff; }
+
+        /* --- 高對比優化與強化樣式 --- */
+        .bg-light {
+            background-color: #f8fafc !important;
+            border-color: #94a3b8 !important;
+        }
+        .border-secondary-subtle {
+            border-color: #64748b !important;
+        }
+        .badge.bg-secondary {
+            background-color: #334155 !important;
+            color: #ffffff !important;
+        }
+        .badge.bg-warning {
+            background-color: #d97706 !important;
+            color: #ffffff !important;
+        }
+        .label-sm.text-primary, .text-primary {
+            color: #1e40af !important;
+        }
+        .label-sm.text-danger, .text-danger {
+            color: #b91c1c !important;
+        }
+        .form-control-sm, .input-group-sm .form-control, .input-group-sm .input-group-text {
+            font-size: 0.92rem;
+            font-weight: 700;
+        }
     </style>
 </head>
 <body>
@@ -149,7 +177,7 @@
         </div>
         <div class="row g-2 mb-2">
             <div class="col-6"><label class="label-sm">🧑‍⚕️ 救護人員姓名</label><input type="text" id="emsStaff" class="form-control" placeholder="姓名"></div>
-            <div class="col-6"><label class="label-sm">📞 追蹤電話</label><input type="tel" id="phone" class="form-control" placeholder="聯絡電話"></div>
+            <div class="col-6"><label class="label-sm">📞 患者追蹤電話</label><input type="tel" id="phone" class="form-control" placeholder="患者聯絡電話"></div>
         </div>
         <div class="row g-2 mb-2">
             <div class="col-5"><label class="label-sm">👤 患者姓名</label><input type="text" id="name" class="form-control" placeholder="姓名"></div>
@@ -350,6 +378,7 @@
                 </select>
             </div>
         </div>
+
 
         <div class="section-title">6. 現場檢傷與後送評估</div>
 
@@ -948,4 +977,4 @@
     }
 </script>
 </body>
-</html>
+</html
