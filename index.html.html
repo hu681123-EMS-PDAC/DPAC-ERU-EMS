@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
@@ -8,7 +7,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body { 
-            background-color: #f1f5f9; 
+            background-color: #e2e8f0; 
             padding: 10px; 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             -webkit-font-smoothing: antialiased;
@@ -18,8 +17,8 @@
         }
         .card { 
             border-radius: 12px; 
-            border: 2px solid #64748b; 
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12); 
+            border: 2px solid #334155; 
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18); 
             margin-bottom: 15px; 
             background-color: #ffffff; 
         }
@@ -33,12 +32,12 @@
             font-size: 1.25rem; 
             letter-spacing: 0.5px; 
             text-shadow: none; 
-            border: 1px solid #4c0519;
+            border: 1.5px solid #4c0519;
         }
         .label-sm { 
             font-size: 1.05rem; 
             font-weight: 800; 
-            color: #0f172a; 
+            color: #020617; 
             margin-bottom: 6px; 
             display: block; 
             letter-spacing: 0.2px; 
@@ -61,7 +60,7 @@
         }
         .form-control:focus, .form-select:focus { 
             border-color: #0284c7; 
-            box-shadow: 0 0 0 0.25rem rgba(2, 132, 199, 0.3); 
+            box-shadow: 0 0 0 0.25rem rgba(2, 132, 199, 0.4); 
             color: #020617; 
             background-color: #ffffff; 
         }
@@ -70,16 +69,16 @@
             padding: 12px; 
             border-radius: 8px; 
             background-color: #f1f5f9; 
-            border: 2px dashed #475569; 
+            border: 2px dashed #334155; 
             margin-bottom: 15px; 
         }
         
         /* 按鈕樣式優化 & 視覺標籤化 (提升對比度與清晰度) */
-        .btn-outline-danger { color: #991b1b; border-color: #b91c1c; border-width: 2px; font-weight: 800; background-color: #ffffff; }
-        .btn-outline-primary { color: #1e40af; border-color: #2563eb; border-width: 2px; font-weight: 800; background-color: #ffffff; }
-        .btn-outline-dark { color: #0f172a; border-color: #334155; border-width: 2px; font-weight: 800; background-color: #ffffff; }
-        .btn-outline-success { color: #14532d; border-color: #15803d; border-width: 2px; font-weight: 800; background-color: #ffffff; }
-        .btn-outline-warning { color: #713f12; border-color: #a16207; border-width: 2px; font-weight: 800; background-color: #ffffff; }
+        .btn-outline-danger { color: #991b1b; border-color: #991b1b; border-width: 2px; font-weight: 800; background-color: #ffffff; }
+        .btn-outline-primary { color: #1d4ed8; border-color: #1d4ed8; border-width: 2px; font-weight: 800; background-color: #ffffff; }
+        .btn-outline-dark { color: #0f172a; border-color: #1e293b; border-width: 2px; font-weight: 800; background-color: #ffffff; }
+        .btn-outline-success { color: #15803d; border-color: #15803d; border-width: 2px; font-weight: 800; background-color: #ffffff; }
+        .btn-outline-warning { color: #854d0e; border-color: #a16207; border-width: 2px; font-weight: 800; background-color: #ffffff; }
 
         .btn-check:checked + .btn-outline-danger { background-color: #991b1b; color: #ffffff; font-weight: 800; border-color: #7f1d1d; box-shadow: 0 2px 6px rgba(153, 27, 27, 0.4); }
         .btn-check:checked + .btn-outline-primary { background-color: #1e40af; color: #ffffff; font-weight: 800; border-color: #1e3a8a; box-shadow: 0 2px 6px rgba(30, 64, 175, 0.4); }
@@ -98,33 +97,33 @@
         
         .btn-submit { background: #991b1b; color: #ffffff; width: 100%; padding: 15px; font-weight: 800; border-radius: 10px; border: 2px solid #7f1d1d; font-size: 1.35rem; margin-top: 15px; letter-spacing: 0.5px; box-shadow: 0 4px 12px rgba(153, 27, 27, 0.35); }
         .btn-submit:active { background: #7f1d1d; }
-        .btn-reset { background: #334155; color: #ffffff; width: 100%; padding: 11px; font-weight: 800; border-radius: 10px; border: 2px solid #1e293b; font-size: 1.1rem; margin-top: 10px; letter-spacing: 0.3px; }
+        .btn-reset { background: #1e293b; color: #ffffff; width: 100%; padding: 11px; font-weight: 800; border-radius: 10px; border: 2px solid #0f172a; font-size: 1.1rem; margin-top: 10px; letter-spacing: 0.3px; }
         .gcs-select { background-color: #ffffff; font-weight: 800; border: 2px solid #334155; color: #020617; font-size: 1.05rem; }
         .input-group-text { font-size: 1rem; font-weight: 800; background-color: #cbd5e1; color: #020617; border: 2px solid #334155; border-left: none; border-radius: 0 8px 8px 0; min-width: 75px; justify-content: center; }
         
         /* 照片槽位優化樣式 */
-        .photo-slot { background: #ffffff; border: 2px solid #475569; border-radius: 8px; padding: 8px; text-align: center; display: flex; flex-direction: column; justify-content: space-between; height: 100%; }
+        .photo-slot { background: #ffffff; border: 2px solid #334155; border-radius: 8px; padding: 8px; text-align: center; display: flex; flex-direction: column; justify-content: space-between; height: 100%; }
         .preview-box { width: 100%; aspect-ratio: 1; border-radius: 6px; background: #f8fafc; border: 2px dashed #475569; display: flex; align-items: center; justify-content: center; color: #0f172a; font-size: 1.05rem; font-weight: 800; cursor: pointer; overflow: hidden; margin-bottom: 6px; }
         .preview-img { width: 100%; height: 100%; object-fit: cover; }
         .photo-btns .btn { font-size: 1rem; font-weight: 800; padding: 6px 4px; }
 
-        .text-muted { color: #1e293b !important; font-weight: 800; }
-        .badge { font-size: 1rem; font-weight: 800; padding: 8px 12px; letter-spacing: 0.3px; }
+        .text-muted { color: #0f172a !important; font-weight: 800; }
+        .badge { font-size: 1.05rem; font-weight: 800; padding: 8px 12px; letter-spacing: 0.3px; }
 
         /* 模式切換與狀態提示標籤 */
-        .status-banner { display: flex; justify-content: space-between; align-items: center; background-color: #e2e8f0; border: 2px solid #475569; padding: 10px 14px; border-radius: 8px; margin-bottom: 12px; }
+        .status-banner { display: flex; justify-content: space-between; align-items: center; background-color: #f1f5f9; border: 2px solid #334155; padding: 10px 14px; border-radius: 8px; margin-bottom: 12px; }
         .status-badge { font-size: 1rem; font-weight: 800; padding: 6px 12px; border-radius: 6px; letter-spacing: 0.3px; }
-        .mode-new { background-color: #0369a1; color: #ffffff; border: 1px solid #075985; }
+        .mode-new { background-color: #0284c7; color: #ffffff; border: 1px solid #0369a1; }
         .mode-edit { background-color: #c2410c; color: #ffffff; border: 1px solid #9a3412; }
 
         /* 覆蓋專用修正顏色 */
-        .text-primary { color: #0284c7 !important; text-shadow: none; font-weight: 800 !important; }
+        .text-primary { color: #0369a1 !important; text-shadow: none; font-weight: 800 !important; }
         .text-danger { color: #b91c1c !important; text-shadow: none; font-weight: 800 !important; }
         .text-dark { color: #020617 !important; font-weight: 800 !important; }
-        .bg-light { background-color: #f1f5f9 !important; color: #020617 !important; }
+        .bg-light { background-color: #f8fafc !important; color: #020617 !important; }
         .bg-secondary { background-color: #1e293b !important; color: #ffffff !important; }
-        .bg-warning { background-color: #d97706 !important; color: #ffffff !important; }
-        .border-secondary-subtle { border-color: #475569 !important; border-width: 2px !important; }
+        .bg-warning { background-color: #b45309 !important; color: #ffffff !important; }
+        .border-secondary-subtle { border-color: #334155 !important; border-width: 2px !important; }
         .border-danger { border-color: #b91c1c !important; border-width: 2px !important; }
         .border-primary { border-color: #0284c7 !important; border-width: 2px !important; }
         .btn-primary { background-color: #0284c7; border-color: #0369a1; color: #ffffff; font-weight: 800; }
@@ -134,7 +133,7 @@
 <body>
 
 <div class="card p-3">
-    <h4 class="text-center mb-3 fw-bold">🚑<strong> 救護紀錄系</strong>統</h4>
+    <h4 class="text-center mb-3 fw-bold">🚑 <strong>救護紀錄系統</strong></h4>
 
     <div class="status-banner">
         <div>
@@ -367,7 +366,6 @@
             </div>
         </div>
 
-
         <div class="section-title">6. 現場檢傷與後送評估</div>
 
         <div class="mb-3 p-2 bg-light rounded border border-secondary-subtle">
@@ -473,7 +471,7 @@
         </div>
         <input type="text" id="historyDetail" class="form-control form-control-sm detail-input mb-3" placeholder="✍️ 既往病史補充">
 		
-        <div class="mb-1"><span class="badge bg-warning text-dark">⚠️ 過敏史</span></div>
+        <div class="mb-1"><span class="badge bg-warning text-white">⚠️ 過敏史</span></div>
         <div class="btn-group-toggle mb-3">
             <input type="checkbox" class="btn-check a-check" id="a1" value="無已知過敏"><label class="btn btn-outline-warning" for="a1">無已知過敏</label>
             <input type="checkbox" class="btn-check a-check" id="a3" value="藥物過敏"><label class="btn btn-outline-warning" for="a3">藥物過敏</label>
@@ -841,6 +839,16 @@
         const transportDetail = getValByDOM('transportModeDetail');
         const transportFull = transportDetail ? transportBase + " (補充: " + transportDetail + ")" : transportBase;
 
+        const bpVal = getValByDOM('bp');
+        const prVal = getValByDOM('pr');
+        const rrVal = getValByDOM('rr');
+        const spo2Val = getValByDOM('spo2');
+        const gluVal = getValByDOM('glu');
+        const btVal = getValByDOM('bt');
+        const pupilLVal = getValByDOM('pupilL');
+        const pupilRVal = getValByDOM('pupilR');
+        const skinVal = getValByDOM('skin');
+
         const payload = {
             action: isEditMode ? "update" : "create",
             date: getValByDOM('date'),
@@ -862,10 +870,10 @@
             injuryParts: getValByDOM('injuryPartsDetail') ? getVals('.i-check') + " (補充: " + getValByDOM('injuryPartsDetail') + ")" : getVals('.i-check'),
             avpu: getValByDOM('avpu'),
             gcs: `E${getValByDOM('gcsE')}V${getValByDOM('gcsV')}M${getValByDOM('gcsM')}`,
-            bt: getValByDOM('bt'),
-            skin: getValByDOM('skin'),
-            pupil: `L:${getValByDOM('pupilL')}mm, R:${getValByDOM('pupilR')}mm`,
-            vitals: `BP:${getValByDOM('bp')}, PR:${getValByDOM('pr')}, RR:${getValByDOM('rr')}, SpO2:${getValByDOM('spo2')}, Glu:${getValByDOM('glu')}, BT:${getValByDOM('bt')}, Pupil:L${getValByDOM('pupilL')}/R${getValByDOM('pupilR')}, Skin:${getValByDOM('skin')}`,
+            bt: btVal,
+            skin: skinVal,
+            pupil: `L:${pupilLVal}mm, R:${pupilRVal}mm`,
+            vitals: `BP:${bpVal}, PR:${prVal}, RR:${rrVal}, SpO2:${spo2Val}, Glu:${gluVal}, BT:${btVal}, Pupil:L${pupilLVal}/R${pupilRVal}, Skin:${skinVal}`,
             treatments: getValByDOM('treatmentsDetail') ? getVals('.treat-check') + " (補充: " + getValByDOM('treatmentsDetail') + ")" : getVals('.treat-check'),
             history: getValByDOM('historyDetail') ? getVals('.h-check') + " (補充: " + getValByDOM('historyDetail') + ")" : getVals('.h-check'),
             allergy: getValByDOM('allergyDetail') ? getVals('.a-check') + " (補充: " + getValByDOM('allergyDetail') + ")" : getVals('.a-check'),
@@ -898,7 +906,7 @@
             const locUri = payload.accidentLoc.startsWith('http') ? payload.accidentLoc : `https://maps.google.com/?q=${encodeURIComponent(payload.accidentLoc)}`;
             let obsLogs = [payload.obs1, payload.obs2, payload.obs3].filter(v => v !== "");
             
-            if (liff.isInClient()) {
+            if (typeof liff !== 'undefined' && liff.isInClient()) {
                 const flexContents = [
                     {
                         "type": "box",
@@ -946,8 +954,8 @@
                     "paddingAll": "8px",
                     "margin": "md",
                     "contents": [
-                        { "type": "text", "text": `BP: ${payload.bp || '--'} | PR: ${payload.pr || '--'} | RR: ${payload.rr || '--'}`, "size": "xs", "margin": "xs" },
-                        { "type": "text", "text": `SpO2: ${payload.spo2 || '--'}% | GCS: ${payload.gcs}`, "size": "xs" }
+                        { "type": "text", "text": `BP: ${bpVal || '--'} | PR: ${prVal || '--'} | RR: ${rrVal || '--'}`, "size": "xs", "margin": "xs" },
+                        { "type": "text", "text": `SpO2: ${spo2Val || '--'}% | GCS: ${payload.gcs}`, "size": "xs" }
                     ]
                 });
 
