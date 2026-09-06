@@ -271,6 +271,7 @@
 
     function populateSelect(elementId, items, defaultText) {
         const select = document.getElementById(elementId);
+        if (!select) return;
         const currentVal = select.value;
         select.innerHTML = `<option value="">${defaultText}</option>`;
         if (items && Array.isArray(items)) {
@@ -294,22 +295,32 @@
         }
     }
 
-    // 日期格式化：將 ISO 字串或 Google Sheets 日期轉為 YYYY-MM-DD
+    // 日期格式化：修正 UTC 時區偏差，使用本地年月日（YYYY-MM-DD）
     function formatDate(val) {
         if (!val) return '';
         let s = String(val).trim();
-        if (s.includes('T')) {
-            try {
-                const dt = new Date(s);
-                if (!isNaN(dt.getTime())) {
-                    return dt.toISOString().split('T')[0];
-                }
-            } catch(e) {}
+        if (s.includes('1899-12-30')) return '';
+        
+        // 如果已經是 YYYY-MM-DD 或 YYYY/MM/DD
+        if (/^\d{4}[-/.]\d{1,2}[-/.]\d{1,2}$/.test(s)) {
+            let parts = s.split(/[-/.]/);
+            return `${parts[0]}-${parts[1].padStart(2, '0')}-${parts[2].padStart(2, '0')}`;
         }
-        return s.split('T')[0];
+
+        try {
+            const dt = new Date(s);
+            if (!isNaN(dt.getTime())) {
+                const y = dt.getFullYear();
+                const m = String(dt.getMonth() + 1).padStart(2, '0');
+                const d = String(dt.getDate()).padStart(2, '0');
+                if (y < 1920) return '';
+                return `${y}-${m}-${d}`;
+            }
+        } catch(e) {}
+        return s.split('T')[0].replace(/\//g, '-');
     }
 
-    // 時間格式化：正確處理 1899-12-30T... 基準時間或一般時間字串
+    // 時間格式化：正確處理基準時間與時間字串
     function formatTime(val) {
         if (!val) return '';
         let s = String(val).trim();
@@ -317,9 +328,9 @@
             try {
                 const dt = new Date(s);
                 if (!isNaN(dt.getTime())) {
-                    const hours = String(dt.getUTCHours()).padStart(2, '0');
-                    const minutes = String(dt.getUTCMinutes()).padStart(2, '0');
-                    const seconds = String(dt.getUTCSeconds()).padStart(2, '0');
+                    const hours = String(dt.getHours()).padStart(2, '0');
+                    const minutes = String(dt.getMinutes()).padStart(2, '0');
+                    const seconds = String(dt.getSeconds()).padStart(2, '0');
                     if (hours === '00' && minutes === '00' && seconds === '00') return '';
                     return `${hours}:${minutes}:${seconds}`;
                 }
@@ -346,37 +357,45 @@
             const res = await fetch(queryUrl);
             const result = await res.json();
 
-            if (result.status === "success" && result.data) {
-                const d = result.data;
-                const recordDate = formatDate(d.date || d.dateTime || '');
-                const recordTime = formatTime(d.time || d.dateTime || '');
-                const contactTime = formatTime(d.contactTime || d.contact_time || d.time || '');
+            // 相容物件與陣列回傳格式
+            let d = result.data || result.record || result.records || result.result;
+            if (Array.isArray(d)) {
+                d = d[0];
+            }
+
+            if (result.status === "success" && d) {
+                const recordDate = formatDate(d.date || d.dateTime || d['日期'] || '');
+                const recordTime = formatTime(d.time || d.dateTime || d['時間'] || '');
+                const contactTime = formatTime(d.contactTime || d.contact_time || d['接觸時間'] || recordTime || '');
 
                 document.getElementById('resDateTime').innerText = `${recordDate} ${recordTime}`.trim() || '-';
                 document.getElementById('resContactTime').innerText = contactTime || recordTime || '-';
-                document.getElementById('resTriageNo').innerText = d.triageNo || d.triage_no || '-';
-                document.getElementById('resPatientInfo').innerText = `${d.name || d.patientName || '無名'} / ${d.gender || '-'} / ${d.age || '-'} 歲`;
-                document.getElementById('resRescuerName').innerText = d.rescuer || d.rescuerName || '-';
-                document.getElementById('resLocation').innerText = d.location || '-';
-                document.getElementById('resProblem').innerText = d.problem || '-';
-                document.getElementById('resInjuryPart').innerText = d.injuryPart || d.injury_part || '-';
-                document.getElementById('resVitals').innerText = d.vitals || '-';
-                document.getElementById('resMedicalHistory').innerText = d.medicalHistory || d.medical_history || '無';
-                document.getElementById('resAllergy').innerText = d.allergy || '無';
+                document.getElementById('resTriageNo').innerText = d.triageNo || d.triage_no || d['檢傷編號'] || '-';
+                document.getElementById('resPatientInfo').innerText = `${d.name || d.patientName || d['姓名'] || d['患者姓名'] || '無名'} / ${d.gender || d['性別'] || '-'} / ${d.age || d['年齡'] || '-'} 歲`;
+                document.getElementById('resRescuerName').innerText = d.rescuer || d.rescuerName || d['救護人員'] || '-';
+                document.getElementById('resLocation').innerText = d.location || d['地點'] || d['事故位置'] || '-';
+                document.getElementById('resProblem').innerText = d.problem || d['傷病問題'] || d['主要問題'] || '-';
+                document.getElementById('resInjuryPart').innerText = d.injuryPart || d.injury_part || d['受傷部位'] || '-';
+                document.getElementById('resVitals').innerText = d.vitals || d['生命徵象'] || '-';
+                document.getElementById('resMedicalHistory').innerText = d.medicalHistory || d.medical_history || d['既往病史'] || '無';
+                document.getElementById('resAllergy').innerText = d.allergy || d['過敏史'] || '無';
 
-                // 強化多重照片欄位與陣列/逗號字串解析
+                // 全面強化多重照片欄位與分隔符號解析
                 let rawPhotos = [];
-                if (Array.isArray(d.photos)) {
-                    rawPhotos = d.photos;
-                } else if (typeof d.photos === 'string' && d.photos.trim() !== '') {
-                    rawPhotos = d.photos.split(/[,，\s]+/);
-                } else if (typeof d.photo === 'string' && d.photo.trim() !== '') {
-                    rawPhotos = d.photo.split(/[,，\s]+/);
+                const possiblePhotoLists = [d.photos, d.photo, d.images, d['照片'], d['現場照片']];
+                for (let list of possiblePhotoLists) {
+                    if (Array.isArray(list)) {
+                        rawPhotos = list;
+                        break;
+                    } else if (typeof list === 'string' && list.trim() !== '') {
+                        rawPhotos = list.split(/[,，;\n\s|]+/);
+                        break;
+                    }
                 }
 
-                const p1 = d.photo1 || d.image1 || d.img1 || d['現場照片1'] || d['照片1'] || rawPhotos[0] || '';
-                const p2 = d.photo2 || d.image2 || d.img2 || d['現場照片2'] || d['照片2'] || rawPhotos[1] || '';
-                const p3 = d.photo3 || d.image3 || d.img3 || d['現場照片3'] || d['照片3'] || rawPhotos[2] || '';
+                const p1 = d.photo1 || d.photo_1 || d.photoUrl1 || d.photo_url1 || d.image1 || d.img1 || d['現場照片1'] || d['照片1'] || d['現場照片 1'] || d['照片 1'] || rawPhotos[0] || '';
+                const p2 = d.photo2 || d.photo_2 || d.photoUrl2 || d.photo_url2 || d.image2 || d.img2 || d['現場照片2'] || d['照片2'] || d['現場照片 2'] || d['照片 2'] || rawPhotos[1] || '';
+                const p3 = d.photo3 || d.photo_3 || d.photoUrl3 || d.photo_url3 || d.image3 || d.img3 || d['現場照片3'] || d['照片3'] || d['現場照片 3'] || d['照片 3'] || rawPhotos[2] || '';
 
                 setPhoto('imgPhoto1', 'noPhoto1', p1);
                 setPhoto('imgPhoto2', 'noPhoto2', p2);
@@ -393,7 +412,7 @@
         }
     }
 
-    // 處理 Google 雲端硬碟圖片網址轉址，支援各種 Drive URL 及純 File ID
+    // 處理 Google 雲端硬碟圖片網址轉址，支援多種 Drive 網址與純 File ID
     function formatDrivePhotoUrl(url) {
         if (!url) return '';
         let cleanUrl = String(url).trim();
@@ -403,7 +422,7 @@
         if (cleanUrl.includes('drive.google.com') || cleanUrl.includes('googleusercontent.com')) {
             if (cleanUrl.includes('/file/d/')) {
                 const parts = cleanUrl.split('/file/d/');
-                if (parts[1]) fileId = parts[1].split('/')[0];
+                if (parts[1]) fileId = parts[1].split('/')[0].split('?')[0];
             } else if (cleanUrl.includes('id=')) {
                 const match = cleanUrl.match(/[?&]id=([^&]+)/);
                 if (match) fileId = match[1];
@@ -415,39 +434,39 @@
             fileId = cleanUrl;
         }
 
+        // 優先使用 Google Drive 高穩定度縮圖網址
         if (fileId) {
-            return `https://lh3.googleusercontent.com/d/${fileId}=s800`;
+            return `https://drive.google.com/thumbnail?id=${fileId}&sz=w1000`;
         }
         return cleanUrl;
     }
 
+    // 照片載入與多階自動備援切換機制
     function setPhoto(imgId, noImgId, rawUrl) {
         const img = document.getElementById(imgId);
         const noImg = document.getElementById(noImgId);
         const url = formatDrivePhotoUrl(rawUrl);
 
-        if (url && url.startsWith('http')) {
+        if (url && (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:image/'))) {
             img.src = url;
             img.style.display = 'block';
             noImg.style.display = 'none';
 
-            // 圖片載入失敗時自動多重備援切換
+            let errorCount = 0;
             img.onerror = function() {
-                if (img.src.includes('googleusercontent.com/d/')) {
-                    const match = img.src.match(/\/d\/([^=]+)/);
-                    if (match && match[1]) {
-                        img.src = `https://drive.google.com/uc?export=view&id=${match[1]}`;
-                        return;
-                    }
-                } else if (img.src.includes('uc?export=view')) {
-                    const match = img.src.match(/[?&]id=([^&]+)/);
-                    if (match && match[1]) {
-                        img.src = `https://lh3.googleusercontent.com/d/${match[1]}=s800`;
-                        return;
-                    }
+                errorCount++;
+                let fileId = '';
+                const matchId = img.src.match(/[?&]id=([^&]+)/) || img.src.match(/\/d\/([^=/]+)/);
+                if (matchId && matchId[1]) fileId = matchId[1];
+
+                if (errorCount === 1 && fileId) {
+                    img.src = `https://lh3.googleusercontent.com/d/${fileId}=s800`;
+                } else if (errorCount === 2 && fileId) {
+                    img.src = `https://drive.google.com/uc?export=view&id=${fileId}`;
+                } else {
+                    img.style.display = 'none';
+                    noImg.style.display = 'block';
                 }
-                img.style.display = 'none';
-                noImg.style.display = 'block';
             };
         } else {
             img.style.display = 'none';
@@ -456,37 +475,31 @@
     }
 
     async function fetchAnalytics() {
-        const date = document.getElementById('statsDate').value;
-        if (!date) {
+        const dateInput = document.getElementById('statsDate').value;
+        if (!dateInput) {
             alert("請先選擇要分析的日期！");
             return;
         }
 
         try {
-            const res = await fetch(`${GAS_URL}?action=analytics&date=${encodeURIComponent(date)}`);
+            const res = await fetch(`${GAS_URL}?action=analytics&date=${encodeURIComponent(dateInput)}`);
             const result = await res.json();
 
             // 強化大數據分析回傳結果的容錯與多重結構解析
             const data = (result && (result.analytics || result.data || result));
             
-            if (result && (result.status === "success" || data)) {
+            if (result && (result.status === "success" || result.analytics || result.data || data.totalCount !== undefined)) {
                 const totalCount = data.totalCount ?? data.count ?? data.total ?? data.total_count ?? 0;
                 const avgAge = data.avgAge ?? data.averageAge ?? data.avg_age ?? 0;
 
                 document.getElementById('statTotalCount').innerText = `${totalCount} 人`;
                 document.getElementById('statAvgAge').innerText = `${avgAge} 歲`;
 
-                const probEl = document.getElementById('statProblemList');
-                const problems = data.problems || data.problemStats || data.problem_stats || {};
-                probEl.innerHTML = Object.keys(problems).length > 0 ?
-                    Object.entries(problems).map(([k, v]) => `<li>${k}：<span class="text-danger">${v} 次</span></li>`).join('') :
-                    `<li class="text-muted">當日無紀錄</li>`;
+                const problems = data.problems || data.problemStats || data.problem_stats;
+                renderStatList('statProblemList', problems, '次');
 
-                const partEl = document.getElementById('statInjuryPartsList');
-                const injuryParts = data.injuryParts || data.injuryPartStats || data.injury_parts || {};
-                partEl.innerHTML = Object.keys(injuryParts).length > 0 ?
-                    Object.entries(injuryParts).map(([k, v]) => `<li>${k}：<span class="text-primary">${v} 處</span></li>`).join('') :
-                    `<li class="text-muted">當日無紀錄</li>`;
+                const injuryParts = data.injuryParts || data.injuryPartStats || data.injury_parts;
+                renderStatList('statInjuryPartsList', injuryParts, '處');
 
                 const historyCount = data.historyCount ?? data.medicalHistoryCount ?? data.history_count ?? 0;
                 const allergyCount = data.allergyCount ?? data.allergy_count ?? 0;
@@ -503,6 +516,44 @@
             resetAnalyticsUI("載入資料發生錯誤");
             alert("分析失敗：" + e.message);
         }
+    }
+
+    // 格式化渲染分析列表（自動相容陣列與物件格式）
+    function renderStatList(containerId, dataObj, unitStr) {
+        const el = document.getElementById(containerId);
+        if (!el) return;
+
+        if (!dataObj) {
+            el.innerHTML = `<li class="text-muted">當日無紀錄</li>`;
+            return;
+        }
+
+        let html = '';
+        if (Array.isArray(dataObj)) {
+            if (dataObj.length === 0) {
+                html = `<li class="text-muted">當日無紀錄</li>`;
+            } else {
+                html = dataObj.map(item => {
+                    if (typeof item === 'string') return `<li>${item}</li>`;
+                    if (typeof item === 'object' && item !== null) {
+                        const name = item.name || item.problem || item.part || item.label || item.key || item[0] || '未指定';
+                        const count = item.count || item.value || item.val || item[1] || 1;
+                        return `<li>${name}：<span class="fw-bold text-primary">${count} ${unitStr}</span></li>`;
+                    }
+                    return `<li>${item}</li>`;
+                }).join('');
+            }
+        } else if (typeof dataObj === 'object') {
+            const entries = Object.entries(dataObj);
+            if (entries.length === 0) {
+                html = `<li class="text-muted">當日無紀錄</li>`;
+            } else {
+                html = entries.map(([k, v]) => `<li>${k}：<span class="fw-bold text-primary">${v} ${unitStr}</span></li>`).join('');
+            }
+        } else {
+            html = `<li>${dataObj}</li>`;
+        }
+        el.innerHTML = html;
     }
 
     function resetAnalyticsUI(message) {
