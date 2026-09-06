@@ -583,6 +583,7 @@
         badge.className = "status-badge mode-new";
         badge.innerText = "✨ 新增模式";
         document.getElementById('submitBtn').innerText = "✅ 確認上傳紀錄";
+        generateAutoTriageNo();
     }
 
     function switchToEditMode() {
@@ -593,7 +594,7 @@
         document.getElementById('submitBtn').innerText = "✏️ 儲存修改紀錄";
     }
 
-    // 強化版：載入舊資料（支援嚴格錯誤攔截與非 JSON 回應診斷）
+    // 強化版：載入舊資料（確保能夠完整代入所有欄位與陣列、物件對應）
     async function loadOldData() {
         const teamNo = document.getElementById('team').value.trim();
         if (!teamNo) {
@@ -617,7 +618,7 @@
                 data = JSON.parse(textResponse);
             } catch (err) {
                 console.error("GAS 非 JSON 回應內容：", textResponse);
-                alert("⚠️ 伺服器回應格式錯誤！通常是因為 Google Apps Script 尚未重新部署，或權限未設為「任何人」。請檢查後端 GAS doGet 回應！");
+                alert("⚠️ 伺服器回應格式錯誤！請檢查後端 GAS doGet 回應格式！");
                 switchToAddMode();
                 return;
             }
@@ -639,6 +640,7 @@
     }
 
     function populateForm(record) {
+        if (record.team) document.getElementById('team').value = record.team;
         if (record.date) document.getElementById('date').value = record.date;
         if (record.time) document.getElementById('contactTime').value = record.time;
         if (record.emsStaff) document.getElementById('emsStaff').value = record.emsStaff;
@@ -679,6 +681,27 @@
         if (record.startTriage) {
             const rad = document.querySelector(`input[name="startTriage"][value="${record.startTriage}"]`);
             if (rad) rad.checked = true;
+        }
+
+        // 解析 Vitals 與 Pupil 欄位還原回控制項
+        if (record.vitals) {
+            const bpMatch = record.vitals.match(/BP:([^,]+)/);
+            if (bpMatch) document.getElementById('bp').value = bpMatch[1].trim();
+            const prMatch = record.vitals.match(/PR:([^,]+)/);
+            if (prMatch) document.getElementById('pr').value = prMatch[1].trim();
+            const rrMatch = record.vitals.match(/RR:([^,]+)/);
+            if (rrMatch) document.getElementById('rr').value = rrMatch[1].trim();
+            const spo2Match = record.vitals.match(/SpO2:([^,%]+)/);
+            if (spo2Match) document.getElementById('spo2').value = spo2Match[1].trim();
+            const gluMatch = record.vitals.match(/Glu:([^,]+)/);
+            if (gluMatch) document.getElementById('glu').value = gluMatch[1].trim();
+        }
+
+        if (record.pupil) {
+            const lMatch = record.pupil.match(/L:([^m]+)mm/);
+            if (lMatch) document.getElementById('pupilL').value = lMatch[1].trim();
+            const rMatch = record.pupil.match(/R:([^m]+)mm/);
+            if (rMatch) document.getElementById('pupilR').value = rMatch[1].trim();
         }
 
         if (record.obs1) document.getElementById('obs1').value = record.obs1;
@@ -809,7 +832,6 @@
         document.getElementById('emsForm').reset();
         clearSlot(1); clearSlot(2); clearSlot(3);
         setInitialDateTime(); 
-        generateAutoTriageNo();
         switchToAddMode();
         
         document.getElementById('traumaArea').style.display = 'none';
