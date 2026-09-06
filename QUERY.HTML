@@ -339,12 +339,13 @@
         }
     }
 
-    // 處理 Google 雲端硬碟圖片網址轉址，確保圖片正確載入
+    // 處理 Google 雲端硬碟圖片網址轉址，支援各種 Drive URL 及純 File ID
     function formatDrivePhotoUrl(url) {
         if (!url || typeof url !== 'string') return '';
         let cleanUrl = url.trim();
-        // 若為 Google Drive 檢視網址 /file/d/ID/view 或 open?id=ID，轉為直接讀取直連或縮圖格式
-        if (cleanUrl.includes('drive.google.com')) {
+        if (!cleanUrl) return '';
+
+        if (cleanUrl.includes('drive.google.com') || cleanUrl.includes('googleusercontent.com')) {
             let fileId = '';
             if (cleanUrl.includes('/file/d/')) {
                 const parts = cleanUrl.split('/file/d/');
@@ -356,6 +357,8 @@
             if (fileId) {
                 return `https://lh3.googleusercontent.com/d/${fileId}=s800`;
             }
+        } else if (!cleanUrl.startsWith('http') && cleanUrl.length >= 20 && !cleanUrl.includes(' ')) {
+            return `https://lh3.googleusercontent.com/d/${cleanUrl}=s800`;
         }
         return cleanUrl;
     }
@@ -369,8 +372,16 @@
             img.src = url;
             img.style.display = 'block';
             noImg.style.display = 'none';
-            // 圖片載入失敗時自動備援切換顯示無照片
+
+            // 圖片載入失敗時自動多重備援
             img.onerror = function() {
+                if (img.src.includes('googleusercontent.com/d/')) {
+                    const match = img.src.match(/\/d\/([^=]+)/);
+                    if (match && match[1]) {
+                        img.src = `https://drive.google.com/uc?export=view&id=${match[1]}`;
+                        return;
+                    }
+                }
                 img.style.display = 'none';
                 noImg.style.display = 'block';
             };
@@ -397,13 +408,15 @@
                 document.getElementById('statAvgAge').innerText = `${data.avgAge || 0} 歲`;
 
                 const probEl = document.getElementById('statProblemList');
-                probEl.innerHTML = (data.problems && Object.keys(data.problems).length > 0) ?
-                    Object.entries(data.problems).map(([k, v]) => `<li>${k}：<span class="text-danger">${v} 次</span></li>`).join('') :
+                const problems = data.problems || {};
+                probEl.innerHTML = Object.keys(problems).length > 0 ?
+                    Object.entries(problems).map(([k, v]) => `<li>${k}：<span class="text-danger">${v} 次</span></li>`).join('') :
                     `<li class="text-muted">當日無紀錄</li>`;
 
                 const partEl = document.getElementById('statInjuryPartsList');
-                partEl.innerHTML = (data.injuryParts && Object.keys(data.injuryParts).length > 0) ?
-                    Object.entries(data.injuryParts).map(([k, v]) => `<li>${k}：<span class="text-primary">${v} 處</span></li>`).join('') :
+                const injuryParts = data.injuryParts || {};
+                partEl.innerHTML = Object.keys(injuryParts).length > 0 ?
+                    Object.entries(injuryParts).map(([k, v]) => `<li>${k}：<span class="text-primary">${v} 處</span></li>`).join('') :
                     `<li class="text-muted">當日無紀錄</li>`;
 
                 document.getElementById('statSummaryTable').innerHTML = `
@@ -411,29 +424,24 @@
                     <tr><td>有過敏史總人數</td><td><span class="text-danger">${data.allergyCount || 0} 人</span></td></tr>
                 `;
             } else {
-                // 無資料時的安全歸零處理
-                document.getElementById('statTotalCount').innerText = "0 人";
-                document.getElementById('statAvgAge').innerText = "0 歲";
-                document.getElementById('statProblemList').innerHTML = `<li class="text-muted">該日期無相符紀錄</li>`;
-                document.getElementById('statInjuryPartsList').innerHTML = `<li class="text-muted">該日期無相符紀錄</li>`;
-                document.getElementById('statSummaryTable').innerHTML = `
-                    <tr><td>有既往病史總人數</td><td><span class="text-danger">0 人</span></td></tr>
-                    <tr><td>有過敏史總人數</td><td><span class="text-danger">0 人</span></td></tr>
-                `;
+                resetAnalyticsUI("該日期無相符紀錄");
                 alert("該日期無對應數據！");
             }
         } catch (e) {
-            // 例外發生時的安全歸零處理
-            document.getElementById('statTotalCount').innerText = "0 人";
-            document.getElementById('statAvgAge').innerText = "0 歲";
-            document.getElementById('statProblemList').innerHTML = `<li class="text-muted">載入資料發生錯誤</li>`;
-            document.getElementById('statInjuryPartsList').innerHTML = `<li class="text-muted">載入資料發生錯誤</li>`;
-            document.getElementById('statSummaryTable').innerHTML = `
-                <tr><td>有既往病史總人數</td><td><span class="text-danger">0 人</span></td></tr>
-                <tr><td>有過敏史總人數</td><td><span class="text-danger">0 人</span></td></tr>
-            `;
+            resetAnalyticsUI("載入資料發生錯誤");
             alert("分析失敗：" + e.message);
         }
+    }
+
+    function resetAnalyticsUI(message) {
+        document.getElementById('statTotalCount').innerText = "0 人";
+        document.getElementById('statAvgAge').innerText = "0 歲";
+        document.getElementById('statProblemList').innerHTML = `<li class="text-muted">${message}</li>`;
+        document.getElementById('statInjuryPartsList').innerHTML = `<li class="text-muted">${message}</li>`;
+        document.getElementById('statSummaryTable').innerHTML = `
+            <tr><td>有既往病史總人數</td><td><span class="text-danger">0 人</span></td></tr>
+            <tr><td>有過敏史總人數</td><td><span class="text-danger">0 人</span></td></tr>
+        `;
     }
 </script>
 </body>
