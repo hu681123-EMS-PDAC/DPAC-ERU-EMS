@@ -73,7 +73,7 @@
             margin-bottom: 15px; 
         }
         
-        /* 按鈕樣式優化 & 視覺標籤化 (提升對比度與清晰度) */
+        /* 按鈕樣式優化 & 視覺標籤化 */
         .btn-outline-danger { color: #991b1b; border-color: #991b1b; border-width: 2px; font-weight: 800; background-color: #ffffff; }
         .btn-outline-primary { color: #1d4ed8; border-color: #1d4ed8; border-width: 2px; font-weight: 800; background-color: #ffffff; }
         .btn-outline-dark { color: #0f172a; border-color: #1e293b; border-width: 2px; font-weight: 800; background-color: #ffffff; }
@@ -86,7 +86,6 @@
         .btn-check:checked + .btn-outline-success { background-color: #14532d; color: #ffffff; font-weight: 800; border-color: #14532d; box-shadow: 0 2px 6px rgba(20, 83, 45, 0.4); }
         .btn-check:checked + .btn-outline-warning { background-color: #854d0e; color: #ffffff; font-weight: 800; border-color: #713f12; box-shadow: 0 2px 6px rgba(133, 77, 14, 0.4); }
         
-        /* START 檢傷專用色 */
         .btn-start-green:checked + label { background-color: #14532d !important; color: #ffffff !important; font-weight: 800 !important; border-color: #14532d !important; }
         .btn-start-yellow:checked + label { background-color: #854d0e !important; color: #ffffff !important; font-weight: 800 !important; border-color: #713f12 !important; }
         .btn-start-red:checked + label { background-color: #991b1b !important; color: #ffffff !important; font-weight: 800 !important; border-color: #7f1d1d !important; }
@@ -101,7 +100,6 @@
         .gcs-select { background-color: #ffffff; font-weight: 800; border: 2px solid #334155; color: #020617; font-size: 1.05rem; }
         .input-group-text { font-size: 1rem; font-weight: 800; background-color: #cbd5e1; color: #020617; border: 2px solid #334155; border-left: none; border-radius: 0 8px 8px 0; min-width: 75px; justify-content: center; }
         
-        /* 照片槽位優化樣式 */
         .photo-slot { background: #ffffff; border: 2px solid #334155; border-radius: 8px; padding: 8px; text-align: center; display: flex; flex-direction: column; justify-content: space-between; height: 100%; }
         .preview-box { width: 100%; aspect-ratio: 1; border-radius: 6px; background: #f8fafc; border: 2px dashed #475569; display: flex; align-items: center; justify-content: center; color: #0f172a; font-size: 1.05rem; font-weight: 800; cursor: pointer; overflow: hidden; margin-bottom: 6px; }
         .preview-img { width: 100%; height: 100%; object-fit: cover; }
@@ -110,13 +108,11 @@
         .text-muted { color: #0f172a !important; font-weight: 800; }
         .badge { font-size: 1.05rem; font-weight: 800; padding: 8px 12px; letter-spacing: 0.3px; }
 
-        /* 模式切換與狀態提示標籤 */
         .status-banner { display: flex; justify-content: space-between; align-items: center; background-color: #f1f5f9; border: 2px solid #334155; padding: 10px 14px; border-radius: 8px; margin-bottom: 12px; flex-wrap: wrap; gap: 8px; }
         .status-badge { font-size: 1rem; font-weight: 800; padding: 6px 12px; border-radius: 6px; letter-spacing: 0.3px; }
         .mode-new { background-color: #0284c7; color: #ffffff; border: 1px solid #0369a1; }
         .mode-edit { background-color: #c2410c; color: #ffffff; border: 1px solid #9a3412; }
 
-        /* 覆蓋專用修正顏色 */
         .text-primary { color: #0369a1 !important; text-shadow: none; font-weight: 800 !important; }
         .text-danger { color: #b91c1c !important; text-shadow: none; font-weight: 800 !important; }
         .text-dark { color: #020617 !important; font-weight: 800 !important; }
@@ -141,7 +137,7 @@
             <span id="modeBadge" class="status-badge mode-new">✨ 新增模式</span>
         </div>
         <div class="d-flex gap-2">
-            <a href="https://hu681123-ems-pdac.github.io/DPAC-ERU-EMS/QUERY.HTML?openExternalBrowser=1" target="_blank" class="btn btn-sm btn-outline-primary">📊 查詢與分析</a>
+            <a href="https://hu681123-ems-pdac.github.io/DPAC-ERU-EMS/QUERY.HTML" target="_blank" class="btn btn-sm btn-outline-primary">📊 查詢與分析</a>
             <button type="button" class="btn btn-sm btn-outline-dark" onclick="switchToAddMode()">➕ 切換為新增資料</button>
         </div>
     </div>
@@ -149,7 +145,6 @@
     <form id="emsForm">
         <div class="section-title">1. 基本資料</div>
         
-        <!-- 【需求變更】將檢傷編號放置最上方，並提供舊資料載入按鈕 -->
         <div class="row g-2 mb-2">
             <div class="col-12">
                 <label class="label-sm text-primary">🏷️ 檢傷編號 (輸入編號可載入舊資料)</label>
@@ -194,7 +189,6 @@
             <label class="label-sm text-danger" style="font-size: 1.05rem;">⚠️ 請先選擇案件類型</label>
             <select id="caseType" class="form-select fw-bold border-danger shadow-sm" onchange="toggleProblems()">
                 <option value="">-- 點擊選擇 (創傷/非創傷/綜合) --</option>
-
                 <option value="創傷">🔴 創傷案件 (Trauma)</option>
                 <option value="非創傷">🔵 非創傷案件 (Non-Trauma)</option>
                 <option value="綜合">🟣 綜合案件 (創傷+非創傷)</option>
@@ -546,11 +540,11 @@
 
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <script>
-    const GAS_URL = "https://script.google.com/macros/s/AKfycby9baNkZ2tuBvBTjetH4e06NzPij54VLw2y6Js6lLyHFPtF6ooAU4utfmhc5frxhUrIuQ/exec"; 
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbxtJq4LBO0yhM2xY8EMjkY_ZdvO7hZ7DIY1WZuT_vaWcdettPDysLuEn5IXEHqOtntgSA/exec"; 
     const LIFF_ID = "2009198292-oRMLEX95";
     
     let photoData = { 1: "", 2: "", 3: "" };
-    let isEditMode = false; // 紀錄目前為新增或修改狀態
+    let isEditMode = false;
 
     window.onload = function() {
         setInitialDateTime();
@@ -599,7 +593,7 @@
         document.getElementById('submitBtn').innerText = "✏️ 儲存修改紀錄";
     }
 
-    // 載入舊資料（向 GAS 發起 GET 請求）
+    // 強化版：載入舊資料（支援嚴格錯誤攔截與非 JSON 回應診斷）
     async function loadOldData() {
         const teamNo = document.getElementById('team').value.trim();
         if (!teamNo) {
@@ -612,11 +606,24 @@
         btn.innerText = "⌛ 載入中...";
 
         try {
-            const res = await fetch(`${GAS_URL}?team=${encodeURIComponent(teamNo)}`);
-            const data = await res.json();
+            const res = await fetch(`${GAS_URL}?team=${encodeURIComponent(teamNo)}`, {
+                method: 'GET',
+                redirect: 'follow'
+            });
+
+            const textResponse = await res.text();
+            let data;
+            try {
+                data = JSON.parse(textResponse);
+            } catch (err) {
+                console.error("GAS 非 JSON 回應內容：", textResponse);
+                alert("⚠️ 伺服器回應格式錯誤！通常是因為 Google Apps Script 尚未重新部署，或權限未設為「任何人」。請檢查後端 GAS doGet 回應！");
+                switchToAddMode();
+                return;
+            }
 
             if (data.status === "error" || !data.record) {
-                alert("未找到該檢傷編號的歷史資料！");
+                alert(`❌ 未找到檢傷編號 [${teamNo}] 的歷史資料！\n(請確認該編號在雲端試算表中是否存在)`);
                 switchToAddMode();
             } else {
                 populateForm(data.record);
@@ -631,7 +638,6 @@
         }
     }
 
-    // 將回傳的 JSON 填入表單中
     function populateForm(record) {
         if (record.date) document.getElementById('date').value = record.date;
         if (record.time) document.getElementById('contactTime').value = record.time;
@@ -648,7 +654,6 @@
             toggleProblems();
         }
 
-        // 解析並還原勾選框
         const parseCheckboxes = (selector, dataStr) => {
             if (!dataStr) return;
             document.querySelectorAll(selector).forEach(chk => {
@@ -667,7 +672,6 @@
         if (record.bt) document.getElementById('bt').value = record.bt;
         if (record.skin) document.getElementById('skin').value = record.skin;
 
-        // 解析單選 Radio
         if (record.isCritical) {
             const rad = document.querySelector(`input[name="isCritical"][value="${record.isCritical}"]`);
             if (rad) rad.checked = true;
@@ -682,11 +686,9 @@
         if (record.obs3) document.getElementById('obs3').value = record.obs3;
         if (record.memo) document.getElementById('memo').value = record.memo;
 
-        // 載入歷史照片預覽
         [1, 2, 3].forEach(i => {
             if (record[`photo${i}`]) {
                 photoData[i] = record[`photo${i}`];
-
                 document.getElementById(`txt-${i}`).style.display = 'none';
                 const imgEl = document.getElementById(`img-${i}`);
                 imgEl.src = record[`photo${i}`];
@@ -805,11 +807,7 @@
         if (!confirm("確定要清空所有填寫的資料嗎？(此操作無法復原)")) return;
         
         document.getElementById('emsForm').reset();
-        
-        clearSlot(1);
-        clearSlot(2);
-        clearSlot(3);
-        
+        clearSlot(1); clearSlot(2); clearSlot(3);
         setInitialDateTime(); 
         generateAutoTriageNo();
         switchToAddMode();
@@ -817,7 +815,6 @@
         document.getElementById('traumaArea').style.display = 'none';
         document.getElementById('nonTraumaArea').style.display = 'none';
         document.getElementById('locationStatus').innerText = '';
-        
         window.scrollTo(0, 0); 
     }
 
@@ -882,11 +879,9 @@
             history: getValByDOM('historyDetail') ? getVals('.h-check') + " (補充: " + getValByDOM('historyDetail') + ")" : getVals('.h-check'),
             allergy: getValByDOM('allergyDetail') ? getVals('.a-check') + " (補充: " + getValByDOM('allergyDetail') + ")" : getVals('.a-check'),
             memo: getValByDOM('memo'),
-            
             obs1: getValByDOM('obs1'),
             obs2: getValByDOM('obs2'),
             obs3: getValByDOM('obs3'),
-            
             photo1: photoData[1],
             photo2: photoData[2],
             photo3: photoData[3]
@@ -896,9 +891,7 @@
             await fetch(GAS_URL, { 
                 method: 'POST', 
                 mode: 'no-cors',
-                headers: {
-                    'Content-Type': 'text/plain;charset=utf-8',
-                },
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                 body: JSON.stringify(payload) 
             });
             
