@@ -288,8 +288,10 @@
         const rescuer = (document.getElementById('inputRescuer').value || document.getElementById('selectRescuer').value).trim();
         const date = document.getElementById('inputDate').value;
 
+        // 檢查是否未填寫任何查詢條件
         if (!triageNo && !patientName && !rescuer && !date) {
             alert("請至少選擇或輸入一項查詢條件！");
+            document.getElementById('queryResultArea').style.display = 'none';
             return;
         }
 
@@ -322,6 +324,7 @@
             }
         } catch (e) {
             alert("查詢失敗：" + e.message);
+            document.getElementById('queryResultArea').style.display = 'none';
         }
     }
 
