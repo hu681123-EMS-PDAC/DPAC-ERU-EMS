@@ -128,7 +128,7 @@
 <body>
 
 <div class="card p-3">
-    <h4 class="text-center mb-3 fw-bold">🚑 <strong>救護紀錄系統</strong>[cite: 11]</h4>
+    <h4 class="text-center mb-3 fw-bold">🚑 <strong>救護紀錄系統</strong></h4>
 
     <div class="status-banner">
         <div>
@@ -601,7 +601,6 @@
         document.getElementById('submitBtn').innerText = "✏️ 儲存修改紀錄";
     }
 
-    // [修正] 確保 loadOldData 為 async 函式並正確處理回應
     async function loadOldData() {
         const teamNo = document.getElementById('team').value.trim();
         if (!teamNo) {
@@ -909,6 +908,7 @@
         const pupilRVal = getValByDOM('pupilR');
         const skinVal = getValByDOM('skin');
 
+        // 嚴格對齊後端寫入順序與欄位名稱
         const payload = {
             action: isEditMode ? "update" : "create",
             date: getValByDOM('date'),
