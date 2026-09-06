@@ -552,6 +552,7 @@
         try { liff.init({ liffId: LIFF_ID }); } catch (err) {}
     };
 
+    // 檢傷編號按照編號排序前面無編號不要跳號，並支援先佔機制
     function generateAutoTriageNo() {
         const now = new Date();
         const year = now.getFullYear();
@@ -559,16 +560,28 @@
         const day = String(now.getDate()).padStart(2, '0');
         const dateStr = `${year}${month}${day}`;
         
-        let counter = parseInt(localStorage.getItem('ems_triage_counter') || '1', 10);
-        const lastDate = localStorage.getItem('ems_triage_date');
+        let counterKey = `ems_triage_counter_${dateStr}`;
+        let activeKey = `ems_triage_active_${dateStr}`;
         
-        if (lastDate !== dateStr) {
-            counter = 1;
-            localStorage.setItem('ems_triage_date', dateStr);
+        let counter = parseInt(localStorage.getItem(counterKey) || '1', 10);
+        
+        // 確保不跳號且先佔（若存在未送出或已佔用的編號，往下遞增尋找空缺）
+        let activeNos = JSON.parse(localStorage.getItem(activeKey) || '[]');
+        let seqStr = String(counter).padStart(2, '0');
+        let fullNo = `${dateStr}${seqStr}`;
+        
+        while (activeNos.includes(fullNo)) {
+            counter++;
+            seqStr = String(counter).padStart(2, '0');
+            fullNo = `${dateStr}${seqStr}`;
         }
         
-        const seqStr = String(counter).padStart(2, '0');
-        document.getElementById('team').value = `${dateStr}${seqStr}`;
+        // 佔用此編號
+        activeNos.push(fullNo);
+        localStorage.setItem(activeKey, JSON.stringify(activeNos));
+        localStorage.setItem(counterKey, counter + 1);
+        
+        document.getElementById('team').value = fullNo;
     }
 
     function setInitialDateTime() {
@@ -583,7 +596,6 @@
         badge.className = "status-badge mode-new";
         badge.innerText = "✨ 新增模式";
         document.getElementById('submitBtn').innerText = "✅ 確認上傳紀錄";
-        generateAutoTriageNo();
     }
 
     function switchToEditMode() {
@@ -594,7 +606,7 @@
         document.getElementById('submitBtn').innerText = "✏️ 儲存修改紀錄";
     }
 
-    // 強化版：載入舊資料（確保能夠完整代入所有欄位與陣列、物件對應）
+    // 載入舊資料（確保正確對應後端回傳格式，解決無法代入舊資料的問題）
     async function loadOldData() {
         const teamNo = document.getElementById('team').value.trim();
         if (!teamNo) {
@@ -618,16 +630,19 @@
                 data = JSON.parse(textResponse);
             } catch (err) {
                 console.error("GAS 非 JSON 回應內容：", textResponse);
-                alert("⚠️ 伺服器回應格式錯誤！請檢查後端 GAS doGet 回應格式！");
+                alert("⚠️ 伺服器回應格式錯誤！通常是因為 Google Apps Script 尚未重新部署，或權限未設為「任何人」。請檢查後端 GAS doGet 回應！");
                 switchToAddMode();
                 return;
             }
 
-            if (data.status === "error" || !data.record) {
+            // 相容後端可能回傳的各種結構 (data.record 或直接把欄位包在 data 裡)
+            const record = data.record || (data.team ? data : null);
+
+            if (data.status === "error" || !record) {
                 alert(`❌ 未找到檢傷編號 [${teamNo}] 的歷史資料！\n(請確認該編號在雲端試算表中是否存在)`);
                 switchToAddMode();
             } else {
-                populateForm(data.record);
+                populateForm(record);
                 switchToEditMode();
                 alert(`✅ 已成功載入檢傷編號 [${teamNo}] 的舊資料！`);
             }
@@ -640,7 +655,6 @@
     }
 
     function populateForm(record) {
-        if (record.team) document.getElementById('team').value = record.team;
         if (record.date) document.getElementById('date').value = record.date;
         if (record.time) document.getElementById('contactTime').value = record.time;
         if (record.emsStaff) document.getElementById('emsStaff').value = record.emsStaff;
@@ -671,8 +685,45 @@
         parseCheckboxes('.a-check', record.allergy);
 
         if (record.avpu) document.getElementById('avpu').value = record.avpu;
+        
+        // 解析 GCS (例如 E4V5M6 或 E4VT M6)
+        if (record.gcs) {
+            const gcsStr = String(record.gcs);
+            const matchE = gcsStr.match(/E([1-4])/);
+            const matchV = gcsStr.match(/V([1-5T])/);
+            const matchM = gcsStr.match(/M([1-6])/);
+            if (matchE) document.getElementById('gcsE').value = matchE[1];
+            if (matchV) document.getElementById('gcsV').value = matchV[1];
+            if (matchM) document.getElementById('gcsM').value = matchM[1];
+        }
+
+        // 解析 Vitals
+        if (record.vitals) {
+            const v = String(record.vitals);
+            const bpMatch = v.match(/BP:([^,]+)/);
+            const prMatch = v.match(/PR:([^,]+)/);
+            const rrMatch = v.match(/RR:([^,]+)/);
+            const spo2Match = v.match(/SpO2:([^,%]+)/);
+            const gluMatch = v.match(/Glu:([^,]+)/);
+            const btMatch = v.match(/BT:([^,]+)/);
+            if (bpMatch && bpMatch[1].trim() !== '--') document.getElementById('bp').value = bpMatch[1].trim();
+            if (prMatch && prMatch[1].trim() !== '--') document.getElementById('pr').value = prMatch[1].trim();
+            if (rrMatch && rrMatch[1].trim() !== '--') document.getElementById('rr').value = rrMatch[1].trim();
+            if (spo2Match && spo2Match[1].trim() !== '--') document.getElementById('spo2').value = spo2Match[1].trim();
+            if (gluMatch && gluMatch[1].trim() !== '--') document.getElementById('glu').value = gluMatch[1].trim();
+            if (btMatch && btMatch[1].trim() !== '--') document.getElementById('bt').value = btMatch[1].trim();
+        }
         if (record.bt) document.getElementById('bt').value = record.bt;
         if (record.skin) document.getElementById('skin').value = record.skin;
+
+        // 解析瞳孔
+        if (record.pupil) {
+            const p = String(record.pupil);
+            const lMatch = p.match(/L:([0-9.]+)/);
+            const rMatch = p.match(/R:([0-9.]+)/);
+            if (lMatch) document.getElementById('pupilL').value = lMatch[1];
+            if (rMatch) document.getElementById('pupilR').value = rMatch[1];
+        }
 
         if (record.isCritical) {
             const rad = document.querySelector(`input[name="isCritical"][value="${record.isCritical}"]`);
@@ -683,25 +734,21 @@
             if (rad) rad.checked = true;
         }
 
-        // 解析 Vitals 與 Pupil 欄位還原回控制項
-        if (record.vitals) {
-            const bpMatch = record.vitals.match(/BP:([^,]+)/);
-            if (bpMatch) document.getElementById('bp').value = bpMatch[1].trim();
-            const prMatch = record.vitals.match(/PR:([^,]+)/);
-            if (prMatch) document.getElementById('pr').value = prMatch[1].trim();
-            const rrMatch = record.vitals.match(/RR:([^,]+)/);
-            if (rrMatch) document.getElementById('rr').value = rrMatch[1].trim();
-            const spo2Match = record.vitals.match(/SpO2:([^,%]+)/);
-            if (spo2Match) document.getElementById('spo2').value = spo2Match[1].trim();
-            const gluMatch = record.vitals.match(/Glu:([^,]+)/);
-            if (gluMatch) document.getElementById('glu').value = gluMatch[1].trim();
-        }
-
-        if (record.pupil) {
-            const lMatch = record.pupil.match(/L:([^m]+)mm/);
-            if (lMatch) document.getElementById('pupilL').value = lMatch[1].trim();
-            const rMatch = record.pupil.match(/R:([^m]+)mm/);
-            if (rMatch) document.getElementById('pupilR').value = rMatch[1].trim();
+        if (record.transportMode) {
+            const tm = String(record.transportMode);
+            const selectEl = document.getElementById('transportMode');
+            let found = false;
+            for (let opt of selectEl.options) {
+                if (tm.includes(opt.value)) {
+                    selectEl.value = opt.value;
+                    found = true;
+                    break;
+                }
+            }
+            if (tm.includes("補充: ")) {
+                const detailPart = tm.split("補充: ")[1].replace(")", "");
+                document.getElementById('transportModeDetail').value = detailPart;
+            }
         }
 
         if (record.obs1) document.getElementById('obs1').value = record.obs1;
@@ -832,6 +879,7 @@
         document.getElementById('emsForm').reset();
         clearSlot(1); clearSlot(2); clearSlot(3);
         setInitialDateTime(); 
+        generateAutoTriageNo();
         switchToAddMode();
         
         document.getElementById('traumaArea').style.display = 'none';
@@ -918,8 +966,11 @@
             });
             
             if (!isEditMode) {
-                let counter = parseInt(localStorage.getItem('ems_triage_counter') || '1', 10);
-                localStorage.setItem('ems_triage_counter', counter + 1);
+                const now = new Date();
+                const dateStr = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
+                let counterKey = `ems_triage_counter_${dateStr}`;
+                let counter = parseInt(localStorage.getItem(counterKey) || '1', 10);
+                localStorage.setItem(counterKey, counter + 1);
             }
 
             const locUri = payload.accidentLoc.startsWith('http') ? payload.accidentLoc : `https://maps.google.com/?q=${encodeURIComponent(payload.accidentLoc)}`;
@@ -1020,3 +1071,4 @@
 </script>
 </body>
 </html>
+```[cite: 1]
