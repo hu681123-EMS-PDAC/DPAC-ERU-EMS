@@ -1,267 +1,381 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>🚑 DPAC 現場自助系統</title>
-<style>
-  :root {
-    --bg: #000000;
-    --card-bg: #121820; /* 提升對比，稍微亮於純黑背景 */
-    --blue: #00d2ff;
-    --orange: #ff9f00;
-    --green: #39ff14;
-    --red: #ff3131;
-    --text: #ffffff;
-    --border: #30363d;
-  }
-
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Microsoft JhengHei", sans-serif;
-    background-color: var(--bg);
-    color: var(--text);
-    margin: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    overscroll-behavior-y: contain; /* 禁止下拉重新整理 */
-  }
-
-  .container {
-    width: 90%;
-    max-width: 420px;
-    background: var(--card-bg);
-    padding: 30px 24px;
-    border-radius: 20px;
-    box-shadow: 0 8px 32px rgba(0, 210, 255, 0.15);
-    border: 2px solid var(--border);
-    text-align: center;
-    box-sizing: border-box;
-  }
-
-  h1 {
-    font-size: 32px; /* 調整為適中的大字體 */
-    font-weight: 800;
-    color: var(--blue);
-    margin: 0 0 8px 0;
-    text-shadow: 0 0 10px rgba(0, 210, 255, 0.4);
-    line-height: 1.3;
-    letter-spacing: 1px;
-  }
-
-  p {
-    font-size: 16px; /* 中字體說明 */
-    color: #a1aab3;
-    margin-bottom: 24px;
-    font-weight: 500;
-  }
-
-  input {
-    width: 100%;
-    padding: 16px;
-    font-size: 22px; /* 舒適的輸入字體大小 */
-    font-weight: 700;
-    background: #000;
-    color: #fff;
-    border: 3px solid var(--border);
-    border-radius: 12px;
-    margin-bottom: 24px;
-    box-sizing: border-box;
-    text-align: center;
-    outline: none;
-    transition: all 0.3s ease;
-  }
-
-  input:focus {
-    border-color: var(--blue);
-    box-shadow: 0 0 15px rgba(0, 210, 255, 0.3);
-    background: #080c11;
-  }
-
-  input::placeholder {
-    color: #555;
-    font-weight: normal;
-  }
-
-  .btn-group {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-  }
-
-  .btn {
-    width: 100%;
-    padding: 18px;
-    font-size: 20px; /* 中字體，確保清楚且不會擠壓破版 */
-    font-weight: 800;
-    color: white;
-    border: none;
-    border-radius: 14px;
-    cursor: pointer;
-    transition: all 0.15s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    user-select: none;
-    touch-action: manipulation;
-    letter-spacing: 1px;
-  }
-
-  .btn:active:not(:disabled) { transform: scale(0.97); opacity: 0.9; }
-  .btn:disabled { background: #2a313c !important; color: #6e7681; cursor: not-allowed; box-shadow: none; }
-
-  .btn-checkin { 
-    background: linear-gradient(135deg, #005bb5, #00a8cc); 
-    box-shadow: 0 4px 15px rgba(0, 210, 255, 0.2);
-  }
-  .btn-checkout { 
-    background: linear-gradient(135deg, #cc4a00, #e68a00); 
-    box-shadow: 0 4px 15px rgba(255, 159, 0, 0.2);
-  }
-
-  #msg-box {
-    margin-top: 24px;
-    padding: 16px;
-    border-radius: 12px;
-    font-size: 18px;
-    font-weight: 700;
-    display: none;
-    line-height: 1.5;
-    animation: fadeIn 0.3s ease-out;
-  }
-
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  .msg-success { background: rgba(57, 255, 20, 0.1); color: var(--green); border: 1px solid var(--green); }
-  .msg-error { background: rgba(255, 49, 49, 0.1); color: var(--red); border: 1px solid var(--red); }
-  .msg-loading { background: rgba(139, 148, 158, 0.1); color: #8b949e; border: 1px solid #8b949e; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EMS 救護紀錄查詢與大數據分析面板</title>
+    <!-- 引入 Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8fafc;
+            color: #0f172a;
+            font-size: 1.1rem; /* 中大字體設定 */
+            font-weight: 600;
+        }
+        .card {
+            border: 2px solid #cbd5e1;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        .form-control, .form-select {
+            border: 2px solid #64748b;
+            font-weight: bold;
+            font-size: 1.05rem;
+            height: 50px;
+        }
+        .btn-main {
+            font-size: 1.15rem;
+            font-weight: bold;
+            padding: 12px;
+        }
+        .section-header {
+            background-color: #1e293b;
+            color: #ffffff;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+        .photo-box {
+            border: 2px dashed #94a3b8;
+            background-color: #ffffff;
+            border-radius: 8px;
+            padding: 10px;
+            min-height: 180px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .status-banner { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            background-color: #f1f5f9; 
+            border: 2px solid #334155; 
+            padding: 10px 14px; 
+            border-radius: 8px; 
+            margin-bottom: 20px; 
+            flex-wrap: wrap; 
+            gap: 8px; 
+        }
+    </style>
 </head>
 <body>
 
-<div class="container">
-  <h1>🚑 DPAC<br>現場自助系統</h1>
-  <p>輸入姓名後點選動作</p>
-  
-  <input type="text" id="user-name" placeholder="點此輸入姓名" autocomplete="off" inputmode="text">
-  
-  <div class="btn-group">
-    <button class="btn btn-checkin" id="btn-in" onclick="handleAction('checkin')">
-      ✔️ 報到 (In)
-    </button>
-    <button class="btn btn-checkout" id="btn-out" onclick="handleAction('checkout')">
-      🏠 報退 (Out)
-    </button>
-  </div>
+<div class="container my-4" style="max-width: 900px;">
+    <h2 class="text-center mb-3 fw-bold text-primary">🚑 EMS 救護紀錄查詢與分析系統</h2>
 
-  <div id="msg-box"></div>
+    <!-- 當前狀態 / 快速連結列 -->
+    <div class="status-banner">
+        <div>
+            <span class="fw-bold" style="font-size: 0.95rem;">當前狀態：</span>
+            <span id="modeBadge" class="badge bg-success" style="font-size: 0.95rem;">📊 查詢分析模式</span>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="https://hu681123-ems-pdac.github.io/DPAC-ERU-EMS/index.html.html?openExternalBrowser=1" target="_blank" class="btn btn-sm btn-outline-danger fw-bold">🚑 前往救護紀錄系統</a>
+        </div>
+    </div>
+
+    <!-- 功能頁籤切換 -->
+    <ul class="nav nav-pills nav-fill mb-4 p-1 bg-white rounded shadow-sm border" id="mainTab" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active fw-bold py-3" id="query-tab" data-bs-toggle="pill" data-bs-target="#queryPanel" type="button" onclick="loadDropdownOptions()">🔍 綜合條件查詢 (含照片)</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link fw-bold py-3" id="stats-tab" data-bs-toggle="pill" data-bs-target="#statsPanel" type="button">📊 數據與大數據分析</button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="mainTabContent">
+        
+        <!-- ================= 1. 綜合條件查詢面板 ================= -->
+        <div class="tab-pane fade show active" id="queryPanel" role="tabpanel">
+            <div class="card p-4 mb-4">
+                <h5 class="fw-bold text-dark mb-3">🎯 下拉選單選取 或 手動輸入 (支援模糊比對)</h5>
+                
+                <div class="row g-3 mb-3">
+                    <!-- 檢傷編號 (下拉 + 輸入) -->
+                    <div class="col-md-6">
+                        <label class="form-label text-secondary">🏷️ 檢傷編號</label>
+                        <select id="selectTriageNo" class="form-select mb-2" onchange="document.getElementById('inputTriageNo').value=this.value;">
+                            <option value="">-- 請選擇檢傷編號 --</option>
+                        </select>
+                        <input type="text" id="inputTriageNo" class="form-control" placeholder="或直接輸入/模糊搜尋檢傷編號">
+                    </div>
+
+                    <!-- 患者姓名 (下拉 + 輸入) -->
+                    <div class="col-md-6">
+                        <label class="form-label text-secondary">👤 患者姓名</label>
+                        <select id="selectPatientName" class="form-select mb-2" onchange="document.getElementById('inputPatientName').value=this.value;">
+                            <option value="">-- 請選擇患者姓名 --</option>
+                        </select>
+                        <input type="text" id="inputPatientName" class="form-control" placeholder="或直接輸入/模糊搜尋患者姓名">
+                    </div>
+
+                    <!-- 救護人員姓名 (下拉 + 輸入) -->
+                    <div class="col-md-6">
+                        <label class="form-label text-secondary">🧑‍⚕️ 救護人員姓名</label>
+                        <select id="selectRescuer" class="form-select mb-2" onchange="document.getElementById('inputRescuer').value=this.value;">
+                            <option value="">-- 請選擇救護人員 --</option>
+                        </select>
+                        <input type="text" id="inputRescuer" class="form-control" placeholder="或直接輸入/模糊搜尋救護人員">
+                    </div>
+
+                    <!-- 日期選擇 -->
+                    <div class="col-md-6">
+                        <label class="form-label text-secondary">📅 日期選擇</label>
+                        <div style="height: 52px;"></div> <!-- 佔位對齊排版 -->
+                        <input type="date" id="inputDate" class="form-control">
+                    </div>
+                </div>
+
+                <button type="button" class="btn btn-primary btn-main w-100 shadow-sm mt-3" onclick="searchRecords()">🔍 立即執行查詢</button>
+            </div>
+
+            <!-- 查詢結果展示區 -->
+            <div id="queryResultArea" style="display: none;">
+                <div class="card p-4 border-success mb-4">
+                    <h4 class="fw-bold text-success mb-3">📋 救護紀錄詳細資料</h4>
+                    <div class="row g-3 bg-light p-3 rounded border mb-4">
+                        <div class="col-md-6"><strong>📅 日期/時間：</strong><span id="resDateTime" class="text-dark">-</span></div>
+                        <div class="col-md-6"><strong>🏷️ 檢傷編號：</strong><span id="resTriageNo" class="text-primary">-</span></div>
+                        <div class="col-md-6"><strong>👤 姓名/性別/年齡：</strong><span id="resPatientInfo" class="text-dark">-</span></div>
+                        <div class="col-md-6"><strong>🧑‍⚕️ 救護人員：</strong><span id="resRescuerName" class="text-dark">-</span></div>
+                        <div class="col-md-12"><strong>📍 事故位置：</strong><span id="resLocation" class="text-dark">-</span></div>
+                        <div class="col-md-6"><strong>🩺 傷病問題：</strong><span id="resProblem" class="text-danger">-</span></div>
+                        <div class="col-md-6"><strong>🩹 受傷部位 (L/R)：</strong><span id="resInjuryPart" class="text-primary">-</span></div>
+                        <div class="col-md-12"><strong>💓 生命徵象摘要：</strong><span id="resVitals" class="text-dark">-</span></div>
+                        <div class="col-md-6"><strong>🏥 既往病史：</strong><span id="resMedicalHistory" class="text-danger">-</span></div>
+                        <div class="col-md-6"><strong>⚠️ 過敏史：</strong><span id="resAllergy" class="text-danger">-</span></div>
+                    </div>
+
+                    <!-- 3張現場照片顯示區 -->
+                    <div class="section-header">📸 現場照片紀錄 (3張)</div>
+                    <div class="row g-3 text-center">
+                        <div class="col-md-4">
+                            <div class="photo-box">
+                                <span class="small text-muted mb-2 fw-bold">現場照片 1</span>
+                                <img id="imgPhoto1" src="" class="img-fluid rounded border" style="max-height: 160px; display: none;" alt="照片1">
+                                <span id="noPhoto1" class="text-muted small fw-bold">無照片</span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="photo-box">
+                                <span class="small text-muted mb-2 fw-bold">現場照片 2</span>
+                                <img id="imgPhoto2" src="" class="img-fluid rounded border" style="max-height: 160px; display: none;" alt="照片2">
+                                <span id="noPhoto2" class="text-muted small fw-bold">無照片</span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="photo-box">
+                                <span class="small text-muted mb-2 fw-bold">現場照片 3</span>
+                                <img id="imgPhoto3" src="" class="img-fluid rounded border" style="max-height: 160px; display: none;" alt="照片3">
+                                <span id="noPhoto3" class="text-muted small fw-bold">無照片</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= 2. 數據與大數據分析面板 ================= -->
+        <div class="tab-pane fade" id="statsPanel" role="tabpanel">
+            <div class="card p-4">
+                <h5 class="fw-bold text-dark mb-3">📈 日期大數據彙整分析</h5>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-8">
+                        <input type="date" id="statsDate" class="form-control">
+                    </div>
+                    <div class="col-md-4">
+                        <button type="button" class="btn btn-secondary btn-main w-100" onclick="fetchAnalytics()">📊 產生分析報表</button>
+                    </div>
+                </div>
+
+                <!-- 核心數字摘要 -->
+                <div class="row g-3 mb-4">
+                    <div class="col-6">
+                        <div class="p-3 bg-light rounded border text-center">
+                            <span class="text-muted small">👥 當日受傷總人數</span>
+                            <h2 id="statTotalCount" class="fw-bold text-danger mb-0">-- 人</h2>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-3 bg-light rounded border text-center">
+                            <span class="text-muted small">🎂 平均年齡</span>
+                            <h2 id="statAvgAge" class="fw-bold text-primary mb-0">-- 歲</h2>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 詳細分析項目 -->
+                <div class="mb-3">
+                    <div class="section-header">🩺 傷病問題 (分類) 統計</div>
+                    <ul id="statProblemList" class="bg-light p-3 rounded border mb-0" style="padding-left: 20px;">
+                        <li class="text-muted">請先選擇日期產出分析</li>
+                    </ul>
+                </div>
+
+                <div class="mb-3">
+                    <div class="section-header">📍 受傷部位 (L/R) 分布</div>
+                    <ul id="statInjuryPartsList" class="bg-light p-3 rounded border mb-0" style="padding-left: 20px;">
+                        <li class="text-muted">請先選擇日期產出分析</li>
+                    </ul>
+                </div>
+
+                <div>
+                    <div class="section-header">💓 生命徵象、病史與過敏史摘要</div>
+                    <div class="table-responsive">
+                        <table class="table table-bordered text-center bg-white mb-0">
+                            <thead class="table-dark">
+                                <tr><th>統計指標項目</th><th>統計結果摘要</th></tr>
+                            </thead>
+                            <tbody id="statSummaryTable">
+                                <tr><td colspan="2" class="text-muted">等待分析中...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
 </div>
 
+<!-- 引入 Bootstrap 5 JS Bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-  // ⚠️ 請確保此網址為「建立新版本」部署後的網址
-  const API = "https://script.google.com/macros/s/AKfycbz6jLiq0iRwzoRU2uEB1Sn-9MoTEhbc7n9BhsUc22P5xbBRC8ATsV6IaIUOLReJbwH2/exec"; 
+    const GAS_URL = "您的_GAS_網頁應用程式_URL";
 
-  // 初始化或獲取本機的報到紀錄 (使用 localStorage)
-  function getLocalCheckInRecords() {
-    try {
-      return JSON.parse(localStorage.getItem('dpac_checkin_records')) || {};
-    } catch (e) {
-      return {};
-    }
-  }
+    // 頁面載入時自動取得下拉選單選項
+    window.onload = function() {
+        loadDropdownOptions();
+    };
 
-  // 更新本機紀錄狀態
-  function updateLocalCheckInRecord(name, status) {
-    const records = getLocalCheckInRecords();
-    if (status === 'in') {
-      records[name] = true;
-    } else {
-      delete records[name];
-    }
-    localStorage.setItem('dpac_checkin_records', JSON.stringify(records));
-  }
-
-  // 統一處理訊息框顯示
-  function showMessage(type, htmlContent) {
-    const msgBox = document.getElementById("msg-box");
-    msgBox.style.display = "block";
-    msgBox.className = "msg-" + type;
-    msgBox.innerHTML = htmlContent;
-  }
-
-  async function handleAction(actionType) {
-    const nameInput = document.getElementById("user-name");
-    const rawName = nameInput.value.trim();
-    const btns = document.querySelectorAll(".btn");
-    const msgBox = document.getElementById("msg-box");
-
-    // 1. 基本檢查：是否輸入姓名
-    if (!rawName) {
-      alert("⚠️ 請先輸入您的姓名");
-      nameInput.focus();
-      return;
+    async function loadDropdownOptions() {
+        try {
+            const res = await fetch(`${GAS_URL}?action=getOptions`);
+            const result = await res.json();
+            if (result.status === "success") {
+                populateSelect('selectTriageNo', result.triageNos, "-- 請選擇檢傷編號 --");
+                populateSelect('selectPatientName', result.patientNames, "-- 請選擇患者姓名 --");
+                populateSelect('selectRescuer', result.rescuers, "-- 請選擇救護人員 --");
+            }
+        } catch (e) {
+            console.error("載入下拉選單失敗", e);
+        }
     }
 
-    // 將名字去空白轉小寫，用作準確的本機紀錄比對 Key
-    const recordKey = rawName.replace(/\s+/g, '').toLowerCase();
-    const records = getLocalCheckInRecords();
-
-    // 2. 防呆機制：落實未報到不能報退
-    if (actionType === 'checkout' && !records[recordKey]) {
-      showMessage("error", "❌ 系統未找到您的報到紀錄<br><span style='font-size:15px;color:#ccc;'>您尚未報到，無法進行報退！</span>");
-      return;
+    function populateSelect(elementId, items, defaultText) {
+        const select = document.getElementById(elementId);
+        const currentVal = select.value;
+        select.innerHTML = `<option value="">${defaultText}</option>`;
+        items.forEach(item => {
+            if (item) {
+                const opt = document.createElement('option');
+                opt.value = item;
+                opt.text = item;
+                select.appendChild(opt);
+            }
+        });
+        select.value = currentVal;
     }
 
-    // 3. 防呆機制：避免同一個人重複點擊報到
-    if (actionType === 'checkin' && records[recordKey]) {
-      showMessage("error", "⚠️ 您已經報到過了！<br><span style='font-size:15px;color:#ccc;'>請勿重複執行報到手續。</span>");
-      setTimeout(() => { if (msgBox.className.includes("error")) msgBox.style.display = "none"; }, 5000);
-      return;
+    async function searchRecords() {
+        // 優先讀取輸入框的值，若無則讀取下拉選單的值
+        const triageNo = (document.getElementById('inputTriageNo').value || document.getElementById('selectTriageNo').value).trim();
+        const patientName = (document.getElementById('inputPatientName').value || document.getElementById('selectPatientName').value).trim();
+        const rescuer = (document.getElementById('inputRescuer').value || document.getElementById('selectRescuer').value).trim();
+        const date = document.getElementById('inputDate').value;
+
+        if (!triageNo && !patientName && !rescuer && !date) {
+            alert("請至少選擇或輸入一項查詢條件！");
+            return;
+        }
+
+        try {
+            const queryUrl = `${GAS_URL}?action=search&triageNo=${encodeURIComponent(triageNo)}&patientName=${encodeURIComponent(patientName)}&rescuer=${encodeURIComponent(rescuer)}&date=${encodeURIComponent(date)}`;
+            const res = await fetch(queryUrl);
+            const result = await res.json();
+
+            if (result.status === "success" && result.data) {
+                const d = result.data;
+                document.getElementById('resDateTime').innerText = `${d.date || ''} ${d.time || ''}`;
+                document.getElementById('resTriageNo').innerText = d.triageNo || '-';
+                document.getElementById('resPatientInfo').innerText = `${d.name || '無名'} / ${d.gender || '-'} / ${d.age || '-'} 歲`;
+                document.getElementById('resRescuerName').innerText = d.rescuer || '-';
+                document.getElementById('resLocation').innerText = d.location || '-';
+                document.getElementById('resProblem').innerText = d.problem || '-';
+                document.getElementById('resInjuryPart').innerText = d.injuryPart || '-';
+                document.getElementById('resVitals').innerText = d.vitals || '-';
+                document.getElementById('resMedicalHistory').innerText = d.medicalHistory || '無';
+                document.getElementById('resAllergy').innerText = d.allergy || '無';
+
+                setPhoto('imgPhoto1', 'noPhoto1', d.photo1);
+                setPhoto('imgPhoto2', 'noPhoto2', d.photo2);
+                setPhoto('imgPhoto3', 'noPhoto3', d.photo3);
+
+                document.getElementById('queryResultArea').style.display = 'block';
+            } else {
+                alert("找不到符合條件的救護紀錄！");
+                document.getElementById('queryResultArea').style.display = 'none';
+            }
+        } catch (e) {
+            alert("查詢失敗：" + e.message);
+        }
     }
 
-    // 鎖定 UI 防止重複連打
-    btns.forEach(b => b.disabled = true);
-    showMessage("loading", "⏳ 雲端同步中...");
-
-    try {
-      const url = `${API}?action=${actionType}&name=${encodeURIComponent(rawName)}&_t=${Date.now()}`;
-      const response = await fetch(url);
-      const res = await response.json();
-
-      if (res.ok) {
-        // 同步成功後，更新裝置本地的報到狀態
-        updateLocalCheckInRecord(recordKey, actionType === 'checkin' ? 'in' : 'out');
-
-        const actionTxt = actionType === 'checkin' ? '報到' : '報退';
-        const serverTime = res.time || new Date().toLocaleTimeString('zh-TW', { hour12: false });
-        
-        showMessage("success", `✅ ${res.name || rawName}<br>${actionTxt}成功！<br><span style="font-size:16px; color:#fff;">🕒 ${serverTime}</span>`);
-        
-        nameInput.value = ""; // 成功後清空
-        nameInput.blur();    // 收起手機虛擬鍵盤
-      } else {
-        showMessage("error", "❌ " + (res.msg || "雲端系統發生錯誤"));
-      }
-    } catch (e) {
-      showMessage("error", "⚠️ 網路異常，請稍後再試<br><span style='font-size:15px;color:#ccc;'>請檢查您的網路連線狀態</span>");
-    } finally {
-      btns.forEach(b => b.disabled = false);
-      // 成功訊息 5 秒後自動隱藏
-      if (msgBox.className === "msg-success") {
-        setTimeout(() => { msgBox.style.display = "none"; }, 5000);
-      }
+    function setPhoto(imgId, noImgId, url) {
+        const img = document.getElementById(imgId);
+        const noImg = document.getElementById(noImgId);
+        if (url && url.startsWith('http')) {
+            img.src = url;
+            img.style.display = 'block';
+            noImg.style.display = 'none';
+        } else {
+            img.style.display = 'none';
+            noImg.style.display = 'block';
+        }
     }
-  }
+
+    async function fetchAnalytics() {
+        const date = document.getElementById('statsDate').value;
+        if (!date) {
+            alert("請先選擇要分析的日期！");
+            return;
+        }
+
+        try {
+            const res = await fetch(`${GAS_URL}?action=analytics&date=${encodeURIComponent(date)}`);
+            const result = await res.json();
+
+            if (result.status === "success") {
+                const data = result.analytics;
+                document.getElementById('statTotalCount').innerText = `${data.totalCount} 人`;
+                document.getElementById('statAvgAge').innerText = `${data.avgAge} 歲`;
+
+                const probEl = document.getElementById('statProblemList');
+                probEl.innerHTML = Object.keys(data.problems).length ?
+                    Object.entries(data.problems).map(([k, v]) => `<li>${k}：<span class="text-danger">${v} 次</span></li>`).join('') :
+                    `<li class="text-muted">當日無紀錄</li>`;
+
+                const partEl = document.getElementById('statInjuryPartsList');
+                partEl.innerHTML = Object.keys(data.injuryParts).length ?
+                    Object.entries(data.injuryParts).map(([k, v]) => `<li>${k}：<span class="text-primary">${v} 處</span></li>`).join('') :
+                    `<li class="text-muted">當日無紀錄</li>`;
+
+                document.getElementById('statSummaryTable').innerHTML = `
+                    <tr><td>有既往病史總人數</td><td><span class="text-danger">${data.historyCount} 人</span></td></tr>
+                    <tr><td>有過敏史總人數</td><td><span class="text-danger">${data.allergyCount} 人</span></td></tr>
+                `;
+            } else {
+                alert("該日期無對應數據！");
+            }
+        } catch (e) {
+            alert("分析失敗：" + e.message);
+        }
+    }
 </script>
-
-</body>
-</html>
-</script>
-
 </body>
 </html>
