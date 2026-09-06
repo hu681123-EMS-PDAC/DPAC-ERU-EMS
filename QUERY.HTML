@@ -364,10 +364,19 @@
                 document.getElementById('resMedicalHistory').innerText = d.medicalHistory || d.medical_history || '無';
                 document.getElementById('resAllergy').innerText = d.allergy || '無';
 
-                // 支援多種照片欄位命名與陣列結構
-                const p1 = d.photo1 || d.image1 || d.img1 || (d.photos && d.photos[0]) || '';
-                const p2 = d.photo2 || d.image2 || d.img2 || (d.photos && d.photos[1]) || '';
-                const p3 = d.photo3 || d.image3 || d.img3 || (d.photos && d.photos[2]) || '';
+                // 強化多重照片欄位與陣列/逗號字串解析
+                let rawPhotos = [];
+                if (Array.isArray(d.photos)) {
+                    rawPhotos = d.photos;
+                } else if (typeof d.photos === 'string' && d.photos.trim() !== '') {
+                    rawPhotos = d.photos.split(/[,，\s]+/);
+                } else if (typeof d.photo === 'string' && d.photo.trim() !== '') {
+                    rawPhotos = d.photo.split(/[,，\s]+/);
+                }
+
+                const p1 = d.photo1 || d.image1 || d.img1 || d['現場照片1'] || d['照片1'] || rawPhotos[0] || '';
+                const p2 = d.photo2 || d.image2 || d.img2 || d['現場照片2'] || d['照片2'] || rawPhotos[1] || '';
+                const p3 = d.photo3 || d.image3 || d.img3 || d['現場照片3'] || d['照片3'] || rawPhotos[2] || '';
 
                 setPhoto('imgPhoto1', 'noPhoto1', p1);
                 setPhoto('imgPhoto2', 'noPhoto2', p2);
@@ -390,20 +399,24 @@
         let cleanUrl = String(url).trim();
         if (!cleanUrl || cleanUrl === 'undefined' || cleanUrl === 'null') return '';
 
+        let fileId = '';
         if (cleanUrl.includes('drive.google.com') || cleanUrl.includes('googleusercontent.com')) {
-            let fileId = '';
             if (cleanUrl.includes('/file/d/')) {
                 const parts = cleanUrl.split('/file/d/');
                 if (parts[1]) fileId = parts[1].split('/')[0];
             } else if (cleanUrl.includes('id=')) {
                 const match = cleanUrl.match(/[?&]id=([^&]+)/);
                 if (match) fileId = match[1];
-            }
-            if (fileId) {
-                return `https://lh3.googleusercontent.com/d/${fileId}=s800`;
+            } else if (cleanUrl.includes('/d/')) {
+                const match = cleanUrl.match(/\/d\/([a-zA-Z0-9_-]+)/);
+                if (match) fileId = match[1];
             }
         } else if (!cleanUrl.startsWith('http') && cleanUrl.length >= 20 && !cleanUrl.includes(' ')) {
-            return `https://lh3.googleusercontent.com/d/${cleanUrl}=s800`;
+            fileId = cleanUrl;
+        }
+
+        if (fileId) {
+            return `https://lh3.googleusercontent.com/d/${fileId}=s800`;
         }
         return cleanUrl;
     }
@@ -418,12 +431,18 @@
             img.style.display = 'block';
             noImg.style.display = 'none';
 
-            // 圖片載入失敗時自動多重備援
+            // 圖片載入失敗時自動多重備援切換
             img.onerror = function() {
                 if (img.src.includes('googleusercontent.com/d/')) {
                     const match = img.src.match(/\/d\/([^=]+)/);
                     if (match && match[1]) {
                         img.src = `https://drive.google.com/uc?export=view&id=${match[1]}`;
+                        return;
+                    }
+                } else if (img.src.includes('uc?export=view')) {
+                    const match = img.src.match(/[?&]id=([^&]+)/);
+                    if (match && match[1]) {
+                        img.src = `https://lh3.googleusercontent.com/d/${match[1]}=s800`;
                         return;
                     }
                 }
@@ -447,28 +466,30 @@
             const res = await fetch(`${GAS_URL}?action=analytics&date=${encodeURIComponent(date)}`);
             const result = await res.json();
 
-            if (result.status === "success" && (result.analytics || result.data)) {
-                const data = result.analytics || result.data;
-                const totalCount = data.totalCount ?? data.count ?? data.total ?? 0;
-                const avgAge = data.avgAge ?? data.averageAge ?? 0;
+            // 強化大數據分析回傳結果的容錯與多重結構解析
+            const data = (result && (result.analytics || result.data || result));
+            
+            if (result && (result.status === "success" || data)) {
+                const totalCount = data.totalCount ?? data.count ?? data.total ?? data.total_count ?? 0;
+                const avgAge = data.avgAge ?? data.averageAge ?? data.avg_age ?? 0;
 
                 document.getElementById('statTotalCount').innerText = `${totalCount} 人`;
                 document.getElementById('statAvgAge').innerText = `${avgAge} 歲`;
 
                 const probEl = document.getElementById('statProblemList');
-                const problems = data.problems || data.problemStats || {};
+                const problems = data.problems || data.problemStats || data.problem_stats || {};
                 probEl.innerHTML = Object.keys(problems).length > 0 ?
                     Object.entries(problems).map(([k, v]) => `<li>${k}：<span class="text-danger">${v} 次</span></li>`).join('') :
                     `<li class="text-muted">當日無紀錄</li>`;
 
                 const partEl = document.getElementById('statInjuryPartsList');
-                const injuryParts = data.injuryParts || data.injuryPartStats || {};
+                const injuryParts = data.injuryParts || data.injuryPartStats || data.injury_parts || {};
                 partEl.innerHTML = Object.keys(injuryParts).length > 0 ?
                     Object.entries(injuryParts).map(([k, v]) => `<li>${k}：<span class="text-primary">${v} 處</span></li>`).join('') :
                     `<li class="text-muted">當日無紀錄</li>`;
 
-                const historyCount = data.historyCount ?? data.medicalHistoryCount ?? 0;
-                const allergyCount = data.allergyCount ?? 0;
+                const historyCount = data.historyCount ?? data.medicalHistoryCount ?? data.history_count ?? 0;
+                const allergyCount = data.allergyCount ?? data.allergy_count ?? 0;
 
                 document.getElementById('statSummaryTable').innerHTML = `
                     <tr><td>有既往病史總人數</td><td><span class="text-danger">${historyCount} 人</span></td></tr>
