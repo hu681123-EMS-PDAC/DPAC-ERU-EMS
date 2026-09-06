@@ -73,7 +73,6 @@
             margin-bottom: 15px; 
         }
         
-        /* 按鈕樣式優化 & 視覺標籤化 */
         .btn-outline-danger { color: #991b1b; border-color: #991b1b; border-width: 2px; font-weight: 800; background-color: #ffffff; }
         .btn-outline-primary { color: #1d4ed8; border-color: #1d4ed8; border-width: 2px; font-weight: 800; background-color: #ffffff; }
         .btn-outline-dark { color: #0f172a; border-color: #1e293b; border-width: 2px; font-weight: 800; background-color: #ffffff; }
@@ -129,7 +128,7 @@
 <body>
 
 <div class="card p-3">
-    <h4 class="text-center mb-3 fw-bold">🚑 <strong>救護紀錄系統</strong></h4>
+    <h4 class="text-center mb-3 fw-bold">🚑 <strong>救護紀錄系統</strong>[cite: 11]</h4>
 
     <div class="status-banner">
         <div>
@@ -552,7 +551,6 @@
         try { liff.init({ liffId: LIFF_ID }); } catch (err) {}
     };
 
-    // 檢傷編號按照編號排序前面無編號不要跳號，並支援先佔機制
     function generateAutoTriageNo() {
         const now = new Date();
         const year = now.getFullYear();
@@ -564,8 +562,6 @@
         let activeKey = `ems_triage_active_${dateStr}`;
         
         let counter = parseInt(localStorage.getItem(counterKey) || '1', 10);
-        
-        // 確保不跳號且先佔（若存在未送出或已佔用的編號，往下遞增尋找空缺）
         let activeNos = JSON.parse(localStorage.getItem(activeKey) || '[]');
         let seqStr = String(counter).padStart(2, '0');
         let fullNo = `${dateStr}${seqStr}`;
@@ -576,7 +572,6 @@
             fullNo = `${dateStr}${seqStr}`;
         }
         
-        // 佔用此編號
         activeNos.push(fullNo);
         localStorage.setItem(activeKey, JSON.stringify(activeNos));
         localStorage.setItem(counterKey, counter + 1);
@@ -606,7 +601,7 @@
         document.getElementById('submitBtn').innerText = "✏️ 儲存修改紀錄";
     }
 
-    // 載入舊資料（確保正確對應後端回傳格式，解決無法代入舊資料的問題）
+    // [修正] 確保 loadOldData 為 async 函式並正確處理回應
     async function loadOldData() {
         const teamNo = document.getElementById('team').value.trim();
         if (!teamNo) {
@@ -630,12 +625,11 @@
                 data = JSON.parse(textResponse);
             } catch (err) {
                 console.error("GAS 非 JSON 回應內容：", textResponse);
-                alert("⚠️ 伺服器回應格式錯誤！通常是因為 Google Apps Script 尚未重新部署，或權限未設為「任何人」。請檢查後端 GAS doGet 回應！");
+                alert("⚠️ 伺服器回應格式錯誤！通常是因為 Google Apps Script 尚未重新部署，或權限未設為「任何人」。");
                 switchToAddMode();
                 return;
             }
 
-            // 相容後端可能回傳的各種結構 (data.record 或直接把欄位包在 data 裡)
             const record = data.record || (data.team ? data : null);
 
             if (data.status === "error" || !record) {
@@ -686,7 +680,6 @@
 
         if (record.avpu) document.getElementById('avpu').value = record.avpu;
         
-        // 解析 GCS (例如 E4V5M6 或 E4VT M6)
         if (record.gcs) {
             const gcsStr = String(record.gcs);
             const matchE = gcsStr.match(/E([1-4])/);
@@ -697,7 +690,6 @@
             if (matchM) document.getElementById('gcsM').value = matchM[1];
         }
 
-        // 解析 Vitals
         if (record.vitals) {
             const v = String(record.vitals);
             const bpMatch = v.match(/BP:([^,]+)/);
@@ -716,7 +708,6 @@
         if (record.bt) document.getElementById('bt').value = record.bt;
         if (record.skin) document.getElementById('skin').value = record.skin;
 
-        // 解析瞳孔
         if (record.pupil) {
             const p = String(record.pupil);
             const lMatch = p.match(/L:([0-9.]+)/);
@@ -737,11 +728,9 @@
         if (record.transportMode) {
             const tm = String(record.transportMode);
             const selectEl = document.getElementById('transportMode');
-            let found = false;
             for (let opt of selectEl.options) {
                 if (tm.includes(opt.value)) {
                     selectEl.value = opt.value;
-                    found = true;
                     break;
                 }
             }
@@ -1071,4 +1060,3 @@
 </script>
 </body>
 </html>
-```[cite: 1]
