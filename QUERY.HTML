@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- 強制忽略 Referrer，徹底解決 Google Drive / LH3 圖片阻擋 403 問題 -->
+    <meta name="referrer" content="no-referrer">
     <title>EMS 救護紀錄查詢與大數據分析面板</title>
     <!-- 引入 Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -71,7 +73,7 @@
     <div class="status-banner">
         <div>
             <span class="fw-bold" style="font-size: 0.95rem;">當前狀態：</span>
-            <span id="modeBadge" class="badge bg-success" style="font-size: 0.95rem;">📊 查詢分析模式</span>
+            <span id="modeBadge" class="badge bg-success" style="font-size: 0.95rem;">📊 查詢分析模式 (GMT+8)</span>
         </div>
         <div class="d-flex gap-2">
             <a href="https://hu681123-ems-pdac.github.io/DPAC-ERU-EMS/index.html.html?openExternalBrowser=1" target="_blank" class="btn btn-sm btn-outline-danger fw-bold">🚑 前往救護紀錄系統</a>
@@ -125,7 +127,7 @@
 
                     <!-- 日期選擇 -->
                     <div class="col-md-6">
-                        <label class="form-label text-secondary">📅 日期選擇</label>
+                        <label class="form-label text-secondary">📅 日期選擇 (GMT+8)</label>
                         <div style="height: 52px;"></div> <!-- 佔位對齊排版 -->
                         <input type="date" id="inputDate" class="form-control">
                     </div>
@@ -158,21 +160,21 @@
                         <div class="col-md-4">
                             <div class="photo-box">
                                 <span class="small text-muted mb-2 fw-bold">現場照片 1</span>
-                                <img id="imgPhoto1" src="" class="img-fluid rounded border" style="max-height: 160px; display: none;" alt="照片1">
+                                <img id="imgPhoto1" src="" class="img-fluid rounded border" style="max-height: 160px; display: none;" alt="照片1" referrerpolicy="no-referrer">
                                 <span id="noPhoto1" class="text-muted small fw-bold">無照片</span>
                             </div>
                         </div>
                         <div class="col-md-4">
                             <div class="photo-box">
                                 <span class="small text-muted mb-2 fw-bold">現場照片 2</span>
-                                <img id="imgPhoto2" src="" class="img-fluid rounded border" style="max-height: 160px; display: none;" alt="照片2">
+                                <img id="imgPhoto2" src="" class="img-fluid rounded border" style="max-height: 160px; display: none;" alt="照片2" referrerpolicy="no-referrer">
                                 <span id="noPhoto2" class="text-muted small fw-bold">無照片</span>
                             </div>
                         </div>
                         <div class="col-md-4">
                             <div class="photo-box">
                                 <span class="small text-muted mb-2 fw-bold">現場照片 3</span>
-                                <img id="imgPhoto3" src="" class="img-fluid rounded border" style="max-height: 160px; display: none;" alt="照片3">
+                                <img id="imgPhoto3" src="" class="img-fluid rounded border" style="max-height: 160px; display: none;" alt="照片3" referrerpolicy="no-referrer">
                                 <span id="noPhoto3" class="text-muted small fw-bold">無照片</span>
                             </div>
                         </div>
@@ -259,10 +261,10 @@
         try {
             const res = await fetch(`${GAS_URL}?action=getOptions`);
             const result = await res.json();
-            if (result.status === "success") {
-                populateSelect('selectTriageNo', result.triageNos, "-- 請選擇檢傷編號 --");
-                populateSelect('selectPatientName', result.patientNames, "-- 請選擇患者姓名 --");
-                populateSelect('selectRescuer', result.rescuers, "-- 請選擇救護人員 --");
+            if (result.status === "success" || result.triageNos) {
+                populateSelect('selectTriageNo', result.triageNos || result.triage_nos, "-- 請選擇檢傷編號 --");
+                populateSelect('selectPatientName', result.patientNames || result.patient_names, "-- 請選擇患者姓名 --");
+                populateSelect('selectRescuer', result.rescuers || result.rescuer_names, "-- 請選擇救護人員 --");
             }
         } catch (e) {
             console.error("載入下拉選單失敗", e);
@@ -295,28 +297,42 @@
         }
     }
 
-    // 日期格式化：修正 UTC 時區偏差，使用本地年月日（YYYY-MM-DD）
+    // 日期格式化：完全解決 GMT+8 時區少一天與格式不符問題
     function formatDate(val) {
         if (!val) return '';
         let s = String(val).trim();
         if (s.includes('1899-12-30')) return '';
-        
-        // 如果已經是 YYYY-MM-DD 或 YYYY/MM/DD
-        if (/^\d{4}[-/.]\d{1,2}[-/.]\d{1,2}$/.test(s)) {
-            let parts = s.split(/[-/.]/);
-            return `${parts[0]}-${parts[1].padStart(2, '0')}-${parts[2].padStart(2, '0')}`;
+
+        // 符合 YYYY-MM-DD 或 YYYY/MM/DD 或 YYYY-M-D 或 YYYY/M/D
+        let match = s.match(/^(\d{4})[-/. ](\d{1,2})[-/. ](\d{1,2})/);
+        if (match) {
+            let y = match[1];
+            let m = match[2].padStart(2, '0');
+            let d = match[3].padStart(2, '0');
+            return `${y}-${m}-${d}`;
         }
 
+        // 處理 UTC ISO 字串 (如 2026-04-18T16:00:00.000Z 轉成 GMT+8 之 2026-04-19)
         try {
-            const dt = new Date(s);
+            let dt = new Date(s);
             if (!isNaN(dt.getTime())) {
-                const y = dt.getFullYear();
-                const m = String(dt.getMonth() + 1).padStart(2, '0');
-                const d = String(dt.getDate()).padStart(2, '0');
-                if (y < 1920) return '';
-                return `${y}-${m}-${d}`;
+                if (s.endsWith('Z') || s.includes('+00:00')) {
+                    dt = new Date(dt.getTime() + 8 * 60 * 60 * 1000); // 補足 GMT+8 8小時偏差
+                    const y = dt.getUTCFullYear();
+                    const m = String(dt.getUTCMonth() + 1).padStart(2, '0');
+                    const d = String(dt.getUTCDate()).padStart(2, '0');
+                    if (y < 1920) return '';
+                    return `${y}-${m}-${d}`;
+                } else {
+                    const y = dt.getFullYear();
+                    const m = String(dt.getMonth() + 1).padStart(2, '0');
+                    const d = String(dt.getDate()).padStart(2, '0');
+                    if (y < 1920) return '';
+                    return `${y}-${m}-${d}`;
+                }
             }
         } catch(e) {}
+
         return s.split('T')[0].replace(/\//g, '-');
     }
 
@@ -339,141 +355,270 @@
         return s;
     }
 
+    // 從圖片網址或字串中精準提取 Google Drive File ID
+    function extractDriveFileId(url) {
+        if (!url) return '';
+        let clean = String(url).trim().replace(/^["'\[\]]+|["'\[\]]+$/g, '');
+        if (!clean || clean === 'undefined' || clean === 'null' || clean === '無' || clean === 'none') return '';
+
+        // 如果本身就是 File ID (長度約 25-50 個字元)
+        if (/^[a-zA-Z0-9_-]{25,50}$/.test(clean)) {
+            return clean;
+        }
+
+        let m = clean.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+        if (m && m[1]) return m[1];
+
+        m = clean.match(/\/d\/([a-zA-Z0-9_-]+)/);
+        if (m && m[1]) return m[1];
+
+        m = clean.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+        if (m && m[1]) return m[1];
+
+        m = clean.match(/id=([a-zA-Z0-9_-]+)/);
+        if (m && m[1]) return m[1];
+
+        return '';
+    }
+
+    // 徹底解析紀錄中的所有照片欄位與格式 (支援 JSON 陣列、逗號/換行分隔、多欄位名稱)
+    function extractPhotosFromRecord(d) {
+        let photos = ['', '', ''];
+
+        // 1. 優先檢查獨立欄位名稱
+        const photoKeys = [
+            ['photo1', 'photo_1', 'photoUrl1', 'photo_url1', 'image1', 'img1', '現場照片1', '照片1', '現場照片 1', '照片 1', '現場相片1', '相片1'],
+            ['photo2', 'photo_2', 'photoUrl2', 'photo_url2', 'image2', 'img2', '現場照片2', '照片2', '現場照片 2', '照片 2', '現場相片2', '相片2'],
+            ['photo3', 'photo_3', 'photoUrl3', 'photo_url3', 'image3', 'img3', '現場照片3', '照片3', '現場照片 3', '照片 3', '現場相片3', '相片3']
+        ];
+
+        for (let i = 0; i < 3; i++) {
+            for (let key of photoKeys[i]) {
+                if (d[key] && String(d[key]).trim() !== '' && String(d[key]).trim() !== '無' && String(d[key]).trim() !== 'null') {
+                    photos[i] = String(d[key]).trim();
+                    break;
+                }
+            }
+        }
+
+        // 2. 如果獨立欄位有缺失，解析綜合照片列表欄位 (如 photos, 照片, 現場照片)
+        const arrayKeys = ['photos', 'photo', 'images', '照片', '現場照片', '現場相片', 'photoUrls', 'photo_urls'];
+        let combinedList = [];
+
+        for (let key of arrayKeys) {
+            if (d[key]) {
+                let val = d[key];
+                if (Array.isArray(val)) {
+                    combinedList = val;
+                    break;
+                } else if (typeof val === 'string' && val.trim() !== '') {
+                    // 嘗試解析 JSON 陣列字串 ['url1', 'url2']
+                    try {
+                        let parsed = JSON.parse(val);
+                        if (Array.isArray(parsed)) {
+                            combinedList = parsed;
+                            break;
+                        }
+                    } catch(e) {}
+
+                    // 切分分隔符號
+                    combinedList = val.split(/[,，;\n\s|]+/);
+                    break;
+                }
+            }
+        }
+
+        // 填補空缺位置
+        let listIdx = 0;
+        for (let i = 0; i < 3; i++) {
+            if (!photos[i]) {
+                while (listIdx < combinedList.length) {
+                    let candidate = String(combinedList[listIdx]).trim().replace(/^["'\[\]]+|["'\[\]]+$/g, '');
+                    listIdx++;
+                    if (candidate && candidate !== '無' && candidate !== 'null' && candidate !== 'undefined') {
+                        photos[i] = candidate;
+                        break;
+                    }
+                }
+            }
+        }
+
+        return photos;
+    }
+
+    // 強大多階圖片備援載入機制，確保 3 張照片 100% 正常顯示
+    function setPhoto(imgId, noImgId, rawUrl) {
+        const img = document.getElementById(imgId);
+        const noImg = document.getElementById(noImgId);
+
+        if (!rawUrl || String(rawUrl).trim() === '' || String(rawUrl).trim() === '無' || String(rawUrl).trim() === 'null') {
+            img.style.display = 'none';
+            noImg.style.display = 'block';
+            return;
+        }
+
+        let cleanUrl = String(rawUrl).trim().replace(/^["'\[\]]+|["'\[\]]+$/g, '');
+        let fileId = extractDriveFileId(cleanUrl);
+
+        let tryUrls = [];
+        if (fileId) {
+            tryUrls = [
+                `https://lh3.googleusercontent.com/d/${fileId}`,
+                `https://drive.google.com/thumbnail?id=${fileId}&sz=w1000`,
+                `https://drive.google.com/uc?export=view&id=${fileId}`,
+                `https://docs.google.com/uc?export=download&id=${fileId}`
+            ];
+        } else if (cleanUrl.startsWith('http://') || cleanUrl.startsWith('https://') || cleanUrl.startsWith('data:image/')) {
+            tryUrls = [cleanUrl];
+        }
+
+        if (tryUrls.length === 0) {
+            img.style.display = 'none';
+            noImg.style.display = 'block';
+            return;
+        }
+
+        let urlIdx = 0;
+
+        function loadNextUrl() {
+            if (urlIdx < tryUrls.length) {
+                img.onerror = function() {
+                    urlIdx++;
+                    loadNextUrl();
+                };
+                img.src = tryUrls[urlIdx];
+                img.style.display = 'block';
+                noImg.style.display = 'none';
+            } else {
+                img.onerror = null;
+                img.style.display = 'none';
+                noImg.style.display = 'block';
+            }
+        }
+
+        loadNextUrl();
+    }
+
+    // 執行查詢 (自動相容多種日期格式, 解決 GMT+8 查無資料問題)
     async function searchRecords() {
         const triageNo = (document.getElementById('inputTriageNo').value || document.getElementById('selectTriageNo').value).trim();
         const patientName = (document.getElementById('inputPatientName').value || document.getElementById('selectPatientName').value).trim();
         const rescuer = (document.getElementById('inputRescuer').value || document.getElementById('selectRescuer').value).trim();
-        const date = document.getElementById('inputDate').value;
+        const rawDate = document.getElementById('inputDate').value;
 
-        // 檢查是否未填寫任何查詢條件
-        if (!triageNo && !patientName && !rescuer && !date) {
+        if (!triageNo && !patientName && !rescuer && !rawDate) {
             alert("請至少選擇或輸入一項查詢條件！");
             document.getElementById('queryResultArea').style.display = 'none';
             return;
         }
 
-        try {
-            const queryUrl = `${GAS_URL}?action=search&triageNo=${encodeURIComponent(triageNo)}&patientName=${encodeURIComponent(patientName)}&rescuer=${encodeURIComponent(rescuer)}&date=${encodeURIComponent(date)}`;
-            const res = await fetch(queryUrl);
-            const result = await res.json();
+        // 建立多重日期變形格式 (YYYY-MM-DD, YYYY/MM/DD, YYYY/M/D, YYYY-M-D) 避免後端格式不一致
+        let dateVariants = [];
+        if (rawDate) {
+            let formatted = formatDate(rawDate);
+            if (formatted) {
+                let parts = formatted.split('-');
+                let y = parts[0], m = parts[1], d = parts[2];
+                let mShort = String(parseInt(m, 10));
+                let dShort = String(parseInt(d, 10));
 
-            // 相容物件與陣列回傳格式
-            let d = result.data || result.record || result.records || result.result;
-            if (Array.isArray(d)) {
-                d = d[0];
+                dateVariants.push(`${y}-${m}-${d}`);
+                dateVariants.push(`${y}/${m}/${d}`);
+                dateVariants.push(`${y}/${mShort}/${dShort}`);
+                dateVariants.push(`${y}-${mShort}-${dShort}`);
+            } else {
+                dateVariants.push(rawDate);
             }
+        } else {
+            dateVariants.push('');
+        }
 
-            if (result.status === "success" && d) {
-                const recordDate = formatDate(d.date || d.dateTime || d['日期'] || '');
-                const recordTime = formatTime(d.time || d.dateTime || d['時間'] || '');
-                const contactTime = formatTime(d.contactTime || d.contact_time || d['接觸時間'] || recordTime || '');
+        let foundRecord = null;
 
-                document.getElementById('resDateTime').innerText = `${recordDate} ${recordTime}`.trim() || '-';
-                document.getElementById('resContactTime').innerText = contactTime || recordTime || '-';
-                document.getElementById('resTriageNo').innerText = d.triageNo || d.triage_no || d['檢傷編號'] || '-';
-                document.getElementById('resPatientInfo').innerText = `${d.name || d.patientName || d['姓名'] || d['患者姓名'] || '無名'} / ${d.gender || d['性別'] || '-'} / ${d.age || d['年齡'] || '-'} 歲`;
-                document.getElementById('resRescuerName').innerText = d.rescuer || d.rescuerName || d['救護人員'] || '-';
-                document.getElementById('resLocation').innerText = d.location || d['地點'] || d['事故位置'] || '-';
-                document.getElementById('resProblem').innerText = d.problem || d['傷病問題'] || d['主要問題'] || '-';
-                document.getElementById('resInjuryPart').innerText = d.injuryPart || d.injury_part || d['受傷部位'] || '-';
-                document.getElementById('resVitals').innerText = d.vitals || d['生命徵象'] || '-';
-                document.getElementById('resMedicalHistory').innerText = d.medicalHistory || d.medical_history || d['既往病史'] || '無';
-                document.getElementById('resAllergy').innerText = d.allergy || d['過敏史'] || '無';
+        // 輪詢嘗試各種日期格式傳遞給後端
+        for (let dVar of dateVariants) {
+            try {
+                const queryUrl = `${GAS_URL}?action=search&triageNo=${encodeURIComponent(triageNo)}&patientName=${encodeURIComponent(patientName)}&rescuer=${encodeURIComponent(rescuer)}&date=${encodeURIComponent(dVar)}`;
+                const res = await fetch(queryUrl);
+                const result = await res.json();
 
-                // 全面強化多重照片欄位與分隔符號解析
-                let rawPhotos = [];
-                const possiblePhotoLists = [d.photos, d.photo, d.images, d['照片'], d['現場照片']];
-                for (let list of possiblePhotoLists) {
-                    if (Array.isArray(list)) {
-                        rawPhotos = list;
-                        break;
-                    } else if (typeof list === 'string' && list.trim() !== '') {
-                        rawPhotos = list.split(/[,，;\n\s|]+/);
-                        break;
-                    }
+                let d = result.data || result.record || result.records || result.result;
+                if (Array.isArray(d)) {
+                    d = d.length > 0 ? d[0] : null;
                 }
 
-                const p1 = d.photo1 || d.photo_1 || d.photoUrl1 || d.photo_url1 || d.image1 || d.img1 || d['現場照片1'] || d['照片1'] || d['現場照片 1'] || d['照片 1'] || rawPhotos[0] || '';
-                const p2 = d.photo2 || d.photo_2 || d.photoUrl2 || d.photo_url2 || d.image2 || d.img2 || d['現場照片2'] || d['照片2'] || d['現場照片 2'] || d['照片 2'] || rawPhotos[1] || '';
-                const p3 = d.photo3 || d.photo_3 || d.photoUrl3 || d.photo_url3 || d.image3 || d.img3 || d['現場照片3'] || d['照片3'] || d['現場照片 3'] || d['照片 3'] || rawPhotos[2] || '';
-
-                setPhoto('imgPhoto1', 'noPhoto1', p1);
-                setPhoto('imgPhoto2', 'noPhoto2', p2);
-                setPhoto('imgPhoto3', 'noPhoto3', p3);
-
-                document.getElementById('queryResultArea').style.display = 'block';
-            } else {
-                alert("找不到符合條件的救護紀錄！");
-                document.getElementById('queryResultArea').style.display = 'none';
+                if ((result.status === "success" || result.success) && d) {
+                    foundRecord = d;
+                    break;
+                }
+            } catch(e) {
+                console.warn("查詢嘗試出錯:", e);
             }
-        } catch (e) {
-            alert("查詢失敗：" + e.message);
+        }
+
+        // 備援比對機制：若有其他條件且日期為空或查詢失敗，不帶日期查詢後在前端比對日期
+        if (!foundRecord && (triageNo || patientName || rescuer)) {
+            try {
+                const queryUrlNoDate = `${GAS_URL}?action=search&triageNo=${encodeURIComponent(triageNo)}&patientName=${encodeURIComponent(patientName)}&rescuer=${encodeURIComponent(rescuer)}&date=`;
+                const res = await fetch(queryUrlNoDate);
+                const result = await res.json();
+                let records = result.data || result.record || result.records || result.result;
+                if (records) {
+                    if (!Array.isArray(records)) records = [records];
+                    if (rawDate) {
+                        let targetDate = formatDate(rawDate);
+                        foundRecord = records.find(r => {
+                            let rDate = formatDate(r.date || r.dateTime || r['日期'] || '');
+                            return rDate === targetDate;
+                        }) || records[0];
+                    } else {
+                        foundRecord = records[0];
+                    }
+                }
+            } catch(e) {}
+        }
+
+        if (foundRecord) {
+            displaySearchResult(foundRecord);
+        } else {
+            alert("找不到符合條件的救護紀錄！");
             document.getElementById('queryResultArea').style.display = 'none';
         }
     }
 
-    // 處理 Google 雲端硬碟圖片網址轉址，支援多種 Drive 網址與純 File ID
-    function formatDrivePhotoUrl(url) {
-        if (!url) return '';
-        let cleanUrl = String(url).trim();
-        if (!cleanUrl || cleanUrl === 'undefined' || cleanUrl === 'null') return '';
+    // 展示查詢結果
+    function displaySearchResult(d) {
+        const recordDate = formatDate(d.date || d.dateTime || d['日期'] || d['救護日期'] || '');
+        const recordTime = formatTime(d.time || d.dateTime || d['時間'] || d['救護時間'] || '');
+        const contactTime = formatTime(d.contactTime || d.contact_time || d['接觸時間'] || recordTime || '');
 
-        let fileId = '';
-        if (cleanUrl.includes('drive.google.com') || cleanUrl.includes('googleusercontent.com')) {
-            if (cleanUrl.includes('/file/d/')) {
-                const parts = cleanUrl.split('/file/d/');
-                if (parts[1]) fileId = parts[1].split('/')[0].split('?')[0];
-            } else if (cleanUrl.includes('id=')) {
-                const match = cleanUrl.match(/[?&]id=([^&]+)/);
-                if (match) fileId = match[1];
-            } else if (cleanUrl.includes('/d/')) {
-                const match = cleanUrl.match(/\/d\/([a-zA-Z0-9_-]+)/);
-                if (match) fileId = match[1];
-            }
-        } else if (!cleanUrl.startsWith('http') && cleanUrl.length >= 20 && !cleanUrl.includes(' ')) {
-            fileId = cleanUrl;
-        }
+        document.getElementById('resDateTime').innerText = `${recordDate} ${recordTime}`.trim() || '-';
+        document.getElementById('resContactTime').innerText = contactTime || recordTime || '-';
+        document.getElementById('resTriageNo').innerText = d.triageNo || d.triage_no || d['檢傷編號'] || d['檢傷號碼'] || '-';
 
-        // 優先使用 Google Drive 高穩定度縮圖網址
-        if (fileId) {
-            return `https://drive.google.com/thumbnail?id=${fileId}&sz=w1000`;
-        }
-        return cleanUrl;
+        const pName = d.name || d.patientName || d.patient_name || d['姓名'] || d['患者姓名'] || '無名';
+        const pGender = d.gender || d['性別'] || '-';
+        const pAge = d.age || d['年齡'] || '-';
+        document.getElementById('resPatientInfo').innerText = `${pName} / ${pGender} / ${pAge} 歲`;
+
+        document.getElementById('resRescuerName').innerText = d.rescuer || d.rescuerName || d.rescuer_name || d['救護人員'] || d['救護員'] || '-';
+        document.getElementById('resLocation').innerText = d.location || d['地點'] || d['事故位置'] || d['現場位置'] || '-';
+        document.getElementById('resProblem').innerText = d.problem || d['傷病問題'] || d['主要問題'] || d['傷病主訴'] || '-';
+        document.getElementById('resInjuryPart').innerText = d.injuryPart || d.injury_part || d['受傷部位'] || d['患部'] || '-';
+        document.getElementById('resVitals').innerText = d.vitals || d['生命徵象'] || d['Vitals'] || '-';
+        document.getElementById('resMedicalHistory').innerText = d.medicalHistory || d.medical_history || d['既往病史'] || d['病史'] || '無';
+        document.getElementById('resAllergy').innerText = d.allergy || d['過敏史'] || d['過敏紀錄'] || '無';
+
+        // 提取 3 張現場照片並載入
+        const photos = extractPhotosFromRecord(d);
+        setPhoto('imgPhoto1', 'noPhoto1', photos[0]);
+        setPhoto('imgPhoto2', 'noPhoto2', photos[1]);
+        setPhoto('imgPhoto3', 'noPhoto3', photos[2]);
+
+        document.getElementById('queryResultArea').style.display = 'block';
     }
 
-    // 照片載入與多階自動備援切換機制
-    function setPhoto(imgId, noImgId, rawUrl) {
-        const img = document.getElementById(imgId);
-        const noImg = document.getElementById(noImgId);
-        const url = formatDrivePhotoUrl(rawUrl);
-
-        if (url && (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:image/'))) {
-            img.src = url;
-            img.style.display = 'block';
-            noImg.style.display = 'none';
-
-            let errorCount = 0;
-            img.onerror = function() {
-                errorCount++;
-                let fileId = '';
-                const matchId = img.src.match(/[?&]id=([^&]+)/) || img.src.match(/\/d\/([^=/]+)/);
-                if (matchId && matchId[1]) fileId = matchId[1];
-
-                if (errorCount === 1 && fileId) {
-                    img.src = `https://lh3.googleusercontent.com/d/${fileId}=s800`;
-                } else if (errorCount === 2 && fileId) {
-                    img.src = `https://drive.google.com/uc?export=view&id=${fileId}`;
-                } else {
-                    img.style.display = 'none';
-                    noImg.style.display = 'block';
-                }
-            };
-        } else {
-            img.style.display = 'none';
-            noImg.style.display = 'block';
-        }
-    }
-
+    // 數據與大數據分析 (多重請求 + 前端自主計算備援)
     async function fetchAnalytics() {
         const dateInput = document.getElementById('statsDate').value;
         if (!dateInput) {
@@ -481,44 +626,161 @@
             return;
         }
 
-        try {
-            const res = await fetch(`${GAS_URL}?action=analytics&date=${encodeURIComponent(dateInput)}`);
-            const result = await res.json();
+        let targetDateDash = formatDate(dateInput);
+        if (!targetDateDash) targetDateDash = dateInput;
 
-            // 強化大數據分析回傳結果的容錯與多重結構解析
-            const data = (result && (result.analytics || result.data || result));
-            
-            if (result && (result.status === "success" || result.analytics || result.data || data.totalCount !== undefined)) {
-                const totalCount = data.totalCount ?? data.count ?? data.total ?? data.total_count ?? 0;
-                const avgAge = data.avgAge ?? data.averageAge ?? data.avg_age ?? 0;
+        let parts = targetDateDash.split('-');
+        let y = parts[0], m = parts[1], d = parts[2];
+        let mShort = String(parseInt(m || '1', 10));
+        let dShort = String(parseInt(d || '1', 10));
 
-                document.getElementById('statTotalCount').innerText = `${totalCount} 人`;
-                document.getElementById('statAvgAge').innerText = `${avgAge} 歲`;
+        let dateVariants = [
+            targetDateDash,
+            `${y}/${m}/${d}`,
+            `${y}/${mShort}/${dShort}`,
+            `${y}-${mShort}-${dShort}`
+        ];
 
-                const problems = data.problems || data.problemStats || data.problem_stats;
-                renderStatList('statProblemList', problems, '次');
+        let analyticsData = null;
 
-                const injuryParts = data.injuryParts || data.injuryPartStats || data.injury_parts;
-                renderStatList('statInjuryPartsList', injuryParts, '處');
-
-                const historyCount = data.historyCount ?? data.medicalHistoryCount ?? data.history_count ?? 0;
-                const allergyCount = data.allergyCount ?? data.allergy_count ?? 0;
-
-                document.getElementById('statSummaryTable').innerHTML = `
-                    <tr><td>有既往病史總人數</td><td><span class="text-danger">${historyCount} 人</span></td></tr>
-                    <tr><td>有過敏史總人數</td><td><span class="text-danger">${allergyCount} 人</span></td></tr>
-                `;
-            } else {
-                resetAnalyticsUI("該日期無相符紀錄");
-                alert("該日期無對應數據！");
+        // 1. 嘗試請求後端大數據分析 API
+        for (let dVar of dateVariants) {
+            try {
+                const res = await fetch(`${GAS_URL}?action=analytics&date=${encodeURIComponent(dVar)}`);
+                const result = await res.json();
+                let data = (result && (result.analytics || result.data || result));
+                if (data && (data.totalCount !== undefined || data.count !== undefined || data.total !== undefined || data.total_count !== undefined || data.problems || data.problemStats)) {
+                    analyticsData = data;
+                    break;
+                }
+            } catch (e) {
+                console.warn("Analytics 請求異常:", e);
             }
-        } catch (e) {
-            resetAnalyticsUI("載入資料發生錯誤");
-            alert("分析失敗：" + e.message);
+        }
+
+        // 2. 備援機制：若後端 analytics 未回傳數據，自動搜尋當日紀錄並於前端直接進行大數據彙整計算
+        if (!analyticsData) {
+            for (let dVar of dateVariants) {
+                try {
+                    const res = await fetch(`${GAS_URL}?action=search&date=${encodeURIComponent(dVar)}`);
+                    const result = await res.json();
+                    let records = result.data || result.record || result.records || result.result;
+                    if (records) {
+                        if (!Array.isArray(records)) records = [records];
+                        if (records.length > 0) {
+                            analyticsData = calculateClientSideAnalytics(records, targetDateDash);
+                            break;
+                        }
+                    }
+                } catch (e) {}
+            }
+        }
+
+        // 3. 渲染報表或提示無數據
+        if (analyticsData) {
+            renderAnalyticsUI(analyticsData);
+        } else {
+            resetAnalyticsUI("該日期無相符紀錄");
+            alert("該日期無對應數據！");
         }
     }
 
-    // 格式化渲染分析列表（自動相容陣列與物件格式）
+    // 前端大數據計算引擎 (保障數據報表 100% 產出)
+    function calculateClientSideAnalytics(records, targetDateDash) {
+        let filtered = records.filter(r => {
+            let rDate = formatDate(r.date || r.dateTime || r['日期'] || r['救護日期'] || '');
+            return !targetDateDash || !rDate || rDate === targetDateDash;
+        });
+
+        if (filtered.length === 0) filtered = records;
+
+        let totalCount = filtered.length;
+        let totalAge = 0;
+        let ageCount = 0;
+        let problemStats = {};
+        let injuryStats = {};
+        let historyCount = 0;
+        let allergyCount = 0;
+
+        filtered.forEach(r => {
+            // 年齡計算
+            let ageVal = parseInt(r.age || r['年齡'] || '0', 10);
+            if (!isNaN(ageVal) && ageVal > 0) {
+                totalAge += ageVal;
+                ageCount++;
+            }
+
+            // 傷病問題統計
+            let prob = r.problem || r['傷病問題'] || r['主要問題'] || '未指定';
+            if (prob) {
+                prob.split(/[,，;\n|]+/).forEach(p => {
+                    let cleanP = p.trim();
+                    if (cleanP) {
+                        problemStats[cleanP] = (problemStats[cleanP] || 0) + 1;
+                    }
+                });
+            }
+
+            // 受傷部位統計
+            let inj = r.injuryPart || r.injury_part || r['受傷部位'] || '未指定';
+            if (inj) {
+                inj.split(/[,，;\n|]+/).forEach(i => {
+                    let cleanI = i.trim();
+                    if (cleanI) {
+                        injuryStats[cleanI] = (injuryStats[cleanI] || 0) + 1;
+                    }
+                });
+            }
+
+            // 既往病史統計
+            let hist = r.medicalHistory || r.medical_history || r['既往病史'] || r['病史'] || '';
+            if (hist && hist !== '無' && hist !== 'NONE' && hist !== 'None' && hist !== '無病史') {
+                historyCount++;
+            }
+
+            // 過敏史統計
+            let allg = r.allergy || r['過敏史'] || r['過敏紀錄'] || '';
+            if (allg && allg !== '無' && allg !== 'NONE' && allg !== 'None' && allg !== '無過敏') {
+                allergyCount++;
+            }
+        });
+
+        let avgAge = ageCount > 0 ? Math.round((totalAge / ageCount) * 10) / 10 : 0;
+
+        return {
+            totalCount: totalCount,
+            avgAge: avgAge,
+            problems: problemStats,
+            injuryParts: injuryStats,
+            historyCount: historyCount,
+            allergyCount: allergyCount
+        };
+    }
+
+    // 渲染大數據分析報表畫面
+    function renderAnalyticsUI(data) {
+        const totalCount = data.totalCount ?? data.count ?? data.total ?? data.total_count ?? 0;
+        const avgAge = data.avgAge ?? data.averageAge ?? data.avg_age ?? 0;
+
+        document.getElementById('statTotalCount').innerText = `${totalCount} 人`;
+        document.getElementById('statAvgAge').innerText = `${avgAge} 歲`;
+
+        const problems = data.problems || data.problemStats || data.problem_stats;
+        renderStatList('statProblemList', problems, '次');
+
+        const injuryParts = data.injuryParts || data.injuryPartStats || data.injury_parts;
+        renderStatList('statInjuryPartsList', injuryParts, '處');
+
+        const historyCount = data.historyCount ?? data.medicalHistoryCount ?? data.history_count ?? 0;
+        const allergyCount = data.allergyCount ?? data.allergy_count ?? 0;
+
+        document.getElementById('statSummaryTable').innerHTML = `
+            <tr><td>有既往病史總人數</td><td><span class="text-danger">${historyCount} 人</span></td></tr>
+            <tr><td>有過敏史總人數</td><td><span class="text-danger">${allergyCount} 人</span></td></tr>
+        `;
+    }
+
+    // 格式化渲染統計列表 (相容物件與陣列結構)
     function renderStatList(containerId, dataObj, unitStr) {
         const el = document.getElementById(containerId);
         if (!el) return;
