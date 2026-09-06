@@ -198,13 +198,13 @@
                     <div class="col-6">
                         <div class="p-3 bg-light rounded border text-center">
                             <span class="text-muted small">👥 當日受傷總人數</span>
-                            <h2 id="statTotalCount" class="fw-bold text-danger mb-0">-- 人</h2>
+                            <h2 id="statTotalCount" class="fw-bold text-danger mb-0">0 人</h2>
                         </div>
                     </div>
                     <div class="col-6">
                         <div class="p-3 bg-light rounded border text-center">
                             <span class="text-muted small">🎂 平均年齡</span>
-                            <h2 id="statAvgAge" class="fw-bold text-primary mb-0">-- 歲</h2>
+                            <h2 id="statAvgAge" class="fw-bold text-primary mb-0">0 歲</h2>
                         </div>
                     </div>
                 </div>
@@ -232,7 +232,8 @@
                                 <tr><th>統計指標項目</th><th>統計結果摘要</th></tr>
                             </thead>
                             <tbody id="statSummaryTable">
-                                <tr><td colspan="2" class="text-muted">等待分析中...</td></tr>
+                                <tr><td>有既往病史總人數</td><td><span class="text-danger">0 人</span></td></tr>
+                                <tr><td>有過敏史總人數</td><td><span class="text-danger">0 人</span></td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -271,14 +272,16 @@
         const select = document.getElementById(elementId);
         const currentVal = select.value;
         select.innerHTML = `<option value="">${defaultText}</option>`;
-        items.forEach(item => {
-            if (item) {
-                const opt = document.createElement('option');
-                opt.value = item;
-                opt.text = item;
-                select.appendChild(opt);
-            }
-        });
+        if (items && Array.isArray(items)) {
+            items.forEach(item => {
+                if (item) {
+                    const opt = document.createElement('option');
+                    opt.value = item;
+                    opt.text = item;
+                    select.appendChild(opt);
+                }
+            });
+        }
         select.value = currentVal;
     }
 
@@ -291,7 +294,6 @@
     }
 
     async function searchRecords() {
-        // 優先讀取文字框，若文字框無值則讀取下拉選單的值（雙向相容）
         const triageNo = (document.getElementById('inputTriageNo').value || document.getElementById('selectTriageNo').value).trim();
         const patientName = (document.getElementById('inputPatientName').value || document.getElementById('selectPatientName').value).trim();
         const rescuer = (document.getElementById('inputRescuer').value || document.getElementById('selectRescuer').value).trim();
@@ -337,13 +339,41 @@
         }
     }
 
-    function setPhoto(imgId, noImgId, url) {
+    // 處理 Google 雲端硬碟圖片網址轉址，確保圖片正確載入
+    function formatDrivePhotoUrl(url) {
+        if (!url || typeof url !== 'string') return '';
+        let cleanUrl = url.trim();
+        // 若為 Google Drive 檢視網址 /file/d/ID/view 或 open?id=ID，轉為直接讀取直連或縮圖格式
+        if (cleanUrl.includes('drive.google.com')) {
+            let fileId = '';
+            if (cleanUrl.includes('/file/d/')) {
+                const parts = cleanUrl.split('/file/d/');
+                if (parts[1]) fileId = parts[1].split('/')[0];
+            } else if (cleanUrl.includes('id=')) {
+                const match = cleanUrl.match(/[?&]id=([^&]+)/);
+                if (match) fileId = match[1];
+            }
+            if (fileId) {
+                return `https://lh3.googleusercontent.com/d/${fileId}=s800`;
+            }
+        }
+        return cleanUrl;
+    }
+
+    function setPhoto(imgId, noImgId, rawUrl) {
         const img = document.getElementById(imgId);
         const noImg = document.getElementById(noImgId);
+        const url = formatDrivePhotoUrl(rawUrl);
+
         if (url && url.startsWith('http')) {
             img.src = url;
             img.style.display = 'block';
             noImg.style.display = 'none';
+            // 圖片載入失敗時自動備援切換顯示無照片
+            img.onerror = function() {
+                img.style.display = 'none';
+                noImg.style.display = 'block';
+            };
         } else {
             img.style.display = 'none';
             noImg.style.display = 'block';
@@ -361,29 +391,47 @@
             const res = await fetch(`${GAS_URL}?action=analytics&date=${encodeURIComponent(date)}`);
             const result = await res.json();
 
-            if (result.status === "success") {
+            if (result.status === "success" && result.analytics) {
                 const data = result.analytics;
-                document.getElementById('statTotalCount').innerText = `${data.totalCount} 人`;
-                document.getElementById('statAvgAge').innerText = `${data.avgAge} 歲`;
+                document.getElementById('statTotalCount').innerText = `${data.totalCount || 0} 人`;
+                document.getElementById('statAvgAge').innerText = `${data.avgAge || 0} 歲`;
 
                 const probEl = document.getElementById('statProblemList');
-                probEl.innerHTML = Object.keys(data.problems).length ?
+                probEl.innerHTML = (data.problems && Object.keys(data.problems).length > 0) ?
                     Object.entries(data.problems).map(([k, v]) => `<li>${k}：<span class="text-danger">${v} 次</span></li>`).join('') :
                     `<li class="text-muted">當日無紀錄</li>`;
 
                 const partEl = document.getElementById('statInjuryPartsList');
-                partEl.innerHTML = Object.keys(data.injuryParts).length ?
+                partEl.innerHTML = (data.injuryParts && Object.keys(data.injuryParts).length > 0) ?
                     Object.entries(data.injuryParts).map(([k, v]) => `<li>${k}：<span class="text-primary">${v} 處</span></li>`).join('') :
                     `<li class="text-muted">當日無紀錄</li>`;
 
                 document.getElementById('statSummaryTable').innerHTML = `
-                    <tr><td>有既往病史總人數</td><td><span class="text-danger">${data.historyCount} 人</span></td></tr>
-                    <tr><td>有過敏史總人數</td><td><span class="text-danger">${data.allergyCount} 人</span></td></tr>
+                    <tr><td>有既往病史總人數</td><td><span class="text-danger">${data.historyCount || 0} 人</span></td></tr>
+                    <tr><td>有過敏史總人數</td><td><span class="text-danger">${data.allergyCount || 0} 人</span></td></tr>
                 `;
             } else {
+                // 無資料時的安全歸零處理
+                document.getElementById('statTotalCount').innerText = "0 人";
+                document.getElementById('statAvgAge').innerText = "0 歲";
+                document.getElementById('statProblemList').innerHTML = `<li class="text-muted">該日期無相符紀錄</li>`;
+                document.getElementById('statInjuryPartsList').innerHTML = `<li class="text-muted">該日期無相符紀錄</li>`;
+                document.getElementById('statSummaryTable').innerHTML = `
+                    <tr><td>有既往病史總人數</td><td><span class="text-danger">0 人</span></td></tr>
+                    <tr><td>有過敏史總人數</td><td><span class="text-danger">0 人</span></td></tr>
+                `;
                 alert("該日期無對應數據！");
             }
         } catch (e) {
+            // 例外發生時的安全歸零處理
+            document.getElementById('statTotalCount').innerText = "0 人";
+            document.getElementById('statAvgAge').innerText = "0 歲";
+            document.getElementById('statProblemList').innerHTML = `<li class="text-muted">載入資料發生錯誤</li>`;
+            document.getElementById('statInjuryPartsList').innerHTML = `<li class="text-muted">載入資料發生錯誤</li>`;
+            document.getElementById('statSummaryTable').innerHTML = `
+                <tr><td>有既往病史總人數</td><td><span class="text-danger">0 人</span></td></tr>
+                <tr><td>有過敏史總人數</td><td><span class="text-danger">0 人</span></td></tr>
+            `;
             alert("分析失敗：" + e.message);
         }
     }
