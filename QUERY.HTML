@@ -48,12 +48,35 @@
             align-items: center;
             justify-content: center;
         }
+        .status-banner { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            background-color: #f1f5f9; 
+            border: 2px solid #334155; 
+            padding: 10px 14px; 
+            border-radius: 8px; 
+            margin-bottom: 20px; 
+            flex-wrap: wrap; 
+            gap: 8px; 
+        }
     </style>
 </head>
 <body>
 
 <div class="container my-4" style="max-width: 900px;">
-    <h2 class="text-center mb-4 fw-bold text-primary">🚑 EMS 救護紀錄查詢與分析系統</h2>
+    <h2 class="text-center mb-3 fw-bold text-primary">🚑 EMS 救護紀錄查詢與分析系統</h2>
+
+    <!-- 當前狀態 / 快速連結列 -->
+    <div class="status-banner">
+        <div>
+            <span class="fw-bold" style="font-size: 0.95rem;">當前狀態：</span>
+            <span id="modeBadge" class="badge bg-success" style="font-size: 0.95rem;">📊 查詢分析模式</span>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="https://hu681123-ems-pdac.github.io/DPAC-ERU-EMS/index.html.html?openExternalBrowser=1" target="_blank" class="btn btn-sm btn-outline-danger fw-bold">🚑 前往救護紀錄系統</a>
+        </div>
+    </div>
 
     <!-- 功能頁籤切換 -->
     <ul class="nav nav-pills nav-fill mb-4 p-1 bg-white rounded shadow-sm border" id="mainTab" role="tablist">
@@ -223,7 +246,7 @@
 <!-- 引入 Bootstrap 5 JS Bundle -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbxeLmd3bb-OOZ5tCQLV8uMXt29_uzyYJfrxgSQZ6ew2hOm8jUoWwZxBp6Ye4Qt_KrLc-Q/exec";
+    const GAS_URL = "您的_GAS_網頁應用程式_URL";
 
     // 頁面載入時自動取得下拉選單選項
     window.onload = function() {
