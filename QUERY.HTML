@@ -140,6 +140,7 @@
                     <h4 class="fw-bold text-success mb-3">📋 救護紀錄詳細資料</h4>
                     <div class="row g-3 bg-light p-3 rounded border mb-4">
                         <div class="col-md-6"><strong>📅 日期/時間：</strong><span id="resDateTime" class="text-dark">-</span></div>
+                        <div class="col-md-6"><strong>⏱️ 接觸時間：</strong><span id="resContactTime" class="text-primary fw-bold">-</span></div>
                         <div class="col-md-6"><strong>🏷️ 檢傷編號：</strong><span id="resTriageNo" class="text-primary">-</span></div>
                         <div class="col-md-6"><strong>👤 姓名/性別/年齡：</strong><span id="resPatientInfo" class="text-dark">-</span></div>
                         <div class="col-md-6"><strong>🧑‍⚕️ 救護人員：</strong><span id="resRescuerName" class="text-dark">-</span></div>
@@ -293,6 +294,40 @@
         }
     }
 
+    // 日期格式化：將 ISO 字串或 Google Sheets 日期轉為 YYYY-MM-DD
+    function formatDate(val) {
+        if (!val) return '';
+        let s = String(val).trim();
+        if (s.includes('T')) {
+            try {
+                const dt = new Date(s);
+                if (!isNaN(dt.getTime())) {
+                    return dt.toISOString().split('T')[0];
+                }
+            } catch(e) {}
+        }
+        return s.split('T')[0];
+    }
+
+    // 時間格式化：正確處理 1899-12-30T... 基準時間或一般時間字串
+    function formatTime(val) {
+        if (!val) return '';
+        let s = String(val).trim();
+        if (s.includes('1899-12-30') || s.includes('T')) {
+            try {
+                const dt = new Date(s);
+                if (!isNaN(dt.getTime())) {
+                    const hours = String(dt.getUTCHours()).padStart(2, '0');
+                    const minutes = String(dt.getUTCMinutes()).padStart(2, '0');
+                    const seconds = String(dt.getUTCSeconds()).padStart(2, '0');
+                    if (hours === '00' && minutes === '00' && seconds === '00') return '';
+                    return `${hours}:${minutes}:${seconds}`;
+                }
+            } catch(e) {}
+        }
+        return s;
+    }
+
     async function searchRecords() {
         const triageNo = (document.getElementById('inputTriageNo').value || document.getElementById('selectTriageNo').value).trim();
         const patientName = (document.getElementById('inputPatientName').value || document.getElementById('selectPatientName').value).trim();
@@ -313,20 +348,30 @@
 
             if (result.status === "success" && result.data) {
                 const d = result.data;
-                document.getElementById('resDateTime').innerText = `${d.date || ''} ${d.time || ''}`;
-                document.getElementById('resTriageNo').innerText = d.triageNo || '-';
-                document.getElementById('resPatientInfo').innerText = `${d.name || '無名'} / ${d.gender || '-'} / ${d.age || '-'} 歲`;
-                document.getElementById('resRescuerName').innerText = d.rescuer || '-';
+                const recordDate = formatDate(d.date || d.dateTime || '');
+                const recordTime = formatTime(d.time || d.dateTime || '');
+                const contactTime = formatTime(d.contactTime || d.contact_time || d.time || '');
+
+                document.getElementById('resDateTime').innerText = `${recordDate} ${recordTime}`.trim() || '-';
+                document.getElementById('resContactTime').innerText = contactTime || recordTime || '-';
+                document.getElementById('resTriageNo').innerText = d.triageNo || d.triage_no || '-';
+                document.getElementById('resPatientInfo').innerText = `${d.name || d.patientName || '無名'} / ${d.gender || '-'} / ${d.age || '-'} 歲`;
+                document.getElementById('resRescuerName').innerText = d.rescuer || d.rescuerName || '-';
                 document.getElementById('resLocation').innerText = d.location || '-';
                 document.getElementById('resProblem').innerText = d.problem || '-';
-                document.getElementById('resInjuryPart').innerText = d.injuryPart || '-';
+                document.getElementById('resInjuryPart').innerText = d.injuryPart || d.injury_part || '-';
                 document.getElementById('resVitals').innerText = d.vitals || '-';
-                document.getElementById('resMedicalHistory').innerText = d.medicalHistory || '無';
+                document.getElementById('resMedicalHistory').innerText = d.medicalHistory || d.medical_history || '無';
                 document.getElementById('resAllergy').innerText = d.allergy || '無';
 
-                setPhoto('imgPhoto1', 'noPhoto1', d.photo1);
-                setPhoto('imgPhoto2', 'noPhoto2', d.photo2);
-                setPhoto('imgPhoto3', 'noPhoto3', d.photo3);
+                // 支援多種照片欄位命名與陣列結構
+                const p1 = d.photo1 || d.image1 || d.img1 || (d.photos && d.photos[0]) || '';
+                const p2 = d.photo2 || d.image2 || d.img2 || (d.photos && d.photos[1]) || '';
+                const p3 = d.photo3 || d.image3 || d.img3 || (d.photos && d.photos[2]) || '';
+
+                setPhoto('imgPhoto1', 'noPhoto1', p1);
+                setPhoto('imgPhoto2', 'noPhoto2', p2);
+                setPhoto('imgPhoto3', 'noPhoto3', p3);
 
                 document.getElementById('queryResultArea').style.display = 'block';
             } else {
@@ -341,9 +386,9 @@
 
     // 處理 Google 雲端硬碟圖片網址轉址，支援各種 Drive URL 及純 File ID
     function formatDrivePhotoUrl(url) {
-        if (!url || typeof url !== 'string') return '';
-        let cleanUrl = url.trim();
-        if (!cleanUrl) return '';
+        if (!url) return '';
+        let cleanUrl = String(url).trim();
+        if (!cleanUrl || cleanUrl === 'undefined' || cleanUrl === 'null') return '';
 
         if (cleanUrl.includes('drive.google.com') || cleanUrl.includes('googleusercontent.com')) {
             let fileId = '';
@@ -402,26 +447,32 @@
             const res = await fetch(`${GAS_URL}?action=analytics&date=${encodeURIComponent(date)}`);
             const result = await res.json();
 
-            if (result.status === "success" && result.analytics) {
-                const data = result.analytics;
-                document.getElementById('statTotalCount').innerText = `${data.totalCount || 0} 人`;
-                document.getElementById('statAvgAge').innerText = `${data.avgAge || 0} 歲`;
+            if (result.status === "success" && (result.analytics || result.data)) {
+                const data = result.analytics || result.data;
+                const totalCount = data.totalCount ?? data.count ?? data.total ?? 0;
+                const avgAge = data.avgAge ?? data.averageAge ?? 0;
+
+                document.getElementById('statTotalCount').innerText = `${totalCount} 人`;
+                document.getElementById('statAvgAge').innerText = `${avgAge} 歲`;
 
                 const probEl = document.getElementById('statProblemList');
-                const problems = data.problems || {};
+                const problems = data.problems || data.problemStats || {};
                 probEl.innerHTML = Object.keys(problems).length > 0 ?
                     Object.entries(problems).map(([k, v]) => `<li>${k}：<span class="text-danger">${v} 次</span></li>`).join('') :
                     `<li class="text-muted">當日無紀錄</li>`;
 
                 const partEl = document.getElementById('statInjuryPartsList');
-                const injuryParts = data.injuryParts || {};
+                const injuryParts = data.injuryParts || data.injuryPartStats || {};
                 partEl.innerHTML = Object.keys(injuryParts).length > 0 ?
                     Object.entries(injuryParts).map(([k, v]) => `<li>${k}：<span class="text-primary">${v} 處</span></li>`).join('') :
                     `<li class="text-muted">當日無紀錄</li>`;
 
+                const historyCount = data.historyCount ?? data.medicalHistoryCount ?? 0;
+                const allergyCount = data.allergyCount ?? 0;
+
                 document.getElementById('statSummaryTable').innerHTML = `
-                    <tr><td>有既往病史總人數</td><td><span class="text-danger">${data.historyCount || 0} 人</span></td></tr>
-                    <tr><td>有過敏史總人數</td><td><span class="text-danger">${data.allergyCount || 0} 人</span></td></tr>
+                    <tr><td>有既往病史總人數</td><td><span class="text-danger">${historyCount} 人</span></td></tr>
+                    <tr><td>有過敏史總人數</td><td><span class="text-danger">${allergyCount} 人</span></td></tr>
                 `;
             } else {
                 resetAnalyticsUI("該日期無相符紀錄");
