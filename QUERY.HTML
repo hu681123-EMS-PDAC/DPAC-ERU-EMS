@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="referrer" content="no-referrer">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
     <title>EMS 救護紀錄查詢與大數據分析面板</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
@@ -622,10 +622,10 @@
 
             let attempt = 0;
             link.href = `https://drive.google.com/file/d/${fileId}/view`;
-            img.src = urls[0];
             link.style.display = 'inline-block';
             noImg.style.display = 'none';
 
+            // 修正：必須在設定 src 之前先綁定 onerror 事件，避免同步載入失敗時未捕捉到錯誤
             img.onerror = function() {
                 attempt++;
                 if (attempt < urls.length) {
@@ -635,16 +635,19 @@
                     noImg.style.display = 'block';
                 }
             };
+
+            img.src = urls[0];
         } else if (rawUrl && (rawUrl.startsWith('http://') || rawUrl.startsWith('https://') || rawUrl.startsWith('data:image/'))) {
             link.href = rawUrl;
-            img.src = rawUrl;
-            link.style.display = 'inline-block';
             noImg.style.display = 'none';
+            link.style.display = 'inline-block';
 
             img.onerror = function() {
                 link.style.display = 'none';
                 noImg.style.display = 'block';
             };
+
+            img.src = rawUrl;
         } else {
             link.style.display = 'none';
             noImg.style.display = 'block';
