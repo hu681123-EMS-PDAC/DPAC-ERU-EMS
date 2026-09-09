@@ -86,7 +86,7 @@
             <button class="nav-link active fw-bold py-3" id="query-tab" data-bs-toggle="pill" data-bs-target="#queryPanel" type="button" onclick="loadDropdownOptions()">🔍 綜合條件查詢 (多患者相容)</button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link fw-bold py-3" id="stats-tab" data-bs-toggle="pill" data-bs-target="#statsPanel" type="button">📊 年月日大數據彙整分析</button>
+            <button class="nav-link fw-bold py-3" id="stats-tab" data-bs-toggle="pill" data-bs-target="#statsPanel" type="button" onclick="initAnalyticsTab()">📊 年月日大數據彙整分析</button>
         </li>
     </ul>
 
@@ -138,13 +138,42 @@
         <!-- 2. 數據與大數據分析面板 -->
         <div class="tab-pane fade" id="statsPanel" role="tabpanel">
             <div class="card p-4">
-                <h5 class="fw-bold text-dark mb-3">📈 年 / 月 / 日 大數據彙整分析</h5>
-                <div class="row g-3 mb-4">
-                    <div class="col-md-8">
-                        <input type="text" id="statsDate" class="form-control" placeholder="請輸入日期 YYYY-MM-DD、月份 YYYY-MM 或年份 YYYY (留空代表全域)">
+                <h5 class="fw-bold text-dark mb-3">📈 年 / 月 / 日 大數據彙整分析 (獨立選單)</h5>
+                
+                <div class="row g-3 mb-4 bg-light p-3 rounded border">
+                    <div class="col-md-4">
+                        <label class="form-label text-secondary fw-bold">📅 選擇年份 (YYYY)</label>
+                        <select id="statsYearSelect" class="form-select">
+                            <option value="">-- 全部年份 --</option>
+                        </select>
                     </div>
                     <div class="col-md-4">
-                        <button type="button" class="btn btn-secondary btn-main w-100" onclick="fetchAnalytics()">📊 產生分析報表</button>
+                        <label class="form-label text-secondary fw-bold">🗓️ 選擇月份 (MM)</label>
+                        <select id="statsMonthSelect" class="form-select">
+                            <option value="">-- 全部月份 --</option>
+                            <option value="01">01 月</option>
+                            <option value="02">02 月</option>
+                            <option value="03">03 月</option>
+                            <option value="04">04 月</option>
+                            <option value="05">05 月</option>
+                            <option value="06">06 月</option>
+                            <option value="07">07 月</option>
+                            <option value="08">08 月</option>
+                            <option value="09">09 月</option>
+                            <option value="10">10 月</option>
+                            <option value="11">11 月</option>
+                            <option value="12">12 月</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label text-secondary fw-bold">📆 選擇日期 (DD)</label>
+                        <select id="statsDaySelect" class="form-select">
+                            <option value="">-- 全部日期 --</option>
+                        </select>
+                    </div>
+                    <div class="col-md-12 d-flex gap-2 mt-3">
+                        <button type="button" class="btn btn-secondary btn-main flex-grow-1" onclick="fetchAnalytics()">📊 產生分析報表</button>
+                        <button type="button" class="btn btn-outline-secondary fw-bold" onclick="resetAnalyticsFilters()">🔄 清除條件</button>
                     </div>
                 </div>
 
@@ -193,6 +222,20 @@
                     </div>
                 </div>
 
+                <div class="mb-4">
+                    <div class="section-header">🚗 後送模式數據彙整分析</div>
+                    <ul id="statTransportModeList" class="bg-light p-3 rounded border mb-0" style="padding-left: 20px;">
+                        <li class="text-muted">請先點擊產生分析報表</li>
+                    </ul>
+                </div>
+
+                <div class="mb-4">
+                    <div class="section-header">🏷️ START 檢傷分類數據彙整分析</div>
+                    <ul id="statStartTriageList" class="bg-light p-3 rounded border mb-0" style="padding-left: 20px;">
+                        <li class="text-muted">請先點擊產生分析報表</li>
+                    </ul>
+                </div>
+
                 <div class="mb-3">
                     <div class="section-header">🩺 傷病問題 (分類) 統計</div>
                     <ul id="statProblemList" class="bg-light p-3 rounded border mb-0" style="padding-left: 20px;">
@@ -229,11 +272,25 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    const GAS_URL = "https://script.google.com/macros/s/AKfycby8d75H6aLrPtDe11EdS0Pcn-bdo2KmtLWNxae6j2Joy-L5BNWkSdmitJkKyNkOOavEGg/exec";
+    const GAS_URL = "https://script.google.com/macros/s/AKfycby5mNTB3ufgvXStfNFD8ZFZzQP72PfKbLA3H-1NWeSIUsGZ-ilbxLHO8nk3yXykDRJMCg/exec";
 
     window.onload = function() {
         loadDropdownOptions();
+        populateDaySelect();
     };
+
+    function populateDaySelect() {
+        const daySelect = document.getElementById('statsDaySelect');
+        if (!daySelect) return;
+        daySelect.innerHTML = '<option value="">-- 全部日期 --</option>';
+        for (let i = 1; i <= 31; i++) {
+            const val = String(i).padStart(2, '0');
+            const opt = document.createElement('option');
+            opt.value = val;
+            opt.text = `${val} 日`;
+            daySelect.appendChild(opt);
+        }
+    }
 
     async function loadDropdownOptions() {
         try {
@@ -243,10 +300,16 @@
                 populateSelect('selectTriageNo', result.triageNos, "-- 請選擇檢傷編號 --");
                 populateSelect('selectPatientName', result.patientNames, "-- 請選擇患者姓名 --");
                 populateSelect('selectRescuer', result.rescuers, "-- 請選擇救護人員 --");
+                populateSelect('statsYearSelect', result.years, "-- 全部年份 --");
             }
         } catch (e) {
             console.error("載入下拉選單失敗", e);
         }
+    }
+
+    function initAnalyticsTab() {
+        loadDropdownOptions();
+        fetchAnalytics();
     }
 
     function populateSelect(elementId, items, defaultText) {
@@ -494,10 +557,13 @@
     }
 
     async function fetchAnalytics() {
-        const dateInput = document.getElementById('statsDate').value.trim();
+        const year = document.getElementById('statsYearSelect').value.trim();
+        const month = document.getElementById('statsMonthSelect').value.trim();
+        const day = document.getElementById('statsDaySelect').value.trim();
 
         try {
-            const res = await fetch(`${GAS_URL}?action=analytics&date=${encodeURIComponent(dateInput)}`);
+            const queryUrl = `${GAS_URL}?action=analytics&year=${encodeURIComponent(year)}&month=${encodeURIComponent(month)}&day=${encodeURIComponent(day)}`;
+            const res = await fetch(queryUrl);
             const result = await res.json();
 
             const data = (result && (result.analytics || result.data || result));
@@ -512,6 +578,9 @@
                 renderSummaryList('statDateSummary', data.dateSummary, '人次');
                 renderSummaryList('statMonthSummary', data.monthSummary, '人次');
                 renderSummaryList('statYearSummary', data.yearSummary, '人次');
+
+                renderStatList('statTransportModeList', data.transportModeSummary, '人次');
+                renderStatList('statStartTriageList', data.startTriageSummary, '人次');
 
                 renderStatList('statProblemList', data.problems, '次');
                 renderStatList('statInjuryPartsList', data.injuryParts, '處');
@@ -531,6 +600,13 @@
             resetAnalyticsUI("載入資料發生錯誤");
             alert("分析失敗：" + e.message);
         }
+    }
+
+    function resetAnalyticsFilters() {
+        document.getElementById('statsYearSelect').value = "";
+        document.getElementById('statsMonthSelect').value = "";
+        document.getElementById('statsDaySelect').value = "";
+        fetchAnalytics();
     }
 
     function renderSummaryList(containerId, dataObj, unitStr) {
@@ -565,6 +641,8 @@
         document.getElementById('statDateSummary').innerHTML = `<li class="text-muted">${message}</li>`;
         document.getElementById('statMonthSummary').innerHTML = `<li class="text-muted">${message}</li>`;
         document.getElementById('statYearSummary').innerHTML = `<li class="text-muted">${message}</li>`;
+        document.getElementById('statTransportModeList').innerHTML = `<li class="text-muted">${message}</li>`;
+        document.getElementById('statStartTriageList').innerHTML = `<li class="text-muted">${message}</li>`;
         document.getElementById('statProblemList').innerHTML = `<li class="text-muted">${message}</li>`;
         document.getElementById('statInjuryPartsList').innerHTML = `<li class="text-muted">${message}</li>`;
         document.getElementById('statSummaryTable').innerHTML = `
@@ -575,3 +653,4 @@
 </script>
 </body>
 </html>
+
