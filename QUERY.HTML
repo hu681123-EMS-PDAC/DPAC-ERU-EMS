@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer">
     <title>EMS 救護紀錄查詢與大數據分析面板</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
@@ -41,7 +42,7 @@
             background-color: #ffffff;
             border-radius: 8px;
             padding: 10px;
-            min-height: 180px;
+            min-height: 200px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -272,7 +273,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbyh4O-hkA4psD_P70mIUSvwffgbfuKuVWYJIKjuB6G6Rfne-padZ9UMPPI9fP_Lfc6kdg/exec";
+    const GAS_URL = typeof google !== 'undefined' && google.script ? '' : "https://script.google.com/macros/s/AKfycbyLhgG2nsvadlwiMlUV9qeXRs-jcRTuoj9DTinCEXsFvYMe1d9ncdEUAUzMtp9JaHS3iQ/exec";
 
     window.onload = function() {
         loadDropdownOptions();
@@ -292,11 +293,31 @@
         }
     }
 
+    async function callGasApi(action, params = {}) {
+        if (typeof google !== 'undefined' && google.script && google.script.run) {
+            return new Promise((resolve, reject) => {
+                if (action === 'getOptions') {
+                    google.script.run.withSuccessHandler(resolve).withFailureHandler(reject).getOptions();
+                } else if (action === 'search') {
+                    google.script.run.withSuccessHandler(resolve).withFailureHandler(reject).searchRecords(params);
+                } else if (action === 'analytics') {
+                    google.script.run.withSuccessHandler(resolve).withFailureHandler(reject).getAnalytics(params);
+                }
+            });
+        } else {
+            let queryStr = `action=${action}`;
+            for (let key in params) {
+                queryStr += `&${key}=${encodeURIComponent(params[key])}`;
+            }
+            const res = await fetch(`${GAS_URL}?${queryStr}`);
+            return await res.json();
+        }
+    }
+
     async function loadDropdownOptions() {
         try {
-            const res = await fetch(`${GAS_URL}?action=getOptions`);
-            const result = await res.json();
-            if (result.status === "success") {
+            const result = await callGasApi('getOptions');
+            if (result && result.status === "success") {
                 populateSelect('selectTriageNo', result.triageNos, "-- 請選擇檢傷編號 --");
                 populateSelect('selectPatientName', result.patientNames, "-- 請選擇患者姓名 --");
                 populateSelect('selectRescuer', result.rescuers, "-- 請選擇救護人員 --");
@@ -377,11 +398,11 @@
     }
 
     function formatAgeDisplay(rawAge) {
-        if (!rawAge) return '-';
+        if (rawAge === undefined || rawAge === null) return '-';
         let str = String(rawAge).trim();
         if (!str || str === '-' || str === '不詳' || str === '無') return '-';
         let cleanNum = str.replace(/[^\d.]/g, '');
-        if (cleanNum) {
+        if (cleanNum && !isNaN(cleanNum)) {
             return `${cleanNum} 歲`;
         }
         return str;
@@ -415,13 +436,10 @@
         }
 
         try {
-            const queryUrl = `${GAS_URL}?action=search&triageNo=${encodeURIComponent(triageNo)}&patientName=${encodeURIComponent(patientName)}&rescuer=${encodeURIComponent(rescuer)}&date=${encodeURIComponent(date)}`;
-            const res = await fetch(queryUrl);
-            const result = await res.json();
-
+            const result = await callGasApi('search', { triageNo, patientName, rescuer, date });
             let records = [];
-            if (result.status === "success") {
-                if (Array.isArray(result.records) && result.records.length > 0) {
+            if (result && result.status === "success") {
+                if (Array.isArray(result.records)) {
                     records = result.records;
                 } else if (result.data) {
                     records = [result.data];
@@ -468,21 +486,27 @@
                             <div class="col-md-4">
                                 <div class="photo-box">
                                     <span class="small text-muted mb-2 fw-bold">現場照片 1</span>
-                                    <img id="imgPhoto_${idx}_1" src="" class="img-fluid rounded border" style="max-height: 160px; display: none;" alt="照片1">
+                                    <a id="linkPhoto_${idx}_1" href="#" target="_blank" style="display:none;">
+                                        <img id="imgPhoto_${idx}_1" src="" class="img-fluid rounded border" style="max-height: 160px;" alt="照片1">
+                                    </a>
                                     <span id="noPhoto_${idx}_1" class="text-muted small fw-bold">無照片</span>
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="photo-box">
                                     <span class="small text-muted mb-2 fw-bold">現場照片 2</span>
-                                    <img id="imgPhoto_${idx}_2" src="" class="img-fluid rounded border" style="max-height: 160px; display: none;" alt="照片2">
+                                    <a id="linkPhoto_${idx}_2" href="#" target="_blank" style="display:none;">
+                                        <img id="imgPhoto_${idx}_2" src="" class="img-fluid rounded border" style="max-height: 160px;" alt="照片2">
+                                    </a>
                                     <span id="noPhoto_${idx}_2" class="text-muted small fw-bold">無照片</span>
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="photo-box">
                                     <span class="small text-muted mb-2 fw-bold">現場照片 3</span>
-                                    <img id="imgPhoto_${idx}_3" src="" class="img-fluid rounded border" style="max-height: 160px; display: none;" alt="照片3">
+                                    <a id="linkPhoto_${idx}_3" href="#" target="_blank" style="display:none;">
+                                        <img id="imgPhoto_${idx}_3" src="" class="img-fluid rounded border" style="max-height: 160px;" alt="照片3">
+                                    </a>
                                     <span id="noPhoto_${idx}_3" class="text-muted small fw-bold">無照片</span>
                                 </div>
                             </div>
@@ -494,9 +518,9 @@
                 container.style.display = 'block';
 
                 records.forEach((d, idx) => {
-                    setPhoto(`imgPhoto_${idx}_1`, `noPhoto_${idx}_1`, d.photo1 || '');
-                    setPhoto(`imgPhoto_${idx}_2`, `noPhoto_${idx}_2`, d.photo2 || '');
-                    setPhoto(`imgPhoto_${idx}_3`, `noPhoto_${idx}_3`, d.photo3 || '');
+                    setPhoto(`imgPhoto_${idx}_1`, `linkPhoto_${idx}_1`, `noPhoto_${idx}_1`, d.photo1 || '');
+                    setPhoto(`imgPhoto_${idx}_2`, `linkPhoto_${idx}_2`, `noPhoto_${idx}_2`, d.photo2 || '');
+                    setPhoto(`imgPhoto_${idx}_3`, `linkPhoto_${idx}_3`, `noPhoto_${idx}_3`, d.photo3 || '');
                 });
 
             } else {
@@ -533,41 +557,48 @@
         return '';
     }
 
-    function setPhoto(imgId, noImgId, rawUrl) {
+    function setPhoto(imgId, linkId, noImgId, rawUrl) {
         const img = document.getElementById(imgId);
+        const link = document.getElementById(linkId);
         const noImg = document.getElementById(noImgId);
-        if (!img || !noImg) return;
+        if (!img || !noImg || !link) return;
 
         const fileId = extractDriveFileId(rawUrl);
 
         if (fileId) {
-            const primaryUrl = `https://lh3.googleusercontent.com/d/${fileId}=s1000`;
-            img.src = primaryUrl;
-            img.style.display = 'block';
+            const urls = [
+                `https://drive.google.com/thumbnail?id=${fileId}&sz=w1000`,
+                `https://lh3.googleusercontent.com/d/${fileId}=s1000`,
+                `https://drive.google.com/uc?export=view&id=${fileId}`
+            ];
+
+            let attempt = 0;
+            link.href = `https://drive.google.com/file/d/${fileId}/view`;
+            img.src = urls[0];
+            link.style.display = 'inline-block';
             noImg.style.display = 'none';
 
-            let errorCount = 0;
             img.onerror = function() {
-                errorCount++;
-                if (errorCount === 1) {
-                    img.src = `https://drive.google.com/thumbnail?id=${fileId}&sz=w1000`;
-                } else if (errorCount === 2) {
-                    img.src = `https://drive.google.com/uc?export=view&id=${fileId}`;
+                attempt++;
+                if (attempt < urls.length) {
+                    img.src = urls[attempt];
                 } else {
-                    img.style.display = 'none';
+                    link.style.display = 'none';
                     noImg.style.display = 'block';
                 }
             };
         } else if (rawUrl && (rawUrl.startsWith('http://') || rawUrl.startsWith('https://') || rawUrl.startsWith('data:image/'))) {
+            link.href = rawUrl;
             img.src = rawUrl;
-            img.style.display = 'block';
+            link.style.display = 'inline-block';
             noImg.style.display = 'none';
+
             img.onerror = function() {
-                img.style.display = 'none';
+                link.style.display = 'none';
                 noImg.style.display = 'block';
             };
         } else {
-            img.style.display = 'none';
+            link.style.display = 'none';
             noImg.style.display = 'block';
         }
     }
@@ -578,13 +609,10 @@
         const day = document.getElementById('statsDaySelect').value.trim();
 
         try {
-            const queryUrl = `${GAS_URL}?action=analytics&year=${encodeURIComponent(year)}&month=${encodeURIComponent(month)}&day=${encodeURIComponent(day)}`;
-            const res = await fetch(queryUrl);
-            const result = await res.json();
-
+            const result = await callGasApi('analytics', { year, month, day });
             const data = (result && (result.analytics || result.data || result));
             
-            if (result && (result.status === "success" || result.analytics || data.totalCount !== undefined)) {
+            if (result && (result.status === "success" || result.analytics || (data && data.totalCount !== undefined))) {
                 const totalCount = data.totalCount ?? 0;
                 const avgAge = data.avgAge ?? 0;
 
@@ -669,4 +697,3 @@
 </script>
 </body>
 </html>
-
