@@ -659,8 +659,19 @@
                 return { status: "error", message: "未配置 GAS_URL" };
             }
             const queryParams = new URLSearchParams({ action: action, ...params });
-            const response = await fetch(`${GAS_URL}?${queryParams.toString()}`);
-            return await response.json();
+            try {
+                const response = await fetch(`${GAS_URL}?${queryParams.toString()}`);
+                const rawText = await response.text();
+                
+                // 防錯處理：若傳回字串開頭為 '<' (例如 <!DOCTYPE html> 登入或權限提示網頁)，提示使用者原因
+                if (rawText.trim().startsWith('<')) {
+                    throw new Error("伺服器傳回了 HTML 網頁而非 JSON 資料。這通常是因為 Google Apps Script 部署存取權限未設定為「所有人 (Anyone)」，或是 GAS 後端 doGet 函式執行發生錯誤。");
+                }
+                
+                return JSON.parse(rawText);
+            } catch (err) {
+                throw err;
+            }
         }
     }
 
