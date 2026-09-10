@@ -734,7 +734,7 @@
     }
 
     /**
-     * 渲染搜尋結果列表 (明確包含檢傷記錄表主要欄位)
+     * 渲染搜尋結果列表 (完全包含指定的 33 項完整欄位與操作按鈕)
      */
     function renderSearchResults(records) {
         const container = document.getElementById('queryResultContainer');
@@ -749,17 +749,42 @@
                     <h5 class="fw-bold mb-0 text-primary">📋 搜尋結果清單 (共 ${records.length} 筆)</h5>
                 </div>
                 <div class="table-responsive">
-                    <table class="table table-hover align-middle text-center mb-0" style="font-size: 0.95rem;">
+                    <table class="table table-hover align-middle text-center text-nowrap mb-0" style="font-size: 0.9rem;">
                         <thead class="table-dark">
                             <tr>
+                                <th>時間戳記</th>
                                 <th>檢傷編號</th>
-                                <th>日期 / 接觸時間</th>
+                                <th>日期</th>
+                                <th>接觸時間</th>
+                                <th>救護人員</th>
                                 <th>患者姓名</th>
-                                <th>性別/年齡</th>
+                                <th>性別</th>
+                                <th>年齡</th>
+                                <th>電話</th>
+                                <th>事故位置</th>
+                                <th>處置位置</th>
                                 <th>案件類型</th>
                                 <th>傷病問題</th>
-                                <th>START 檢傷</th>
-                                <th>救護人員</th>
+                                <th>受傷部位</th>
+                                <th>AVPU</th>
+                                <th>GCS</th>
+                                <th>生命徵象</th>
+                                <th>體溫</th>
+                                <th>膚色</th>
+                                <th>瞳孔</th>
+                                <th>是否危急</th>
+                                <th>START檢傷</th>
+                                <th>後送模式</th>
+                                <th>處置狀態</th>
+                                <th>既往病史</th>
+                                <th>過敏史</th>
+                                <th>備註</th>
+                                <th>留觀1</th>
+                                <th>留觀2</th>
+                                <th>留觀3</th>
+                                <th>照片1</th>
+                                <th>照片2</th>
+                                <th>照片3</th>
                                 <th>操作</th>
                             </tr>
                         </thead>
@@ -768,18 +793,49 @@
 
         records.forEach((rec, idx) => {
             const startBadge = getStartBadgeHtml(rec.startTriage);
+            const criticalBadge = getCriticalBadgeHtml(rec.isCritical);
+
+            const photo1Btn = rec.photo1 && rec.photo1.trim() !== '' ? `<a href="${rec.photo1}" target="_blank" class="btn btn-sm btn-outline-primary py-0 px-2 fw-bold">📷 照片1</a>` : '-';
+            const photo2Btn = rec.photo2 && rec.photo2.trim() !== '' ? `<a href="${rec.photo2}" target="_blank" class="btn btn-sm btn-outline-primary py-0 px-2 fw-bold">📷 照片2</a>` : '-';
+            const photo3Btn = rec.photo3 && rec.photo3.trim() !== '' ? `<a href="${rec.photo3}" target="_blank" class="btn btn-sm btn-outline-primary py-0 px-2 fw-bold">📷 照片3</a>` : '-';
+
             html += `
                 <tr>
+                    <td>${rec.timestamp || '-'}</td>
                     <td class="fw-bold text-primary">${rec.triageNo || '-'}</td>
-                    <td>${rec.date || '-'} ${rec.time || ''}</td>
+                    <td>${rec.date || '-'}</td>
+                    <td>${rec.time || '-'}</td>
+                    <td>${rec.rescuer || '-'}</td>
                     <td class="fw-bold">${rec.name || '未填寫'}</td>
-                    <td>${rec.gender || '-'}/${rec.age ? rec.age + '歲' : '-'}</td>
+                    <td>${rec.gender || '-'}</td>
+                    <td>${rec.age ? rec.age + '歲' : '-'}</td>
+                    <td>${rec.phone || '-'}</td>
+                    <td>${rec.location || '-'}</td>
+                    <td>${rec.treatLoc || '-'}</td>
                     <td>${rec.caseType || '-'}</td>
                     <td><span class="badge bg-light text-dark border">${rec.problem || '-'}</span></td>
+                    <td>${rec.injuryPart || '-'}</td>
+                    <td>${rec.avpu || rec.consciousness || '-'}</td>
+                    <td>${rec.gcs || '-'}</td>
+                    <td>${rec.vitalSigns || '-'}</td>
+                    <td>${rec.bt ? rec.bt + '°C' : '-'}</td>
+                    <td>${rec.skin || '-'}</td>
+                    <td>${rec.pupil || '-'}</td>
+                    <td>${criticalBadge}</td>
                     <td>${startBadge}</td>
-                    <td>${rec.rescuer || '-'}</td>
+                    <td>${rec.transportMode || '-'}</td>
+                    <td>${rec.treatments || '-'}</td>
+                    <td>${rec.medicalHistory || '-'}</td>
+                    <td>${rec.allergy || '-'}</td>
+                    <td>${rec.memo || '-'}</td>
+                    <td>${rec.obs1 || '-'}</td>
+                    <td>${rec.obs2 || '-'}</td>
+                    <td>${rec.obs3 || '-'}</td>
+                    <td>${photo1Btn}</td>
+                    <td>${photo2Btn}</td>
+                    <td>${photo3Btn}</td>
                     <td>
-                        <button class="btn btn-sm btn-primary fw-bold px-3" onclick="openA4Modal(${idx})">🆔 檢視 A4 卡</button>
+                        <button class="btn btn-sm btn-primary fw-bold px-3 text-nowrap" onclick="openA4Modal(${idx})">🆔 檢視 A4 卡</button>
                     </td>
                 </tr>
             `;
