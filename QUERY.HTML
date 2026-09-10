@@ -616,7 +616,7 @@
     </div>
 </div>
 
-<!-- ✏️ 搜尋結果修改資料專屬 Modal (高對比、中大字體、圖示清晰) -->
+<!-- ✏️ 搜尋結果修改資料專屬 Modal (高對比、中大字體、欄位獨立) -->
 <div class="modal fade" id="editRecordModal" tabindex="-1" aria-labelledby="editRecordModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-scrollable">
         <div class="modal-content border-3 border-dark">
@@ -711,22 +711,31 @@
                             </select>
                         </div>
 
-                        <div class="col-md-6">
-                            <label class="form-label">❤️🫁🩸 生命徵象 (PR, RR, BP)</label>
-                            <input type="text" id="edit_vitalSigns" class="form-control" placeholder="PR:80, RR:20, BP:120/80">
+                        <!-- 獨立生命徵象欄位區塊 -->
+                        <div class="col-md-4">
+                            <label class="form-label">❤️ 脈搏 (PR)</label>
+                            <input type="text" id="edit_pr" class="form-control" placeholder="例: 80">
                         </div>
-                        <div class="col-md-6">
-                            <label class="form-label">🌡️ 體溫 (°C)</label>
-                            <input type="text" id="edit_bt" class="form-control" placeholder="36.5">
+                        <div class="col-md-4">
+                            <label class="form-label">🫁 呼吸 (RR)</label>
+                            <input type="text" id="edit_rr" class="form-control" placeholder="例: 20">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">🩸 血壓 (BP)</label>
+                            <input type="text" id="edit_bp" class="form-control" placeholder="例: 120/80">
                         </div>
 
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <label class="form-label">⭕ 血氧 (SpO2 %)</label>
-                            <input type="text" id="edit_spo2" class="form-control" placeholder="98">
+                            <input type="text" id="edit_spo2" class="form-control" placeholder="例: 98">
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <label class="form-label">🍬 血糖 (Glucose mg/dL)</label>
-                            <input type="text" id="edit_glucose" class="form-control" placeholder="100">
+                            <input type="text" id="edit_glucose" class="form-control" placeholder="例: 100">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">🌡️ 體溫 (°C)</label>
+                            <input type="text" id="edit_bt" class="form-control" placeholder="例: 36.5">
                         </div>
 
                         <div class="col-md-6">
@@ -871,7 +880,7 @@
     }
 
     /**
-     * 時間與時間戳記格式化函式（已修正為 YYYY/MM/DD HH:mm GMT+0800 (台北標準時間)）
+     * 時間與時間戳記格式化函式
      */
     function formatTimestampDisplay(val) {
         if (!val) return '-';
@@ -894,28 +903,36 @@
     }
 
     /**
-     * 生命徵象中文化轉換函式 (解析 PR、RR、BP、SpO2、BG)
+     * 生命徵象中文化標準轉換函式（脈搏、呼吸、血壓、血氧獨立對應）
      */
-    function formatVitalSignsChinese(vitalStr) {
-        if (!vitalStr || vitalStr === '-') return '無紀錄';
-        let str = String(vitalStr);
-        let prMatch = str.match(/PR\s*[:：]?\s*([^\s,]+)/i) || str.match(/脈搏\s*[:：]?\s*([^\s,]+)/i);
-        let rrMatch = str.match(/RR\s*[:：]?\s*([^\s,]+)/i) || str.match(/呼吸\s*[:：]?\s*([^\s,]+)/i);
-        let bpMatch = str.match(/BP\s*[:：]?\s*([^\s,]+)/i) || str.match(/血壓\s*[:：]?\s*([^\s,]+)/i);
-        let spo2Match = str.match(/SpO2\s*[:：]?\s*([^\s,]+)/i) || str.match(/血氧\s*[:：]?\s*([^\s,]+)/i);
-        let glucoseMatch = str.match(/(?:BG|Glucose|血糖)\s*[:：]?\s*([^\s,]+)/i);
+    function formatVitalSignsChinese(rec) {
+        let pr = rec.pr || '-';
+        let rr = rec.rr || '-';
+        let bp = rec.bp || '-';
+        let spo2 = rec.spo2 || rec.SpO2 || '-';
+
+        // 相容舊版合併欄位 (vitalSigns)
+        const vitalStr = rec.vitalSigns || '';
+        if (vitalStr && vitalStr !== '-') {
+            let str = String(vitalStr);
+            let prMatch = str.match(/PR\s*[:：]?\s*([^\s,]+)/i) || str.match(/脈搏\s*[:：]?\s*([^\s,]+)/i);
+            let rrMatch = str.match(/RR\s*[:：]?\s*([^\s,]+)/i) || str.match(/呼吸\s*[:：]?\s*([^\s,]+)/i);
+            let bpMatch = str.match(/BP\s*[:：]?\s*([^\s,]+)/i) || str.match(/血壓\s*[:：]?\s*([^\s,]+)/i);
+            let spo2Match = str.match(/SpO2\s*[:：]?\s*([^\s,]+)/i) || str.match(/血氧\s*[:：]?\s*([^\s,]+)/i);
+            
+            if (pr === '-' && prMatch) pr = prMatch[1];
+            if (rr === '-' && rrMatch) rr = rrMatch[1];
+            if (bp === '-' && bpMatch) bp = bpMatch[1];
+            if (spo2 === '-' && spo2Match) spo2 = spo2Match[1];
+        }
 
         let parts = [];
-        if (prMatch) parts.push(`脈搏：${prMatch[1]} 次/分`);
-        if (rrMatch) parts.push(`呼吸：${rrMatch[1]} 次/分`);
-        if (bpMatch) parts.push(`血壓：${bpMatch[1]} mmHg`);
-        if (spo2Match) parts.push(`血氧：${spo2Match[1]}%`);
-        if (glucoseMatch) parts.push(`血糖：${glucoseMatch[1]} mg/dL`);
+        parts.push(`脈搏：${pr} ${pr !== '-' ? '次/分' : ''}`);
+        parts.push(`呼吸：${rr} ${rr !== '-' ? '次/分' : ''}`);
+        parts.push(`血壓：${bp} ${bp !== '-' ? 'mmHg' : ''}`);
+        parts.push(`血氧：${spo2} ${spo2 !== '-' ? '%' : ''}`);
 
-        if (parts.length > 0) {
-            return parts.join(' ｜ ');
-        }
-        return str;
+        return parts.join(' ｜ ');
     }
 
     function onSelectChange(selectId, inputId) {
@@ -1055,7 +1072,7 @@
 
             const formattedTimestamp = formatTimestampDisplay(rec.timestamp);
             const formattedTime = formatTimestampDisplay(rec.time);
-            const formattedVitals = formatVitalSignsChinese(rec.vitalSigns || rec.pr);
+            const formattedVitals = formatVitalSignsChinese(rec);
 
             let photoHtml = '';
             [rec.photo1, rec.photo2, rec.photo3].forEach((pUrl, pIdx) => {
@@ -1111,6 +1128,7 @@
                         </div>
 
                         <div class="section-header py-1 px-2 mb-2 fs-6" style="background-color: #334155;">🩺 臨床評估與生命徵象 (Clinical & Vitals)</div>
+
                         <div class="row g-2 mb-3 px-1 fs-6">
                             <div class="col-md-4"><span class="text-muted">傷病問題：</span> ${problemBadge}</div>
                             <div class="col-md-4"><span class="text-muted">受傷部位 (L/R)：</span> <span class="fw-bold text-primary">${rec.injuryPart || '-'}</span></div>
@@ -1278,15 +1296,32 @@
         document.getElementById('a4_isCritical').innerHTML = getCriticalBadgeHtml(rec.isCritical);
 
         // 生命徵象精確配對：脈搏 (PR)、呼吸 (RR)、血壓 (BP)、血氧 (SpO2)、血糖 (BG)
-        const vitalsText = formatVitalSignsChinese(rec.vitalSigns || rec.pr);
-        document.getElementById('a4_vital_pr').innerText = rec.pr || '-';
-        document.getElementById('a4_vital_rr').innerText = rec.rr || '-';
-        document.getElementById('a4_vital_bp').innerText = rec.bp || '-';
-        
-        const spo2Val = rec.spo2 || rec.SpO2 || (vitalsText.match(/血氧：([^\s｜]+)/)?.[1]) || '-';
-        const glucoseVal = rec.glucose || rec.BG || (vitalsText.match(/血糖：([^\s｜]+)/)?.[1]) || '-';
-        document.getElementById('a4_vital_spo2').innerText = spo2Val;
-        document.getElementById('a4_vital_glucose').innerText = glucoseVal;
+        let pr = rec.pr || '-';
+        let rr = rec.rr || '-';
+        let bp = rec.bp || '-';
+        let spo2 = rec.spo2 || rec.SpO2 || '-';
+        let glucose = rec.glucose || rec.BG || '-';
+
+        if (rec.vitalSigns) {
+            let str = String(rec.vitalSigns);
+            let prMatch = str.match(/PR\s*[:：]?\s*([^\s,]+)/i) || str.match(/脈搏\s*[:：]?\s*([^\s,]+)/i);
+            let rrMatch = str.match(/RR\s*[:：]?\s*([^\s,]+)/i) || str.match(/呼吸\s*[:：]?\s*([^\s,]+)/i);
+            let bpMatch = str.match(/BP\s*[:：]?\s*([^\s,]+)/i) || str.match(/血壓\s*[:：]?\s*([^\s,]+)/i);
+            let spo2Match = str.match(/SpO2\s*[:：]?\s*([^\s,]+)/i) || str.match(/血氧\s*[:：]?\s*([^\s,]+)/i);
+            let glucoseMatch = str.match(/(?:BG|Glucose|血糖)\s*[:：]?\s*([^\s,]+)/i);
+
+            if (pr === '-' && prMatch) pr = prMatch[1];
+            if (rr === '-' && rrMatch) rr = rrMatch[1];
+            if (bp === '-' && bpMatch) bp = bpMatch[1];
+            if (spo2 === '-' && spo2Match) spo2 = spo2Match[1];
+            if (glucose === '-' && glucoseMatch) glucose = glucoseMatch[1];
+        }
+
+        document.getElementById('a4_vital_pr').innerText = pr;
+        document.getElementById('a4_vital_rr').innerText = rr;
+        document.getElementById('a4_vital_bp').innerText = bp;
+        document.getElementById('a4_vital_spo2').innerText = spo2;
+        document.getElementById('a4_vital_glucose').innerText = glucose;
 
         document.getElementById('a4_bt').innerText = rec.bt ? `${rec.bt} °C` : '-';
         document.getElementById('a4_skin').innerText = rec.skin || '-';
@@ -1365,10 +1400,36 @@
         document.getElementById('edit_avpu').value = rec.avpu || rec.consciousness || '';
         document.getElementById('edit_gcs').value = rec.gcs || '';
         document.getElementById('edit_isCritical').value = (String(rec.isCritical).includes('是') || String(rec.isCritical).includes('危急')) ? '是' : '否';
-        document.getElementById('edit_vitalSigns').value = rec.vitalSigns || '';
+        
+        // 獨立生命徵象欄位載入
+        let pr = rec.pr || '';
+        let rr = rec.rr || '';
+        let bp = rec.bp || '';
+        let spo2 = rec.spo2 || rec.SpO2 || '';
+        let glucose = rec.glucose || rec.BG || '';
+
+        if (rec.vitalSigns && (!pr || !rr || !bp)) {
+            let str = String(rec.vitalSigns);
+            let prMatch = str.match(/PR\s*[:：]?\s*([^\s,]+)/i) || str.match(/脈搏\s*[:：]?\s*([^\s,]+)/i);
+            let rrMatch = str.match(/RR\s*[:：]?\s*([^\s,]+)/i) || str.match(/呼吸\s*[:：]?\s*([^\s,]+)/i);
+            let bpMatch = str.match(/BP\s*[:：]?\s*([^\s,]+)/i) || str.match(/血壓\s*[:：]?\s*([^\s,]+)/i);
+            let spo2Match = str.match(/SpO2\s*[:：]?\s*([^\s,]+)/i) || str.match(/血氧\s*[:：]?\s*([^\s,]+)/i);
+            let glucoseMatch = str.match(/(?:BG|Glucose|血糖)\s*[:：]?\s*([^\s,]+)/i);
+
+            if (!pr && prMatch) pr = prMatch[1];
+            if (!rr && rrMatch) rr = rrMatch[1];
+            if (!bp && bpMatch) bp = bpMatch[1];
+            if (!spo2 && spo2Match) spo2 = spo2Match[1];
+            if (!glucose && glucoseMatch) glucose = glucoseMatch[1];
+        }
+
+        document.getElementById('edit_pr').value = pr;
+        document.getElementById('edit_rr').value = rr;
+        document.getElementById('edit_bp').value = bp;
+        document.getElementById('edit_spo2').value = spo2;
+        document.getElementById('edit_glucose').value = glucose;
+
         document.getElementById('edit_bt').value = rec.bt || '';
-        document.getElementById('edit_spo2').value = rec.spo2 || rec.SpO2 || '';
-        document.getElementById('edit_glucose').value = rec.glucose || rec.BG || '';
         document.getElementById('edit_skin').value = rec.skin || '';
         document.getElementById('edit_pupil').value = rec.pupil || '';
         document.getElementById('edit_startTriage').value = rec.startTriage || '綠色 (輕傷)';
@@ -1390,6 +1451,10 @@
 
     async function saveEditedRecord() {
         const index = document.getElementById('edit_recordIndex').value;
+        const prVal = document.getElementById('edit_pr').value;
+        const rrVal = document.getElementById('edit_rr').value;
+        const bpVal = document.getElementById('edit_bp').value;
+
         const updatedData = {
             triageNo: document.getElementById('edit_triageNo').value,
             timestamp: document.getElementById('edit_timestamp').value,
@@ -1408,10 +1473,13 @@
             avpu: document.getElementById('edit_avpu').value,
             gcs: document.getElementById('edit_gcs').value,
             isCritical: document.getElementById('edit_isCritical').value,
-            vitalSigns: document.getElementById('edit_vitalSigns').value,
-            bt: document.getElementById('edit_bt').value,
+            pr: prVal,
+            rr: rrVal,
+            bp: bpVal,
             spo2: document.getElementById('edit_spo2').value,
             glucose: document.getElementById('edit_glucose').value,
+            vitalSigns: `PR:${prVal}, RR:${rrVal}, BP:${bpVal}`, // 同步保留格式以相容後端
+            bt: document.getElementById('edit_bt').value,
             skin: document.getElementById('edit_skin').value,
             pupil: document.getElementById('edit_pupil').value,
             startTriage: document.getElementById('edit_startTriage').value,
