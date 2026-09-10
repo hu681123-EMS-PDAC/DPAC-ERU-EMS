@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="referrer" content="strict-origin-when-cross-origin">
-    <title>EMS 救護紀錄查詢與大數據分析系統</title>
+    <title>EMS 救護紀錄查詢與大數據分析系統 - MCI 專屬 A4 檢傷卡版</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
@@ -274,7 +274,7 @@
     <div class="status-banner">
         <div>
             <span class="fw-bold fs-5">當前狀態：</span>
-            <span id="modeBadge" class="badge bg-primary fs-6 px-3 py-2">📊 查詢分析模式</span>
+            <span id="modeBadge" class="badge bg-primary fs-6 px-3 py-2">📊 查詢分析模式 (MCI 專屬檢傷卡版)</span>
         </div>
         <div class="d-flex gap-2">
             <a href="https://hu681123-ems-pdac.github.io/DPAC-ERU-EMS/index.html.html?openExternalBrowser=1" target="_blank" class="btn btn-danger fw-bold fs-6">🚑 前往救護紀錄系統</a>
@@ -878,7 +878,6 @@
         let str = String(val);
         let d = new Date(val);
         if (!isNaN(d.getTime())) {
-            // 若為 Google Sheets 僅記錄時間導致的 1899 預設基準日
             if (str.includes('1899') || d.getFullYear() === 1899) {
                 let hh = String(d.getHours()).padStart(2, '0');
                 let mm = String(d.getMinutes()).padStart(2, '0');
@@ -895,7 +894,7 @@
     }
 
     /**
-     * 生命徵象中文化轉換函式 (新增血氧 SpO2 與血糖 BG 解析)
+     * 生命徵象中文化轉換函式 (解析 PR、RR、BP、SpO2、BG)
      */
     function formatVitalSignsChinese(vitalStr) {
         if (!vitalStr || vitalStr === '-') return '無紀錄';
@@ -919,9 +918,6 @@
         return str;
     }
 
-    /**
-     * 下拉選單選擇與輸入框自動連動
-     */
     function onSelectChange(selectId, inputId) {
         const sel = document.getElementById(selectId);
         const inp = document.getElementById(inputId);
@@ -930,9 +926,6 @@
         }
     }
 
-    /**
-     * 載入查詢與分析用下拉選單
-     */
     async function loadDropdownOptions() {
         try {
             const res = await callGasApi('getOptions');
@@ -960,9 +953,6 @@
         });
     }
 
-    /**
-     * 執行紀錄搜尋
-     */
     async function searchRecords() {
         const container = document.getElementById('queryResultContainer');
         container.style.display = 'block';
@@ -988,9 +978,6 @@
         }
     }
 
-    /**
-     * 生成 START 高對比戰術顏色標籤 (Visual Tagging)
-     */
     function getStartBadgeHtml(triage) {
         const str = String(triage || '').toLowerCase();
         if (str.includes('紅') || str.includes('red') || str.includes('重傷')) {
@@ -1006,9 +993,6 @@
         }
     }
 
-    /**
-     * 生成危急狀態高對比標籤
-     */
     function getCriticalBadgeHtml(isCritical) {
         const str = String(isCritical || '').toLowerCase();
         if (str.includes('是') || str.includes('危急') || str.includes('ohca') || str.includes('true')) {
@@ -1018,9 +1002,6 @@
         }
     }
 
-    /**
-     * 生成 AVPU 意識標籤
-     */
     function getAvpuBadgeHtml(avpu) {
         const str = String(avpu || '').toUpperCase();
         if (str.includes('A') || str.includes('清醒')) {
@@ -1035,17 +1016,11 @@
         return `<span class="v-tag v-tag-info">🧠 ${avpu || '-'}</span>`;
     }
 
-    /**
-     * 生成傷病問題標籤
-     */
     function getProblemBadgeHtml(problem) {
         if (!problem || problem === '-') return '-';
         return `<span class="v-tag v-tag-purple">🩺 ${problem}</span>`;
     }
 
-    /**
-     * 轉換 Google Drive 照片連結為可預覽的縮圖網址
-     */
     function formatDriveImageUrl(url) {
         if (!url) return '';
         if (url.includes('drive.google.com')) {
@@ -1057,9 +1032,6 @@
         return url;
     }
 
-    /**
-     * 渲染搜尋結果列表 (卡片區塊顯示，照片直接顯示縮圖)
-     */
     function renderSearchResults(records) {
         const container = document.getElementById('queryResultContainer');
         if (!records || records.length === 0) {
@@ -1085,7 +1057,6 @@
             const formattedTime = formatTimestampDisplay(rec.time);
             const formattedVitals = formatVitalSignsChinese(rec.vitalSigns || rec.pr);
 
-            // 照片直接顯示縮圖處理
             let photoHtml = '';
             [rec.photo1, rec.photo2, rec.photo3].forEach((pUrl, pIdx) => {
                 if (pUrl && pUrl.trim() !== '') {
@@ -1113,7 +1084,6 @@
             html += `
                 <div class="col-12">
                     <div class="card p-3 shadow-sm border-2 border-dark rounded-3 bg-white">
-                        <!-- 卡片標題列：檢傷編號、姓名與快速操作按鈕 -->
                         <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 pb-2 mb-3 border-bottom border-2">
                             <div class="d-flex align-items-center gap-3 flex-wrap">
                                 <span class="badge bg-dark fs-5 px-3 py-2">🆔 ${rec.triageNo || '無編號'}</span>
@@ -1128,7 +1098,6 @@
                             </div>
                         </div>
 
-                        <!-- 區塊一：基本與接觸資料 -->
                         <div class="section-header py-1 px-2 mb-2 fs-6" style="background-color: #1e293b;">🕒 基本與接觸紀錄 (Basic Info & Contact)</div>
                         <div class="row g-2 mb-3 px-1 fs-6">
                             <div class="col-md-4"><span class="text-muted">時間戳記：</span> <span class="fw-bold">${formattedTimestamp}</span></div>
@@ -1141,7 +1110,6 @@
                             <div class="col-md-3"><span class="text-muted">處置位置：</span> <span class="fw-bold">${rec.treatLoc || '-'}</span></div>
                         </div>
 
-                        <!-- 區塊二：臨床評估與生命徵象 (中文顯示) -->
                         <div class="section-header py-1 px-2 mb-2 fs-6" style="background-color: #334155;">🩺 臨床評估與生命徵象 (Clinical & Vitals)</div>
                         <div class="row g-2 mb-3 px-1 fs-6">
                             <div class="col-md-4"><span class="text-muted">傷病問題：</span> ${problemBadge}</div>
@@ -1157,8 +1125,7 @@
                             <div class="col-md-4"><span class="text-muted">START 檢傷分類：</span> ${startBadge}</div>
                         </div>
 
-                        <!-- 區塊三：處置與後送歷程 -->
-                        <div class="section-header py-1 px-2 mb-2 fs-6" style="background-color: #475569;">🚑 處置處置與後送歷程 (Treatment & Transport)</div>
+                        <div class="section-header py-1 px-2 mb-2 fs-6" style="background-color: #475569;">🚑 處置與後送歷程 (Treatment & Transport)</div>
                         <div class="row g-2 mb-3 px-1 fs-6">
                             <div class="col-md-6"><span class="text-muted">後送模式：</span> <span class="fw-bold text-success">${rec.transportMode || '-'}</span></div>
                             <div class="col-md-6"><span class="text-muted">處置狀態 / 施予項目：</span> <span class="fw-bold">${rec.treatments || '-'}</span></div>
@@ -1170,7 +1137,6 @@
                             <div class="col-12"><span class="text-muted">備註事項：</span> <span class="fw-bold text-secondary">${rec.memo || '無'}</span></div>
                         </div>
 
-                        <!-- 區塊四：現場照片紀錄 (直接顯示縮圖) -->
                         <div class="section-header py-1 px-2 mb-2 fs-6" style="background-color: #64748b;">📸 現場照片紀錄 (Field Photos)</div>
                         <div class="d-flex gap-3 align-items-center flex-wrap px-1">
                             ${photoHtml}
@@ -1188,9 +1154,6 @@
         container.innerHTML = html;
     }
 
-    /**
-     * 清除查詢篩選條件
-     */
     function clearQueryFilters() {
         document.getElementById('selectTriageNo').value = '';
         document.getElementById('inputTriageNo').value = '';
@@ -1205,9 +1168,6 @@
         container.innerHTML = '';
     }
 
-    /**
-     * 初始化與抓取大數據分析面板
-     */
     function initAnalyticsTab() {
         fetchAnalytics();
     }
@@ -1229,9 +1189,6 @@
         }
     }
 
-    /**
-     * 渲染大數據圖表與統計清單
-     */
     function renderAnalyticsData(data) {
         document.getElementById('statTotalCount').innerText = `${data.totalCount || 0} 人`;
         document.getElementById('statAvgAge').innerText = `${data.avgAge || 0} 歲`;
@@ -1283,7 +1240,7 @@
     }
 
     /**
-     * 開啟 A4 檢傷卡 Modal 視窗並動態填入所有欄位（包含血氧與血糖）
+     * 開啟 A4 檢傷卡 Modal 視窗並動態填入所有欄位（獨立對應 PR、RR、BP、SpO2、BG）
      */
     function openA4Modal(index) {
         const rec = currentSearchRecords[index];
@@ -1320,13 +1277,12 @@
         
         document.getElementById('a4_isCritical').innerHTML = getCriticalBadgeHtml(rec.isCritical);
 
-        // 生命徵象 (PR, RR, BP, SpO2, Glucose, BT, Skin, Pupil)
+        // 生命徵象精確配對：脈搏 (PR)、呼吸 (RR)、血壓 (BP)、血氧 (SpO2)、血糖 (BG)
         const vitalsText = formatVitalSignsChinese(rec.vitalSigns || rec.pr);
         document.getElementById('a4_vital_pr').innerText = rec.pr || '-';
         document.getElementById('a4_vital_rr').innerText = rec.rr || '-';
         document.getElementById('a4_vital_bp').innerText = rec.bp || '-';
         
-        // 血氧與血糖解析
         const spo2Val = rec.spo2 || rec.SpO2 || (vitalsText.match(/血氧：([^\s｜]+)/)?.[1]) || '-';
         const glucoseVal = rec.glucose || rec.BG || (vitalsText.match(/血糖：([^\s｜]+)/)?.[1]) || '-';
         document.getElementById('a4_vital_spo2').innerText = spo2Val;
@@ -1387,9 +1343,6 @@
         modal.show();
     }
 
-    /**
-     * 開啟修改資料 Modal 並載入該筆紀錄
-     */
     function openEditModal(index) {
         const rec = currentSearchRecords[index];
         if (!rec) return;
@@ -1435,9 +1388,6 @@
         modal.show();
     }
 
-    /**
-     * 儲存修改後的記錄並傳送至後端
-     */
     async function saveEditedRecord() {
         const index = document.getElementById('edit_recordIndex').value;
         const updatedData = {
