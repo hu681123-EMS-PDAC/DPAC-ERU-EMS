@@ -978,7 +978,7 @@
     }
 
     /**
-     * 渲染搜尋結果列表 (完全包含指定的 33 項完整欄位、視覺標籤化、高對比)
+     * 渲染搜尋結果列表 (改為表單化卡片區塊顯示，避免長條狀與左右捲動)
      */
     function renderSearchResults(records) {
         const container = document.getElementById('queryResultContainer');
@@ -988,51 +988,11 @@
         }
 
         let html = `
-            <div class="card p-3 shadow-sm mb-4">
+            <div class="mb-4">
                 <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
                     <h5 class="fw-bold mb-0 text-primary fs-4">📋 搜尋結果清單 (共 ${records.length} 筆)</h5>
                 </div>
-                <div class="table-responsive" style="max-height: 650px; overflow-y: auto;">
-                    <table class="table table-hover table-striped align-middle text-center text-nowrap mb-0">
-                        <thead>
-                            <tr>
-                                <th>🛠️ 操作</th>
-                                <th>🕒 時間戳記</th>
-                                <th>🆔 檢傷編號</th>
-                                <th>📅 日期</th>
-                                <th>⏱️ 接觸時間</th>
-                                <th>🧑‍⚕️ 救護人員</th>
-                                <th>👤 患者姓名</th>
-                                <th>⚧️ 性別</th>
-                                <th>🎂 年齡</th>
-                                <th>📞 電話</th>
-                                <th>📍 事故位置</th>
-                                <th>🏥 處置位置</th>
-                                <th>🏷️ 案件類型</th>
-                                <th>🩺 傷病問題</th>
-                                <th>🩹 受傷部位</th>
-                                <th>🧠 AVPU</th>
-                                <th>📊 GCS</th>
-                                <th>❤️🫁🩸 生命徵象</th>
-                                <th>🌡️ 體溫</th>
-                                <th>🎨 膚色</th>
-                                <th>👁️ 瞳孔</th>
-                                <th>🚨 是否危急</th>
-                                <th>🏷️ START檢傷</th>
-                                <th>🚗 後送模式</th>
-                                <th>🛠️ 處置狀態</th>
-                                <th>📜 既往病史</th>
-                                <th>⚠️ 過敏史</th>
-                                <th>📝 備註</th>
-                                <th>⏱️ 留觀1</th>
-                                <th>⏱️ 留觀2</th>
-                                <th>⏱️ 留觀3</th>
-                                <th>📸 照片1</th>
-                                <th>📸 照片2</th>
-                                <th>📸 照片3</th>
-                            </tr>
-                        </thead>
-                        <tbody>
+                <div class="row g-4">
         `;
 
         records.forEach((rec, idx) => {
@@ -1041,61 +1001,86 @@
             const avpuBadge = getAvpuBadgeHtml(rec.avpu || rec.consciousness);
             const problemBadge = getProblemBadgeHtml(rec.problem);
 
-            const photo1Btn = rec.photo1 && rec.photo1.trim() !== '' ? `<a href="${rec.photo1}" target="_blank" class="btn btn-sm btn-outline-primary py-0 px-2 fw-bold">📷 照片1</a>` : '-';
-            const photo2Btn = rec.photo2 && rec.photo2.trim() !== '' ? `<a href="${rec.photo2}" target="_blank" class="btn btn-sm btn-outline-primary py-0 px-2 fw-bold">📷 照片2</a>` : '-';
-            const photo3Btn = rec.photo3 && rec.photo3.trim() !== '' ? `<a href="${rec.photo3}" target="_blank" class="btn btn-sm btn-outline-primary py-0 px-2 fw-bold">📷 照片3</a>` : '-';
+            const photo1Btn = rec.photo1 && rec.photo1.trim() !== '' ? `<a href="${rec.photo1}" target="_blank" class="btn btn-sm btn-outline-primary fw-bold">📸 照片 1</a>` : '<span class="text-muted small">無照片 1</span>';
+            const photo2Btn = rec.photo2 && rec.photo2.trim() !== '' ? `<a href="${rec.photo2}" target="_blank" class="btn btn-sm btn-outline-primary fw-bold">📸 照片 2</a>` : '<span class="text-muted small">無照片 2</span>';
+            const photo3Btn = rec.photo3 && rec.photo3.trim() !== '' ? `<a href="${rec.photo3}" target="_blank" class="btn btn-sm btn-outline-primary fw-bold">📸 照片 3</a>` : '<span class="text-muted small">無照片 3</span>';
 
             const medHist = (rec.medicalHistory && rec.medicalHistory !== '無') ? `<span class="text-danger fw-bold">${rec.medicalHistory}</span>` : '無';
             const allergy = (rec.allergy && rec.allergy !== '無') ? `<span class="text-danger fw-bold">${rec.allergy}</span>` : '無';
 
             html += `
-                <tr>
-                    <td>
-                        <div class="d-flex flex-column gap-1 align-items-center">
-                            <button class="btn btn-sm btn-primary fw-bold px-2 py-1 text-nowrap w-100" onclick="openA4Modal(${idx})">🆔 檢視A4卡</button>
-                            <button class="btn btn-sm btn-warning fw-bold px-2 py-1 text-nowrap w-100 text-dark" onclick="openEditModal(${idx})">✏️ 修改資料</button>
+                <div class="col-12">
+                    <div class="card p-3 shadow-sm border-2 border-dark rounded-3 bg-white">
+                        <!-- 卡片標題列：檢傷編號、姓名與快速操作按鈕 -->
+                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 pb-2 mb-3 border-bottom border-2">
+                            <div class="d-flex align-items-center gap-3 flex-wrap">
+                                <span class="badge bg-dark fs-5 px-3 py-2">🆔 ${rec.triageNo || '無編號'}</span>
+                                <span class="fs-4 fw-bold text-primary">👤 ${rec.name || '未填寫'}</span>
+                                <span class="fs-6 text-muted fw-bold">(${rec.gender || '-'} / ${rec.age ? rec.age + '歲' : '-'})</span>
+                                ${startBadge}
+                                ${criticalBadge}
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-primary fw-bold px-3 py-2 fs-6" onclick="openA4Modal(${idx})">🆔 檢視 A4 檢傷卡</button>
+                                <button class="btn btn-warning text-dark fw-bold px-3 py-2 fs-6" onclick="openEditModal(${idx})">✏️ 修改救護紀錄</button>
+                            </div>
                         </div>
-                    </td>
-                    <td>${rec.timestamp || '-'}</td>
-                    <td class="fw-bold text-primary fs-6">${rec.triageNo || '-'}</td>
-                    <td>${rec.date || '-'}</td>
-                    <td>${rec.time || '-'}</td>
-                    <td>${rec.rescuer || '-'}</td>
-                    <td class="fw-bold fs-6">${rec.name || '未填寫'}</td>
-                    <td>${rec.gender || '-'}</td>
-                    <td>${rec.age ? rec.age + '歲' : '-'}</td>
-                    <td>${rec.phone || '-'}</td>
-                    <td>${rec.location || '-'}</td>
-                    <td>${rec.treatLoc || '-'}</td>
-                    <td>${rec.caseType || '-'}</td>
-                    <td>${problemBadge}</td>
-                    <td class="text-primary fw-bold">${rec.injuryPart || '-'}</td>
-                    <td>${avpuBadge}</td>
-                    <td><span class="v-tag v-tag-dark">${rec.gcs || '-'}</span></td>
-                    <td class="fw-bold text-danger">${rec.vitalSigns || '-'}</td>
-                    <td>${rec.bt ? rec.bt + '°C' : '-'}</td>
-                    <td>${rec.skin || '-'}</td>
-                    <td>${rec.pupil || '-'}</td>
-                    <td>${criticalBadge}</td>
-                    <td>${startBadge}</td>
-                    <td class="text-success fw-bold">${rec.transportMode || '-'}</td>
-                    <td>${rec.treatments || '-'}</td>
-                    <td>${medHist}</td>
-                    <td>${allergy}</td>
-                    <td>${rec.memo || '-'}</td>
-                    <td>${rec.obs1 || '-'}</td>
-                    <td>${rec.obs2 || '-'}</td>
-                    <td>${rec.obs3 || '-'}</td>
-                    <td>${photo1Btn}</td>
-                    <td>${photo2Btn}</td>
-                    <td>${photo3Btn}</td>
-                </tr>
+
+                        <!-- 區塊一：基本與接觸資料 -->
+                        <div class="section-header py-1 px-2 mb-2 fs-6" style="background-color: #1e293b;">🕒 基本與接觸紀錄 (Basic Info & Contact)</div>
+                        <div class="row g-2 mb-3 px-1 fs-6">
+                            <div class="col-md-3"><span class="text-muted">時間戳記：</span> <span class="fw-bold">${rec.timestamp || '-'}</span></div>
+                            <div class="col-md-3"><span class="text-muted">事故日期：</span> <span class="fw-bold">${rec.date || '-'}</span></div>
+                            <div class="col-md-3"><span class="text-muted">接觸時間：</span> <span class="fw-bold">${rec.time || '-'}</span></div>
+                            <div class="col-md-3"><span class="text-muted">救護人員：</span> <span class="fw-bold">${rec.rescuer || '-'}</span></div>
+                            <div class="col-md-3"><span class="text-muted">聯絡電話：</span> <span class="fw-bold">${rec.phone || '-'}</span></div>
+                            <div class="col-md-3"><span class="text-muted">案件類型：</span> <span class="fw-bold">${rec.caseType || '-'}</span></div>
+                            <div class="col-md-3"><span class="text-muted">事故位置：</span> <span class="fw-bold">${rec.location || '-'}</span></div>
+                            <div class="col-md-3"><span class="text-muted">處置位置：</span> <span class="fw-bold">${rec.treatLoc || '-'}</span></div>
+                        </div>
+
+                        <!-- 區塊二：臨床評估與生命徵象 -->
+                        <div class="section-header py-1 px-2 mb-2 fs-6" style="background-color: #334155;">🩺 臨床評估與生命徵象 (Clinical & Vitals)</div>
+                        <div class="row g-2 mb-3 px-1 fs-6">
+                            <div class="col-md-4"><span class="text-muted">傷病問題：</span> ${problemBadge}</div>
+                            <div class="col-md-4"><span class="text-muted">受傷部位 (L/R)：</span> <span class="fw-bold text-primary">${rec.injuryPart || '-'}</span></div>
+                            <div class="col-md-4"><span class="text-muted">AVPU 意識：</span> ${avpuBadge}</div>
+                            
+                            <div class="col-md-4"><span class="text-muted">GCS 昏迷指數：</span> <span class="v-tag v-tag-dark">${rec.gcs || '-'}</span></div>
+                            <div class="col-md-4"><span class="text-muted">生命徵象 (PR/RR/BP)：</span> <span class="fw-bold text-danger">${rec.vitalSigns || '-'}</span></div>
+                            <div class="col-md-4"><span class="text-muted">體溫 (BT)：</span> <span class="fw-bold text-primary">${rec.bt ? rec.bt + ' °C' : '-'}</span></div>
+
+                            <div class="col-md-4"><span class="text-muted">膚色：</span> <span class="fw-bold">${rec.skin || '-'}</span></div>
+                            <div class="col-md-4"><span class="text-muted">瞳孔：</span> <span class="fw-bold">${rec.pupil || '-'}</span></div>
+                            <div class="col-md-4"><span class="text-muted">START 檢傷分類：</span> ${startBadge}</div>
+                        </div>
+
+                        <!-- 區塊三：處置與後送歷程 -->
+                        <div class="section-header py-1 px-2 mb-2 fs-6" style="background-color: #475569;">🚑 處置處置與後送歷程 (Treatment & Transport)</div>
+                        <div class="row g-2 mb-3 px-1 fs-6">
+                            <div class="col-md-6"><span class="text-muted">後送模式：</span> <span class="fw-bold text-success">${rec.transportMode || '-'}</span></div>
+                            <div class="col-md-6"><span class="text-muted">處置狀態 / 施予項目：</span> <span class="fw-bold">${rec.treatments || '-'}</span></div>
+                            
+                            <div class="col-md-6"><span class="text-muted">既往病史：</span> ${medHist}</div>
+                            <div class="col-md-6"><span class="text-muted">過敏史：</span> ${allergy}</div>
+
+                            <div class="col-12"><span class="text-muted">留觀紀錄：</span> <span class="fw-bold">[留觀1]: ${rec.obs1 || '無'} | [留觀2]: ${rec.obs2 || '無'} | [留觀3]: ${rec.obs3 || '無'}</span></div>
+                            <div class="col-12"><span class="text-muted">備註事項：</span> <span class="fw-bold text-secondary">${rec.memo || '無'}</span></div>
+                        </div>
+
+                        <!-- 區塊四：現場照片紀錄 -->
+                        <div class="section-header py-1 px-2 mb-2 fs-6" style="background-color: #64748b;">📸 現場照片紀錄 (Field Photos)</div>
+                        <div class="d-flex gap-3 align-items-center px-1">
+                            ${photo1Btn}
+                            ${photo2Btn}
+                            ${photo3Btn}
+                        </div>
+                    </div>
+                </div>
             `;
         });
 
         html += `
-                        </tbody>
-                    </table>
                 </div>
             </div>
         `;
