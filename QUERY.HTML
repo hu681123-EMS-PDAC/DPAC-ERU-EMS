@@ -61,7 +61,7 @@
             background-color: #f8fafc;
             border-radius: 8px;
             padding: 10px;
-            min-height: 200px;
+            min-height: 180px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -78,12 +78,6 @@
             margin-bottom: 20px; 
             flex-wrap: wrap; 
             gap: 8px; 
-        }
-        .badge-triage {
-            padding: 8px 14px;
-            font-size: 1.05rem;
-            font-weight: 800;
-            border-radius: 6px;
         }
         .list-unstyled li {
             font-size: 1rem;
@@ -432,7 +426,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    const GAS_URL = typeof google !== 'undefined' && google.script ? '' : "https://script.google.com/macros/s/AKfycbwgwepE-SES6NfKlieXnXLYyHF61HHJajQGIXS7PwFSFXJZSGH2cUSclKh0l8UPz3Jplg/exec";
+    const GAS_URL = typeof google !== 'undefined' && google.script ? '' : "https://script.google.com/macros/s/AKfycbzYNjgZIm-7lhZyFcsV4sMoHqOJudmppFy8KiySDHifKiFsAxeDqbdU6dRpr6BTOd85qw/exec";
 
     let currentSearchRecords = [];
 
@@ -454,6 +448,9 @@
         }
     }
 
+    /**
+     * 雙軌 API 呼叫器：相容 GAS 內部環境與外部 (如 GitHub Pages) HTTP fetch
+     */
     async function callGasApi(action, params = {}) {
         if (typeof google !== 'undefined' && google.script && google.script.run) {
             return new Promise((resolve, reject) => {
@@ -463,528 +460,358 @@
                     google.script.run.withSuccessHandler(resolve).withFailureHandler(reject).searchRecords(params);
                 } else if (action === 'analytics') {
                     google.script.run.withSuccessHandler(resolve).withFailureHandler(reject).getAnalytics(params);
+                } else {
+                    reject(new Error("未知的 API Action: " + action));
                 }
             });
         } else {
-            let queryStr = `action=${action}`;
-            for (let key in params) {
-                queryStr += `&${key}=${encodeURIComponent(params[key])}`;
+            if (!GAS_URL) {
+                alert("請配置有效的 GAS_URL 網址！");
+                return { status: "error", message: "未配置 GAS_URL" };
             }
-            const res = await fetch(`${GAS_URL}?${queryStr}`);
-            return await res.json();
+            const queryParams = new URLSearchParams({ action: action, ...params });
+            const response = await fetch(`${GAS_URL}?${queryParams.toString()}`);
+            return await response.json();
         }
     }
 
+    /**
+     * 下拉選單選擇與輸入框自動連動
+     */
+    function onSelectChange(selectId, inputId) {
+        const sel = document.getElementById(selectId);
+        const inp = document.getElementById(inputId);
+        if (sel && inp) {
+            inp.value = sel.value;
+        }
+    }
+
+    /**
+     * 載入查詢與分析用下拉選單
+     */
     async function loadDropdownOptions() {
         try {
-            const result = await callGasApi('getOptions');
-            if (result && result.status === "success") {
-                populateSelect('selectTriageNo', result.triageNos, "-- 請選擇檢傷編號 --");
-                populateSelect('selectPatientName', result.patientNames, "-- 請選擇患者姓名 --");
-                populateSelect('selectRescuer', result.rescuers, "-- 請選擇救護人員 --");
-                populateSelect('statsYearSelect', result.years, "-- 全部年份 --");
+            const res = await callGasApi('getOptions');
+            if (res && res.status === 'success') {
+                fillSelect('selectTriageNo', res.triageNos || [], '-- 請選擇檢傷編號 --');
+                fillSelect('selectPatientName', res.patientNames || [], '-- 請選擇患者姓名 --');
+                fillSelect('selectRescuer', res.rescuers || [], '-- 請選擇救護人員 --');
+                fillSelect('statsYearSelect', res.years || [], '-- 全部年份 --');
             }
         } catch (e) {
-            console.error("載入下拉選單失敗", e);
+            console.error("載入下拉選單失敗：", e);
         }
     }
 
-    function initAnalyticsTab() {
-        loadDropdownOptions();
-        fetchAnalytics();
-    }
-
-    function populateSelect(elementId, items, defaultText) {
-        const select = document.getElementById(elementId);
+    function fillSelect(elemId, list, defaultText) {
+        const select = document.getElementById(elemId);
         if (!select) return;
-        const currentVal = select.value;
         select.innerHTML = `<option value="">${defaultText}</option>`;
-        if (items && Array.isArray(items)) {
-            items.forEach(item => {
-                if (item) {
-                    const opt = document.createElement('option');
-                    opt.value = item;
-                    opt.text = item;
-                    select.appendChild(opt);
-                }
-            });
-        }
-        select.value = currentVal;
+        list.forEach(item => {
+            if (!item) return;
+            const opt = document.createElement('option');
+            opt.value = item;
+            opt.textContent = item;
+            select.appendChild(opt);
+        });
     }
 
-    function onSelectChange(selectId, inputId) {
-        const selectVal = document.getElementById(selectId).value;
-        if (selectVal) {
-            document.getElementById(inputId).value = selectVal;
-        }
-    }
+    /**
+     * 執行紀錄搜尋
+     */
+    async function searchRecords() {
+        const container = document.getElementById('queryResultContainer');
+        container.style.display = 'block';
+        container.innerHTML = '<div class="text-center p-4"><div class="spinner-border text-primary" role="status"></div><p class="mt-2 text-muted fw-bold">正在檢索救護紀錄中...</p></div>';
 
-    function formatDate(val) {
-        if (!val) return '';
-        let s = String(val).trim();
-        if (s.includes('1899-12-30')) return '';
-        if (/^\d{4}[-/.]\d{1,2}[-/.]\d{1,2}$/.test(s)) {
-            let parts = s.split(/[-/.]/);
-            return `${parts[0]}-${parts[1].padStart(2, '0')}-${parts[2].padStart(2, '0')}`;
-        }
+        const params = {
+            triageNo: document.getElementById('inputTriageNo').value.trim(),
+            patientName: document.getElementById('inputPatientName').value.trim(),
+            rescuer: document.getElementById('inputRescuer').value.trim(),
+            date: document.getElementById('inputDate').value.trim()
+        };
+
         try {
-            const dt = new Date(s);
-            if (!isNaN(dt.getTime())) {
-                const y = dt.getFullYear();
-                const m = String(dt.getMonth() + 1).padStart(2, '0');
-                const d = String(dt.getDate()).padStart(2, '0');
-                if (y < 1920) return '';
-                return `${y}-${m}-${d}`;
+            const res = await callGasApi('search', params);
+            if (res && res.status === 'success') {
+                currentSearchRecords = res.records || [];
+                renderSearchResults(currentSearchRecords);
+            } else {
+                container.innerHTML = `<div class="alert alert-danger fw-bold">❌ 查詢失敗：${(res && res.message) || '伺服器未回應'}</div>`;
             }
-        } catch(e) {}
-        return s.split('T')[0].replace(/\//g, '-');
-    }
-
-    function formatTime(val) {
-        if (!val) return '';
-        let s = String(val).trim();
-        if (s.includes('1899-12-30') || s.includes('T')) {
-            try {
-                const dt = new Date(s);
-                if (!isNaN(dt.getTime())) {
-                    const hours = String(dt.getHours()).padStart(2, '0');
-                    const minutes = String(dt.getMinutes()).padStart(2, '0');
-                    const seconds = String(dt.getSeconds()).padStart(2, '0');
-                    if (hours === '00' && minutes === '00' && seconds === '00') return '';
-                    return `${hours}:${minutes}:${seconds}`;
-                }
-            } catch(e) {}
+        } catch (e) {
+            container.innerHTML = `<div class="alert alert-danger fw-bold">❌ 連線發生錯誤：${e.message}</div>`;
         }
-        return s;
     }
 
-    function formatAgeDisplay(rawAge) {
-        if (rawAge === undefined || rawAge === null) return '-';
-        let str = String(rawAge).trim();
-        if (!str || str === '-' || str === '不詳' || str === '無') return '-';
-        let cleanNum = str.replace(/[^\d.]/g, '');
-        if (cleanNum && !isNaN(cleanNum)) {
-            return `${cleanNum} 歲`;
+    /**
+     * 渲染搜尋結果列表
+     */
+    function renderSearchResults(records) {
+        const container = document.getElementById('queryResultContainer');
+        if (!records || records.length === 0) {
+            container.innerHTML = '<div class="alert alert-warning text-center fw-bold fs-5">⚠️ 查無符合條件的救護紀錄</div>';
+            return;
         }
-        return str;
+
+        let html = `
+            <div class="card p-3 shadow-sm mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+                    <h5 class="fw-bold mb-0 text-primary">📋 搜尋結果清單 (共 ${records.length} 筆)</h5>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle text-center mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>檢傷編號</th>
+                                <th>日期 / 接觸時間</th>
+                                <th>患者姓名</th>
+                                <th>性別 / 年齡</th>
+                                <th>案件類型</th>
+                                <th>START 檢傷</th>
+                                <th>救護人員</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+        `;
+
+        records.forEach((rec, idx) => {
+            const startBadge = getStartBadgeHtml(rec.startTriage);
+            html += `
+                <tr>
+                    <td class="fw-bold text-primary">${rec.triageNo || '-'}</td>
+                    <td>${rec.date || '-'} ${rec.time || ''}</td>
+                    <td class="fw-bold">${rec.name || '未填寫'}</td>
+                    <td>${rec.gender || '-'}/ ${rec.age ? rec.age + '歲' : '-'}</td>
+                    <td>${rec.caseType || '-'}</td>
+                    <td>${startBadge}</td>
+                    <td>${rec.rescuer || '-'}</td>
+                    <td>
+                        <button class="btn btn-sm btn-primary fw-bold px-3" onclick="openA4Modal(${idx})">🆔 檢視 A4 卡</button>
+                    </td>
+                </tr>
+            `;
+        });
+
+        html += `
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+
+        container.innerHTML = html;
     }
 
-    function getStartTriageBadge(startStr) {
-        if (!startStr) return `<span class="badge bg-secondary">未指定</span>`;
-        const val = String(startStr).trim().toLowerCase();
-        if (val.includes('紅') || val.includes('red') || val.includes('重')) {
-            return `<span class="badge bg-danger badge-triage" style="border: 2px solid #7f1d1d;">🔴 START: 重傷/紅色</span>`;
-        } else if (val.includes('黃') || val.includes('yellow') || val.includes('中')) {
-            return `<span class="badge bg-warning text-dark badge-triage" style="border: 2px solid #713f12;">🟡 START: 中傷/黃色</span>`;
-        } else if (val.includes('綠') || val.includes('green') || val.includes('輕')) {
-            return `<span class="badge bg-success badge-triage" style="border: 2px solid #14532d;">🟢 START: 輕傷/綠色</span>`;
-        } else if (val.includes('黑') || val.includes('black') || val.includes('死')) {
-            return `<span class="badge bg-dark badge-triage" style="border: 2px solid #020617;">⚫ START: 死亡/黑色</span>`;
+    /**
+     * 生成 START 高對比戰術顏色標籤
+     */
+    function getStartBadgeHtml(triage) {
+        const str = String(triage || '').toLowerCase();
+        if (str.includes('紅') || str.includes('red') || str.includes('重傷')) {
+            return '<span class="badge bg-danger fs-6 px-3 py-2">🔴 紅色 (重傷)</span>';
+        } else if (str.includes('黃') || str.includes('yellow') || str.includes('中傷')) {
+            return '<span class="badge bg-warning text-dark fs-6 px-3 py-2">🟡 黃色 (中傷)</span>';
+        } else if (str.includes('綠') || str.includes('green') || str.includes('輕傷')) {
+            return '<span class="badge bg-success fs-6 px-3 py-2">🟢 綠色 (輕傷)</span>';
+        } else if (str.includes('黑') || str.includes('black') || str.includes('死亡')) {
+            return '<span class="badge bg-dark text-white fs-6 px-3 py-2">⚫ 黑色 (死亡)</span>';
+        } else {
+            return `<span class="badge bg-secondary fs-6 px-3 py-2">${triage || '未分類'}</span>`;
         }
-        return `<span class="badge bg-info text-dark badge-triage">${startStr}</span>`;
     }
 
-    function getTacticalStartTriageBadge(startStr) {
-        if (!startStr) return `<span class="badge bg-secondary border border-2 border-dark px-3 py-2 fs-6">未指定</span>`;
-        const val = String(startStr).trim().toLowerCase();
-        if (val.includes('紅') || val.includes('red') || val.includes('重')) {
-            return `<span class="badge text-white px-3 py-2 fs-5 fw-bold" style="background-color: #991b1b; border: 3px solid #7f1d1d;">🔴 START: 紅區 (重傷 Immediate)</span>`;
-        } else if (val.includes('黃') || val.includes('yellow') || val.includes('中')) {
-            return `<span class="badge text-white px-3 py-2 fs-5 fw-bold" style="background-color: #b45309; border: 3px solid #713f12;">🟡 START: 黃區 (中傷 Delayed)</span>`;
-        } else if (val.includes('綠') || val.includes('green') || val.includes('輕')) {
-            return `<span class="badge text-white px-3 py-2 fs-5 fw-bold" style="background-color: #15803d; border: 3px solid #14532d;">🟢 START: 綠區 (輕傷 Minor)</span>`;
-        } else if (val.includes('黑') || val.includes('black') || val.includes('死')) {
-            return `<span class="badge text-white px-3 py-2 fs-5 fw-bold" style="background-color: #0f172a; border: 3px solid #020617;">⚫ START: 黑區 (期待性/死亡)</span>`;
-        }
-        return `<span class="badge bg-info text-dark px-3 py-2 fs-5 fw-bold border border-2 border-dark">${startStr}</span>`;
-    }
-
+    /**
+     * 清除查詢篩選條件
+     */
     function clearQueryFilters() {
-        document.getElementById('selectTriageNo').value = "";
-        document.getElementById('inputTriageNo').value = "";
-        document.getElementById('selectPatientName').value = "";
-        document.getElementById('inputPatientName').value = "";
-        document.getElementById('selectRescuer').value = "";
-        document.getElementById('inputRescuer').value = "";
-        document.getElementById('inputDate').value = "";
+        document.getElementById('selectTriageNo').value = '';
+        document.getElementById('inputTriageNo').value = '';
+        document.getElementById('selectPatientName').value = '';
+        document.getElementById('inputPatientName').value = '';
+        document.getElementById('selectRescuer').value = '';
+        document.getElementById('inputRescuer').value = '';
+        document.getElementById('inputDate').value = '';
+        
         const container = document.getElementById('queryResultContainer');
         container.style.display = 'none';
         container.innerHTML = '';
-        currentSearchRecords = [];
     }
 
-    async function searchRecords() {
-        const triageNo = (document.getElementById('inputTriageNo').value || document.getElementById('selectTriageNo').value).trim();
-        const patientName = (document.getElementById('inputPatientName').value || document.getElementById('selectPatientName').value).trim();
-        const rescuer = (document.getElementById('inputRescuer').value || document.getElementById('selectRescuer').value).trim();
-        const date = document.getElementById('inputDate').value;
-
-        if (!triageNo && !patientName && !rescuer && !date) {
-            alert("請至少選擇或輸入一項查詢條件！");
-            document.getElementById('queryResultContainer').style.display = 'none';
-            return;
-        }
-
-        try {
-            const result = await callGasApi('search', { triageNo, patientName, rescuer, date });
-            let records = [];
-            if (result && result.status === "success") {
-                if (Array.isArray(result.records)) {
-                    records = result.records;
-                } else if (result.data) {
-                    records = [result.data];
-                }
-            }
-
-            currentSearchRecords = records;
-            const container = document.getElementById('queryResultContainer');
-
-            if (records.length > 0) {
-                let html = `<div class="alert alert-success fw-bold fs-5 mb-3">✅ 成功找到 ${records.length} 筆符合條件的救護紀錄</div>`;
-
-                records.forEach((d, idx) => {
-                    const rDate = formatDate(d.date || '');
-                    const rTime = formatTime(d.time || '');
-                    const triageBadge = getStartTriageBadge(d.startTriage);
-                    const ageDisplay = formatAgeDisplay(d.age);
-
-                    html += `
-                    <div class="card p-4 border-primary mb-4 shadow-sm">
-                        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-                            <h4 class="fw-bold text-primary mb-0">📋 救護紀錄 #${idx + 1}</h4>
-                            <div class="d-flex gap-2 align-items-center">
-                                <button type="button" class="btn btn-outline-danger fw-bold btn-sm px-3 py-2 shadow-sm" onclick="openA4TriageCardModal(${idx})" style="border-width: 2px;">🖨️ A4 檢傷卡</button>
-                                <div>${triageBadge}</div>
-                            </div>
-                        </div>
-                        <div class="row g-3 bg-light p-3 rounded border mb-4">
-                            <div class="col-md-6"><strong>🕒 時間戳記：</strong><span class="text-dark">${d.timestamp || '-'}</span></div>
-                            <div class="col-md-6"><strong>📅 日期/時間：</strong><span class="text-dark">${rDate} ${rTime}</span></div>
-                            <div class="col-md-6"><strong>⏱️ 接觸時間：</strong><span class="text-primary fw-bold">${formatTime(d.contactTime) || rTime || '-'}</span></div>
-                            <div class="col-md-6"><strong>🏷️ 檢傷編號：</strong><span class="text-primary">${d.triageNo || '-'}</span></div>
-                            <div class="col-md-6"><strong>👤 姓名/性別/年齡：</strong><span class="text-dark">${d.name || '無名'} / ${d.gender || '-'} / ${ageDisplay}</span></div>
-                            <div class="col-md-6"><strong>🧑‍⚕️ 救護人員：</strong><span class="text-dark">${d.rescuer || '-'}</span></div>
-                            <div class="col-md-6"><strong>📞 聯絡電話：</strong><span class="text-dark">${d.phone || '-'}</span></div>
-                            <div class="col-md-12"><strong>📍 事故位置：</strong><span class="text-dark">${d.location || '-'}</span></div>
-                            <div class="col-md-6"><strong>🏥 處置位置：</strong><span class="text-dark">${d.treatLoc || '-'}</span></div>
-                            <div class="col-md-6"><strong>🏷️ 案件類型：</strong><span class="text-dark">${d.caseType || '-'}</span></div>
-                            <div class="col-md-6"><strong>🩺 傷病問題：</strong><span class="text-danger">${d.problem || '-'}</span></div>
-                            <div class="col-md-6"><strong>🩹 受傷部位 (L/R)：</strong><span class="text-primary">${d.injuryPart || '-'}</span></div>
-                            <div class="col-md-6"><strong>🧠 意識狀態 (AVPU / GCS)：</strong><span class="text-primary fw-bold">${d.consciousness || '未測量 / 正常'}</span></div>
-                            <div class="col-md-6"><strong>💓 生命徵象 (Vital Signs)：</strong><span class="text-danger fw-bold">${d.vitalSigns || '未測量'}</span></div>
-                            <div class="col-md-6"><strong>🚗 後送模式：</strong><span class="text-success fw-bold">${d.transportMode || '未記錄'}</span></div>
-                            <div class="col-md-6"><strong>📋 處置狀態/項目：</strong><span class="text-dark fw-bold">${d.treatments || '無'}</span></div>
-                            <div class="col-md-6"><strong>🏥 既往病史：</strong><span class="text-danger">${d.medicalHistory || d.history || '無'}</span></div>
-                            <div class="col-md-6"><strong>⚠️ 過敏史：</strong><span class="text-danger">${d.allergy || '無'}</span></div>
-                            <div class="col-md-12"><strong>⏱️ 留觀記錄：</strong><span class="text-dark">1. ${d.obs1 || '無'} | 2. ${d.obs2 || '無'} | 3. ${d.obs3 || '無'}</span></div>
-                            <div class="col-md-12"><strong>📝 備註：</strong><span class="text-dark">${d.memo || '無'}</span></div>
-                        </div>
-
-                        <div class="section-header">📸 現場照片紀錄 (3張)</div>
-                        <div class="row g-3 text-center">
-                            <div class="col-md-4">
-                                <div class="photo-box">
-                                    <span class="small text-muted mb-2 fw-bold">現場照片 1</span>
-                                    <a id="linkPhoto_${idx}_1" href="#" target="_blank" style="display:none;">
-                                        <img id="imgPhoto_${idx}_1" src="" class="img-fluid rounded border" style="max-height: 160px;" alt="照片1">
-                                    </a>
-                                    <span id="noPhoto_${idx}_1" class="text-muted small fw-bold">無照片</span>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="photo-box">
-                                    <span class="small text-muted mb-2 fw-bold">現場照片 2</span>
-                                    <a id="linkPhoto_${idx}_2" href="#" target="_blank" style="display:none;">
-                                        <img id="imgPhoto_${idx}_2" src="" class="img-fluid rounded border" style="max-height: 160px;" alt="照片2">
-                                    </a>
-                                    <span id="noPhoto_${idx}_2" class="text-muted small fw-bold">無照片</span>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="photo-box">
-                                    <span class="small text-muted mb-2 fw-bold">現場照片 3</span>
-                                    <a id="linkPhoto_${idx}_3" href="#" target="_blank" style="display:none;">
-                                        <img id="imgPhoto_${idx}_3" src="" class="img-fluid rounded border" style="max-height: 160px;" alt="照片3">
-                                    </a>
-                                    <span id="noPhoto_${idx}_3" class="text-muted small fw-bold">無照片</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>`;
-                });
-
-                container.innerHTML = html;
-                container.style.display = 'block';
-
-                records.forEach((d, idx) => {
-                    setPhoto(`imgPhoto_${idx}_1`, `linkPhoto_${idx}_1`, `noPhoto_${idx}_1`, d.photo1 || '');
-                    setPhoto(`imgPhoto_${idx}_2`, `linkPhoto_${idx}_2`, `noPhoto_${idx}_2`, d.photo2 || '');
-                    setPhoto(`imgPhoto_${idx}_3`, `linkPhoto_${idx}_3`, `noPhoto_${idx}_3`, d.photo3 || '');
-                });
-
-            } else {
-                alert("找不到符合條件的救護紀錄！");
-                container.style.display = 'none';
-            }
-        } catch (e) {
-            alert("查詢失敗：" + e.message);
-            document.getElementById('queryResultContainer').style.display = 'none';
-        }
-    }
-
-    function openA4TriageCardModal(idx) {
-        const d = currentSearchRecords[idx];
-        if (!d) return;
-
-        const rDate = formatDate(d.date || '');
-        const rTime = formatTime(d.time || '');
-        const cTime = formatTime(d.contactTime || '') || rTime;
-        const ageDisplay = formatAgeDisplay(d.age);
-
-        document.getElementById('a4_timestamp').innerText = d.timestamp || '-';
-        document.getElementById('a4_triageNo').innerText = d.triageNo || '-';
-        document.getElementById('a4_startBadgeContainer').innerHTML = getTacticalStartTriageBadge(d.startTriage);
-        document.getElementById('a4_datetime').innerText = `${rDate} ${rTime} (接觸: ${cTime})`;
-        document.getElementById('a4_rescuer').innerText = d.rescuer || '-';
-        document.getElementById('a4_patientInfo').innerText = `${d.name || '無名'} / ${d.gender || '-'} / ${ageDisplay}`;
-        document.getElementById('a4_phone').innerText = d.phone || '-';
-        document.getElementById('a4_location').innerText = d.location || '-';
-        document.getElementById('a4_treatLoc').innerText = d.treatLoc || '-';
-        document.getElementById('a4_caseType').innerText = d.caseType || '-';
-        document.getElementById('a4_problem').innerText = d.problem || '-';
-        document.getElementById('a4_injuryPart').innerText = d.injuryPart || '-';
-        document.getElementById('a4_consciousness').innerText = `${d.consciousness || '未測量 / 正常'}`;
-        
-        const critVal = d.isCritical || '否';
-        let critHtml = `<span class="badge bg-success">🛡️ 否 (No)</span>`;
-        if (critVal === '是') critHtml = `<span class="badge bg-danger">🔥 是 (Yes)</span>`;
-        if (critVal === 'OHCA') critHtml = `<span class="badge bg-dark">💔 OHCA</span>`;
-        document.getElementById('a4_isCritical').innerHTML = critHtml;
-
-        let bp = '-', pr = '-', rr = '-', bt = '-', pupil = '-', skin = '-';
-        if (d.vitals) {
-            const v = String(d.vitals);
-            const mBp = v.match(/BP:([^,]+)/); if (mBp) bp = mBp[1].trim();
-            const mPr = v.match(/PR:([^,]+)/); if (mPr) pr = mPr[1].trim();
-            const mRr = v.match(/RR:([^,]+)/); if (mRr) rr = mRr[1].trim();
-            const mBt = v.match(/BT:([^,]+)/); if (mBt) bt = mBt[1].trim();
-            const mPupil = v.match(/Pupil:([^,]+)/); if (mPupil) pupil = mPupil[1].trim();
-            const mSkin = v.match(/Skin:([^,]+)/); if (mSkin) skin = mSkin[1].trim();
-        }
-        if (d.bt && bt === '-') bt = d.bt;
-        if (d.skin && skin === '-') skin = d.skin;
-        if (d.pupil && pupil === '-') pupil = d.pupil;
-
-        document.getElementById('a4_bp').innerText = bp;
-        document.getElementById('a4_pr').innerText = pr;
-        document.getElementById('a4_rr').innerText = rr;
-        document.getElementById('a4_bt').innerText = `${bt}°C`;
-        document.getElementById('a4_pupil').innerText = pupil;
-        document.getElementById('a4_skin').innerText = skin;
-
-        document.getElementById('a4_transportMode').innerText = d.transportMode || '未記錄';
-        document.getElementById('a4_treatments').innerText = d.treatments || '無';
-        document.getElementById('a4_medicalHistory').innerText = d.medicalHistory || d.history || '無';
-        document.getElementById('a4_allergy').innerText = d.allergy || '無';
-
-        document.getElementById('a4_obs1').innerText = d.obs1 || '無';
-        document.getElementById('a4_obs2').innerText = d.obs2 || '無';
-        document.getElementById('a4_obs3').innerText = d.obs3 || '無';
-        document.getElementById('a4_memo').innerText = d.memo || '無';
-
-        const photoContainer = document.getElementById('a4_photoContainer');
-        let photoHtml = '';
-        [d.photo1, d.photo2, d.photo3].forEach((pUrl, pIdx) => {
-            const fileId = extractDriveFileId(pUrl);
-            if (fileId) {
-                photoHtml += `
-                <div class="col-4">
-                    <div class="p-1 border rounded bg-white">
-                        <span class="small fw-bold text-muted">照片 ${pIdx + 1}</span>
-                        <img src="https://drive.google.com/thumbnail?id=${fileId}&sz=w600" class="img-fluid rounded" style="max-height: 95px; object-fit: cover;" alt="照片${pIdx + 1}">
-                    </div>
-                </div>`;
-            } else if (pUrl && String(pUrl).startsWith('http')) {
-                photoHtml += `
-                <div class="col-4">
-                    <div class="p-1 border rounded bg-white">
-                        <span class="small fw-bold text-muted">照片 ${pIdx + 1}</span>
-                        <img src="${pUrl}" class="img-fluid rounded" style="max-height: 95px; object-fit: cover;" alt="照片${pIdx + 1}">
-                    </div>
-                </div>`;
-            }
-        });
-        photoContainer.innerHTML = photoHtml || '<div class="col-12 text-muted small">無上傳現場照片</div>';
-
-        const modal = new bootstrap.Modal(document.getElementById('a4CardModal'));
-        modal.show();
-    }
-
-    function extractDriveFileId(url) {
-        if (!url) return '';
-        let cleanUrl = String(url).trim();
-        if (!cleanUrl || cleanUrl === 'undefined' || cleanUrl === 'null' || cleanUrl === '-') return '';
-
-        if (!String(cleanUrl).startsWith('http') && cleanUrl.length >= 20 && !cleanUrl.includes(' ')) {
-            return cleanUrl;
-        }
-
-        const fileDMatch = cleanUrl.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
-        if (fileDMatch && fileDMatch[1]) return fileDMatch[1];
-
-        const idParamMatch = cleanUrl.match(/[?&]id=([a-zA-Z0-9_-]+)/);
-        if (idParamMatch && idParamMatch[1]) return idParamMatch[1];
-
-        const dPathMatch = cleanUrl.match(/\/d\/([a-zA-Z0-9_-]+)/);
-        if (dPathMatch && dPathMatch[1]) return dPathMatch[1];
-
-        const openMatch = cleanUrl.match(/\/open\?id=([a-zA-Z0-9_-]+)/);
-        if (openMatch && openMatch[1]) return openMatch[1];
-
-        const genericMatch = cleanUrl.match(/([a-zA-Z0-9_-]{25,})/);
-        if (genericMatch && genericMatch[1]) return genericMatch[1];
-
-        return '';
-    }
-
-    function setPhoto(imgId, linkId, noImgId, rawUrl) {
-        const img = document.getElementById(imgId);
-        const link = document.getElementById(linkId);
-        const noImg = document.getElementById(noImgId);
-        if (!img || !noImg || !link) return;
-
-        const fileId = extractDriveFileId(rawUrl);
-
-        if (fileId) {
-            const urls = [
-                `https://lh3.googleusercontent.com/d/${fileId}=s1000`,
-                `https://drive.google.com/thumbnail?id=${fileId}&sz=w1000`,
-                `https://drive.google.com/uc?export=view&id=${fileId}`
-            ];
-
-            let attempt = 0;
-            link.href = `https://drive.google.com/file/d/${fileId}/view`;
-            link.style.display = 'inline-block';
-            noImg.style.display = 'none';
-
-            img.onerror = function() {
-                attempt++;
-                if (attempt < urls.length) {
-                    img.src = urls[attempt];
-                } else {
-                    link.style.display = 'none';
-                    noImg.style.display = 'block';
-                }
-            };
-
-            img.src = urls[0];
-        } else if (rawUrl && (String(rawUrl).startsWith('http://') || String(rawUrl).startsWith('https://') || String(rawUrl).startsWith('data:image/'))) {
-            link.href = rawUrl;
-            noImg.style.display = 'none';
-            link.style.display = 'inline-block';
-
-            img.onerror = function() {
-                link.style.display = 'none';
-                noImg.style.display = 'block';
-            };
-
-            img.src = rawUrl;
-        } else {
-            link.style.display = 'none';
-            noImg.style.display = 'block';
-        }
-    }
-
-    async function fetchAnalytics() {
-        const year = document.getElementById('statsYearSelect').value.trim();
-        const month = document.getElementById('statsMonthSelect').value.trim();
-        const day = document.getElementById('statsDaySelect').value.trim();
-
-        try {
-            const result = await callGasApi('analytics', { year, month, day });
-            const data = (result && (result.analytics || result.data || result));
-            
-            if (result && (result.status === "success" || result.analytics || (data && data.totalCount !== undefined))) {
-                const totalCount = data.totalCount ?? 0;
-                const avgAge = data.avgAge ?? 0;
-
-                document.getElementById('statTotalCount').innerText = `${totalCount} 人`;
-                document.getElementById('statAvgAge').innerText = `${avgAge} 歲`;
-
-                renderSummaryList('statDateSummary', data.dateSummary, '人次');
-                renderSummaryList('statMonthSummary', data.monthSummary, '人次');
-                renderSummaryList('statYearSummary', data.yearSummary, '人次');
-
-                renderStatList('statTransportModeList', data.transportModeSummary, '人次');
-                renderStatList('statStartTriageList', data.startTriageSummary, '人次');
-
-                renderStatList('statProblemList', data.problems, '次');
-                renderStatList('statInjuryPartsList', data.injuryParts, '處');
-
-                const historyCount = data.historyCount ?? 0;
-                const allergyCount = data.allergyCount ?? 0;
-
-                document.getElementById('statSummaryTable').innerHTML = `
-                    <tr><td>有既往病史總人數</td><td><span class="text-danger fw-bold">${historyCount} 人</span></td></tr>
-                    <tr><td>有過敏史總人數</td><td><span class="text-danger fw-bold">${allergyCount} 人</span></td></tr>
-                `;
-            } else {
-                resetAnalyticsUI("該條件無相符紀錄");
-                alert("找不到對應數據！");
-            }
-        } catch (e) {
-            resetAnalyticsUI("載入資料發生錯誤");
-            alert("分析失敗：" + e.message);
-        }
-    }
-
-    function resetAnalyticsFilters() {
-        document.getElementById('statsYearSelect').value = "";
-        document.getElementById('statsMonthSelect').value = "";
-        document.getElementById('statsDaySelect').value = "";
+    /**
+     * 初始化與抓取大數據分析面板
+     */
+    function initAnalyticsTab() {
         fetchAnalytics();
     }
 
-    function renderSummaryList(containerId, dataObj, unitStr) {
-        const el = document.getElementById(containerId);
-        if (!el) return;
-        if (!dataObj || Object.keys(dataObj).length === 0) {
-            el.innerHTML = `<li class="text-muted">尚無資料</li>`;
-            return;
+    async function fetchAnalytics() {
+        const year = document.getElementById('statsYearSelect').value;
+        const month = document.getElementById('statsMonthSelect').value;
+        const day = document.getElementById('statsDaySelect').value;
+
+        const params = { year, month, day };
+
+        try {
+            const res = await callGasApi('analytics', params);
+            if (res && res.status === 'success' && res.analytics) {
+                renderAnalyticsData(res.analytics);
+            }
+        } catch (e) {
+            console.error("取得大數據分析資料失敗：", e);
         }
-        const html = Object.entries(dataObj).map(([key, val]) => 
-            `<li class="d-flex justify-content-between border-bottom py-1"><span>${key}</span><span class="fw-bold text-primary">${val} ${unitStr}</span></li>`
-        ).join('');
-        el.innerHTML = html;
     }
 
-    function renderStatList(containerId, dataObj, unitStr) {
-        const el = document.getElementById(containerId);
-        if (!el) return;
-        if (!dataObj || Object.keys(dataObj).length === 0) {
-            el.innerHTML = `<li class="text-muted">當期無紀錄</li>`;
-            return;
+    /**
+     * 渲染大數據圖表與統計清單
+     */
+    function renderAnalyticsData(data) {
+        document.getElementById('statTotalCount').innerText = `${data.totalCount || 0} 人`;
+        document.getElementById('statAvgAge').innerText = `${data.avgAge || 0} 歲`;
+
+        renderObjectList('statDateSummary', data.dateSummary, '日人次');
+        renderObjectList('statMonthSummary', data.monthSummary, '月人次');
+        renderObjectList('statYearSummary', data.yearSummary, '年人次');
+
+        renderObjectList('statTransportModeList', data.transportModeSummary, '次');
+        renderObjectList('statStartTriageList', data.startTriageSummary, '人');
+        renderObjectList('statProblemList', data.problems, '例');
+        renderObjectList('statInjuryPartsList', data.injuryParts, '處');
+
+        const tableBody = document.getElementById('statSummaryTable');
+        if (tableBody) {
+            tableBody.innerHTML = `
+                <tr><td>有既往病史總人數</td><td><span class="text-danger fw-bold fs-5">${data.historyCount || 0} 人</span></td></tr>
+                <tr><td>有過敏史總人數</td><td><span class="text-danger fw-bold fs-5">${data.allergyCount || 0} 人</span></td></tr>
+            `;
         }
-        const html = Object.entries(dataObj).map(([k, v]) => 
-            `<li class="py-1 border-bottom">${k}：<span class="fw-bold text-primary">${v} ${unitStr}</span></li>`
-        ).join('');
-        el.innerHTML = html;
     }
 
-    function resetAnalyticsUI(message) {
-        document.getElementById('statTotalCount').innerText = "0 人";
-        document.getElementById('statAvgAge').innerText = "0 歲";
-        document.getElementById('statDateSummary').innerHTML = `<li class="text-muted">${message}</li>`;
-        document.getElementById('statMonthSummary').innerHTML = `<li class="text-muted">${message}</li>`;
-        document.getElementById('statYearSummary').innerHTML = `<li class="text-muted">${message}</li>`;
-        document.getElementById('statTransportModeList').innerHTML = `<li class="text-muted">${message}</li>`;
-        document.getElementById('statStartTriageList').innerHTML = `<li class="text-muted">${message}</li>`;
-        document.getElementById('statProblemList').innerHTML = `<li class="text-muted">${message}</li>`;
-        document.getElementById('statInjuryPartsList').innerHTML = `<li class="text-muted">${message}</li>`;
-        document.getElementById('statSummaryTable').innerHTML = `
-            <tr><td>有既往病史總人數</td><td><span class="text-danger">0 人</span></td></tr>
-            <tr><td>有過敏史總人數</td><td><span class="text-danger">0 人</span></td></tr>
-        `;
+    function renderObjectList(elementId, obj, unit = '次') {
+        const container = document.getElementById(elementId);
+        if (!container) return;
+
+        if (!obj || Object.keys(obj).length === 0) {
+            container.innerHTML = '<li class="text-muted">尚無資料</li>';
+            return;
+        }
+
+        let html = '';
+        for (const key in obj) {
+            html += `
+                <li class="py-1 border-bottom d-flex justify-content-between align-items-center">
+                    <span>${key}</span>
+                    <span class="badge bg-primary rounded-pill fs-6">${obj[key]} ${unit}</span>
+                </li>
+            `;
+        }
+        container.innerHTML = html;
+    }
+
+    function resetAnalyticsFilters() {
+        document.getElementById('statsYearSelect').value = '';
+        document.getElementById('statsMonthSelect').value = '';
+        document.getElementById('statsDaySelect').value = '';
+        fetchAnalytics();
+    }
+
+    /**
+     * 解析生命徵象字串 (如 Vital Signs 中包含 PR/RR/BP)
+     */
+    function parseVitalSigns(vitalStr) {
+        let pr = '-', rr = '-', bp = '-';
+        if (vitalStr) {
+            const prMatch = vitalStr.match(/PR\s*[:：]?\s*(\d+)/i) || vitalStr.match(/脈搏\s*[:：]?\s*(\d+)/i);
+            const rrMatch = vitalStr.match(/RR\s*[:：]?\s*(\d+)/i) || vitalStr.match(/呼吸\s*[:：]?\s*(\d+)/i);
+            const bpMatch = vitalStr.match(/BP\s*[:：]?\s*([\d\/]+)/i) || vitalStr.match(/血壓\s*[:：]?\s*([\d\/]+)/i);
+
+            if (prMatch) pr = prMatch[1];
+            if (rrMatch) rr = rrMatch[1];
+            if (bpMatch) bp = bpMatch[1];
+        }
+        return { pr, rr, bp };
+    }
+
+    /**
+     * 轉換 Google Drive 照片連結為可預覽的縮圖網址
+     */
+    function formatDriveImageUrl(url) {
+        if (!url) return '';
+        if (url.includes('drive.google.com')) {
+            const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || url.match(/id=([a-zA-Z0-9_-]+)/);
+            if (match && match[1]) {
+                return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w800`;
+            }
+        }
+        return url;
+    }
+
+    /**
+     * 開啟 A4 檢傷卡 Modal 視窗並動態填入所有欄位
+     */
+    function openA4Modal(index) {
+        const rec = currentSearchRecords[index];
+        if (!rec) return;
+
+        document.getElementById('a4_triageNo').innerText = rec.triageNo || '無';
+        document.getElementById('a4_startBadgeContainer').innerHTML = getStartBadgeHtml(rec.startTriage);
+        document.getElementById('a4_timestamp').innerText = rec.timestamp || '-';
+        document.getElementById('a4_datetime').innerText = `${rec.date || '-'} ${rec.time || ''}`;
+        document.getElementById('a4_patientInfo').innerText = `${rec.name || '未知'} / ${rec.gender || '-'} / ${rec.age ? rec.age + '歲' : '-'}`;
+        document.getElementById('a4_phone').innerText = rec.phone || '-';
+        document.getElementById('a4_location').innerText = rec.location || '-';
+        document.getElementById('a4_treatLoc').innerText = rec.treatLoc || '-';
+        document.getElementById('a4_caseType').innerText = rec.caseType || '-';
+        document.getElementById('a4_rescuer').innerText = rec.rescuer || '-';
+
+        document.getElementById('a4_problem').innerText = rec.problem || '-';
+        document.getElementById('a4_injuryPart').innerText = rec.injuryPart || '-';
+        document.getElementById('a4_consciousness').innerText = rec.consciousness || '-';
+        document.getElementById('a4_isCritical').innerText = rec.isCritical || '否';
+
+        const vitals = parseVitalSigns(rec.vitalSigns);
+        document.getElementById('a4_pr').innerText = vitals.pr !== '-' ? vitals.pr : (rec.vitalSigns || '-');
+        document.getElementById('a4_rr').innerText = vitals.rr !== '-' ? vitals.rr : '-';
+        document.getElementById('a4_bp').innerText = vitals.bp !== '-' ? vitals.bp : '-';
+        document.getElementById('a4_bt').innerText = rec.bt || '-';
+        document.getElementById('a4_skin').innerText = rec.skin || '-';
+        document.getElementById('a4_pupil').innerText = rec.pupil || '-';
+
+        document.getElementById('a4_transportMode').innerText = rec.transportMode || '-';
+        document.getElementById('a4_treatments').innerText = rec.treatments || '-';
+        document.getElementById('a4_medicalHistory').innerText = rec.medicalHistory || '無';
+        document.getElementById('a4_allergy').innerText = rec.allergy || '無';
+        document.getElementById('a4_obs1').innerText = rec.obs1 || '無';
+        document.getElementById('a4_obs2').innerText = rec.obs2 || '無';
+        document.getElementById('a4_obs3').innerText = rec.obs3 || '無';
+        document.getElementById('a4_memo').innerText = rec.memo || '-';
+
+        // 渲染現場照片
+        const photoContainer = document.getElementById('a4_photoContainer');
+        const photos = [rec.photo1, rec.photo2, rec.photo3].filter(Boolean);
+        if (photos.length > 0) {
+            let photoHtml = '';
+            photos.forEach((p, i) => {
+                const imgUrl = formatDriveImageUrl(p);
+                photoHtml += `
+                    <div class="col-4">
+                        <div class="photo-box p-1">
+                            <a href="${p}" target="_blank">
+                                <img src="${imgUrl}" class="img-fluid rounded" style="max-height: 140px; object-fit: contain;" alt="照片${i+1}" onerror="this.src='https://via.placeholder.com/150?text=圖片載入失敗'">
+                            </a>
+                            <small class="text-muted d-block mt-1">照片 ${i+1}</small>
+                        </div>
+                    </div>
+                `;
+            });
+            photoContainer.innerHTML = photoHtml;
+        } else {
+            photoContainer.innerHTML = '<div class="col-12 text-muted fw-bold p-3">📷 無現場照片紀錄</div>';
+        }
+
+        const modal = new bootstrap.Modal(document.getElementById('a4CardModal'));
+        modal.show();
     }
 </script>
 </body>
