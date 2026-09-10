@@ -167,7 +167,7 @@
 
         .a4-vitals-grid {
             display: grid;
-            grid-template-columns: repeat(6, 1fr);
+            grid-template-columns: repeat(8, 1fr);
             gap: 4px;
             background-color: #f8fafc;
             border: 2px solid #475569;
@@ -184,13 +184,13 @@
             border-right: none;
         }
         .a4-vitals-item .v-label {
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             color: #1e293b;
             font-weight: 800;
             display: block;
         }
         .a4-vitals-item .v-val {
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             font-weight: 800;
             color: #0f172a;
         }
@@ -543,6 +543,14 @@
                                     <span class="v-val text-danger" id="a4_vital_bp">-</span>
                                 </div>
                                 <div class="a4-vitals-item">
+                                    <span class="v-label">⭕ 血氧 (SpO2)</span>
+                                    <span class="v-val text-success" id="a4_vital_spo2">-</span>
+                                </div>
+                                <div class="a4-vitals-item">
+                                    <span class="v-label">🍬 血糖 (BG)</span>
+                                    <span class="v-val text-warning" id="a4_vital_glucose">-</span>
+                                </div>
+                                <div class="a4-vitals-item">
                                     <span class="v-label">🌡️ 體溫 (BT)</span>
                                     <span class="v-val text-primary" id="a4_bt">-</span>
                                 </div>
@@ -559,7 +567,7 @@
                     </div>
 
                     <div class="a4-section-title">
-                        <span>🚑 處置處置與處置流程 (Treatment & Transport & History)</span>
+                        <span>🚑 處置與後送歷程 (Treatment & Transport & History)</span>
                         <span class="badge bg-light text-dark" style="font-size: 0.75rem;">後送處置</span>
                     </div>
                     <div class="row g-1 mb-2">
@@ -704,12 +712,21 @@
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label">❤️🫁🩸 生命徵象 (Vital Signs)</label>
+                            <label class="form-label">❤️🫁🩸 生命徵象 (PR, RR, BP)</label>
                             <input type="text" id="edit_vitalSigns" class="form-control" placeholder="PR:80, RR:20, BP:120/80">
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">🌡️ 體溫 (°C)</label>
                             <input type="text" id="edit_bt" class="form-control" placeholder="36.5">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">⭕ 血氧 (SpO2 %)</label>
+                            <input type="text" id="edit_spo2" class="form-control" placeholder="98">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">🍬 血糖 (Glucose mg/dL)</label>
+                            <input type="text" id="edit_glucose" class="form-control" placeholder="100">
                         </div>
 
                         <div class="col-md-6">
@@ -854,7 +871,7 @@
     }
 
     /**
-     * 專屬時間與時間戳記格式化函式（修正 1899 序列值並轉為 YYYY/MM/DD/HH/mm GMT+0800 (台北標準時間)）
+     * 時間與時間戳記格式化函式（已修正為 YYYY/MM/DD HH:mm GMT+0800 (台北標準時間)）
      */
     function formatTimestampDisplay(val) {
         if (!val) return '-';
@@ -872,13 +889,13 @@
             let dd = String(d.getDate()).padStart(2, '0');
             let hh = String(d.getHours()).padStart(2, '0');
             let min = String(d.getMinutes()).padStart(2, '0');
-            return `${yyyy}/${mm}/${dd}/${hh}/${min} GMT+0800 (台北標準時間)`;
+            return `${yyyy}/${mm}/${dd} ${hh}:${min} GMT+0800 (台北標準時間)`;
         }
         return str;
     }
 
     /**
-     * 生命徵象中文化轉換函式 (PR/RR/BP 轉繁體中文說明)
+     * 生命徵象中文化轉換函式 (新增血氧 SpO2 與血糖 BG 解析)
      */
     function formatVitalSignsChinese(vitalStr) {
         if (!vitalStr || vitalStr === '-') return '無紀錄';
@@ -886,11 +903,15 @@
         let prMatch = str.match(/PR\s*[:：]?\s*([^\s,]+)/i) || str.match(/脈搏\s*[:：]?\s*([^\s,]+)/i);
         let rrMatch = str.match(/RR\s*[:：]?\s*([^\s,]+)/i) || str.match(/呼吸\s*[:：]?\s*([^\s,]+)/i);
         let bpMatch = str.match(/BP\s*[:：]?\s*([^\s,]+)/i) || str.match(/血壓\s*[:：]?\s*([^\s,]+)/i);
+        let spo2Match = str.match(/SpO2\s*[:：]?\s*([^\s,]+)/i) || str.match(/血氧\s*[:：]?\s*([^\s,]+)/i);
+        let glucoseMatch = str.match(/(?:BG|Glucose|血糖)\s*[:：]?\s*([^\s,]+)/i);
 
         let parts = [];
         if (prMatch) parts.push(`脈搏：${prMatch[1]} 次/分`);
         if (rrMatch) parts.push(`呼吸：${rrMatch[1]} 次/分`);
         if (bpMatch) parts.push(`血壓：${bpMatch[1]} mmHg`);
+        if (spo2Match) parts.push(`血氧：${spo2Match[1]}%`);
+        if (glucoseMatch) parts.push(`血糖：${glucoseMatch[1]} mg/dL`);
 
         if (parts.length > 0) {
             return parts.join(' ｜ ');
@@ -1262,7 +1283,7 @@
     }
 
     /**
-     * 開啟 A4 檢傷卡 Modal 視窗並動態填入所有 33 欄位
+     * 開啟 A4 檢傷卡 Modal 視窗並動態填入所有欄位（包含血氧與血糖）
      */
     function openA4Modal(index) {
         const rec = currentSearchRecords[index];
@@ -1299,11 +1320,18 @@
         
         document.getElementById('a4_isCritical').innerHTML = getCriticalBadgeHtml(rec.isCritical);
 
-        // 生命徵象
+        // 生命徵象 (PR, RR, BP, SpO2, Glucose, BT, Skin, Pupil)
         const vitalsText = formatVitalSignsChinese(rec.vitalSigns || rec.pr);
-        document.getElementById('a4_vital_pr').innerText = rec.pr || vitalsText;
+        document.getElementById('a4_vital_pr').innerText = rec.pr || '-';
         document.getElementById('a4_vital_rr').innerText = rec.rr || '-';
         document.getElementById('a4_vital_bp').innerText = rec.bp || '-';
+        
+        // 血氧與血糖解析
+        const spo2Val = rec.spo2 || rec.SpO2 || (vitalsText.match(/血氧：([^\s｜]+)/)?.[1]) || '-';
+        const glucoseVal = rec.glucose || rec.BG || (vitalsText.match(/血糖：([^\s｜]+)/)?.[1]) || '-';
+        document.getElementById('a4_vital_spo2').innerText = spo2Val;
+        document.getElementById('a4_vital_glucose').innerText = glucoseVal;
+
         document.getElementById('a4_bt').innerText = rec.bt ? `${rec.bt} °C` : '-';
         document.getElementById('a4_skin').innerText = rec.skin || '-';
         document.getElementById('a4_pupil').innerText = rec.pupil || '-';
@@ -1386,6 +1414,8 @@
         document.getElementById('edit_isCritical').value = (String(rec.isCritical).includes('是') || String(rec.isCritical).includes('危急')) ? '是' : '否';
         document.getElementById('edit_vitalSigns').value = rec.vitalSigns || '';
         document.getElementById('edit_bt').value = rec.bt || '';
+        document.getElementById('edit_spo2').value = rec.spo2 || rec.SpO2 || '';
+        document.getElementById('edit_glucose').value = rec.glucose || rec.BG || '';
         document.getElementById('edit_skin').value = rec.skin || '';
         document.getElementById('edit_pupil').value = rec.pupil || '';
         document.getElementById('edit_startTriage').value = rec.startTriage || '綠色 (輕傷)';
@@ -1430,6 +1460,8 @@
             isCritical: document.getElementById('edit_isCritical').value,
             vitalSigns: document.getElementById('edit_vitalSigns').value,
             bt: document.getElementById('edit_bt').value,
+            spo2: document.getElementById('edit_spo2').value,
+            glucose: document.getElementById('edit_glucose').value,
             skin: document.getElementById('edit_skin').value,
             pupil: document.getElementById('edit_pupil').value,
             startTriage: document.getElementById('edit_startTriage').value,
