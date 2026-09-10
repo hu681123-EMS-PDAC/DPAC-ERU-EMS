@@ -903,13 +903,14 @@
     }
 
     /**
-     * 生命徵象中文化標準轉換函式（脈搏、呼吸、血壓、血氧獨立對應）
+     * 生命徵象中文化標準轉換函式（新增 🍬 血糖 BG 獨立對應與解析）
      */
     function formatVitalSignsChinese(rec) {
         let pr = rec.pr || '-';
         let rr = rec.rr || '-';
         let bp = rec.bp || '-';
         let spo2 = rec.spo2 || rec.SpO2 || '-';
+        let glucose = rec.glucose || rec.BG || '-';
 
         // 相容舊版合併欄位 (vitalSigns)
         const vitalStr = rec.vitalSigns || '';
@@ -919,11 +920,13 @@
             let rrMatch = str.match(/RR\s*[:：]?\s*([^\s,]+)/i) || str.match(/呼吸\s*[:：]?\s*([^\s,]+)/i);
             let bpMatch = str.match(/BP\s*[:：]?\s*([^\s,]+)/i) || str.match(/血壓\s*[:：]?\s*([^\s,]+)/i);
             let spo2Match = str.match(/SpO2\s*[:：]?\s*([^\s,]+)/i) || str.match(/血氧\s*[:：]?\s*([^\s,]+)/i);
+            let glucoseMatch = str.match(/(?:BG|Glucose|血糖)\s*[:：]?\s*([^\s,]+)/i);
             
             if (pr === '-' && prMatch) pr = prMatch[1];
             if (rr === '-' && rrMatch) rr = rrMatch[1];
             if (bp === '-' && bpMatch) bp = bpMatch[1];
             if (spo2 === '-' && spo2Match) spo2 = spo2Match[1];
+            if (glucose === '-' && glucoseMatch) glucose = glucoseMatch[1];
         }
 
         let parts = [];
@@ -931,6 +934,7 @@
         parts.push(`呼吸：${rr} ${rr !== '-' ? '次/分' : ''}`);
         parts.push(`血壓：${bp} ${bp !== '-' ? 'mmHg' : ''}`);
         parts.push(`血氧：${spo2} ${spo2 !== '-' ? '%' : ''}`);
+        parts.push(`血糖：${glucose} ${glucose !== '-' ? 'mg/dL' : ''}`);
 
         return parts.join(' ｜ ');
     }
@@ -1135,8 +1139,8 @@
                             <div class="col-md-4"><span class="text-muted">AVPU 意識：</span> ${avpuBadge}</div>
                             
                             <div class="col-md-4"><span class="text-muted">GCS 昏迷指數：</span> <span class="v-tag v-tag-dark">${rec.gcs || '-'}</span></div>
-                            <div class="col-md-5"><span class="text-muted">生命徵象：</span> <span class="fw-bold text-danger">${formattedVitals}</span></div>
-                            <div class="col-md-3"><span class="text-muted">體溫 (BT)：</span> <span class="fw-bold text-primary">${rec.bt ? rec.bt + ' °C' : '-'}</span></div>
+                            <div class="col-md-8"><span class="text-muted">生命徵象 (PR/RR/BP/SpO2/BG)：</span> <span class="fw-bold text-danger">${formattedVitals}</span></div>
+                            <div class="col-md-4"><span class="text-muted">體溫 (BT)：</span> <span class="fw-bold text-primary">${rec.bt ? rec.bt + ' °C' : '-'}</span></div>
 
                             <div class="col-md-4"><span class="text-muted">膚色：</span> <span class="fw-bold">${rec.skin || '-'}</span></div>
                             <div class="col-md-4"><span class="text-muted">瞳孔：</span> <span class="fw-bold">${rec.pupil || '-'}</span></div>
@@ -1258,7 +1262,7 @@
     }
 
     /**
-     * 開啟 A4 檢傷卡 Modal 視窗並動態填入所有欄位（獨立對應 PR、RR、BP、SpO2、BG）
+     * 開啟 A4 檢傷卡 Modal 視窗並動態填入所有欄位（含 🍬 血糖 BG 獨立對應）
      */
     function openA4Modal(index) {
         const rec = currentSearchRecords[index];
@@ -1276,6 +1280,7 @@
         document.getElementById('a4_date').innerText = rec.date || '-';
         document.getElementById('a4_time').innerText = formatTimestampDisplay(rec.time);
         document.getElementById('a4_name').innerText = rec.name || '未填寫';
+
         document.getElementById('a4_gender').innerText = rec.gender || '-';
         document.getElementById('a4_age').innerText = rec.age ? `${rec.age} 歲` : '-';
         document.getElementById('a4_phone').innerText = rec.phone || '-';
@@ -1401,14 +1406,14 @@
         document.getElementById('edit_gcs').value = rec.gcs || '';
         document.getElementById('edit_isCritical').value = (String(rec.isCritical).includes('是') || String(rec.isCritical).includes('危急')) ? '是' : '否';
         
-        // 獨立生命徵象欄位載入
+        // 獨立生命徵象欄位載入（含血糖）
         let pr = rec.pr || '';
         let rr = rec.rr || '';
         let bp = rec.bp || '';
         let spo2 = rec.spo2 || rec.SpO2 || '';
         let glucose = rec.glucose || rec.BG || '';
 
-        if (rec.vitalSigns && (!pr || !rr || !bp)) {
+        if (rec.vitalSigns && (!pr || !rr || !bp || !glucose)) {
             let str = String(rec.vitalSigns);
             let prMatch = str.match(/PR\s*[:：]?\s*([^\s,]+)/i) || str.match(/脈搏\s*[:：]?\s*([^\s,]+)/i);
             let rrMatch = str.match(/RR\s*[:：]?\s*([^\s,]+)/i) || str.match(/呼吸\s*[:：]?\s*([^\s,]+)/i);
@@ -1454,6 +1459,7 @@
         const prVal = document.getElementById('edit_pr').value;
         const rrVal = document.getElementById('edit_rr').value;
         const bpVal = document.getElementById('edit_bp').value;
+        const glucoseVal = document.getElementById('edit_glucose').value;
 
         const updatedData = {
             triageNo: document.getElementById('edit_triageNo').value,
@@ -1477,8 +1483,8 @@
             rr: rrVal,
             bp: bpVal,
             spo2: document.getElementById('edit_spo2').value,
-            glucose: document.getElementById('edit_glucose').value,
-            vitalSigns: `PR:${prVal}, RR:${rrVal}, BP:${bpVal}`, // 同步保留格式以相容後端
+            glucose: glucoseVal,
+            vitalSigns: `PR:${prVal}, RR:${rrVal}, BP:${bpVal}, BG:${glucoseVal}`, // 同步更新合併格式
             bt: document.getElementById('edit_bt').value,
             skin: document.getElementById('edit_skin').value,
             pupil: document.getElementById('edit_pupil').value,
