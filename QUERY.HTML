@@ -16,15 +16,15 @@
             letter-spacing: 0.015em;
         }
         .card {
-            border: 2px solid #94a3b8;
+            border: 2px solid #64748b;
             border-radius: 12px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.08);
             background-color: #ffffff;
         }
         .form-control, .form-select {
-            border: 2px solid #475569;
+            border: 2px solid #334155;
             font-weight: 700;
-            font-size: 1rem;
+            font-size: 1.05rem;
             height: 48px;
             color: #0f172a;
         }
@@ -33,18 +33,19 @@
             box-shadow: 0 0 0 0.25rem rgba(37, 99, 235, 0.25);
         }
         .form-label, label {
-            color: #1e293b !important;
-            font-weight: 700 !important;
+            color: #0f172a !important;
+            font-weight: 800 !important;
             margin-bottom: 4px;
+            font-size: 1.05rem;
         }
         .text-muted, .small {
             color: #334155 !important;
-            font-weight: 600 !important;
+            font-weight: 700 !important;
         }
         .btn-main {
-            font-size: 1.1rem;
-            font-weight: bold;
-            padding: 10px;
+            font-size: 1.15rem;
+            font-weight: 800;
+            padding: 12px;
         }
         .section-header {
             background-color: #0f172a;
@@ -52,34 +53,68 @@
             padding: 8px 12px;
             border-radius: 6px;
             margin-bottom: 12px;
-            font-size: 1.1rem;
-            font-weight: 700;
+            font-size: 1.15rem;
+            font-weight: 800;
             letter-spacing: 0.02em;
         }
         .status-banner { 
             display: flex; 
             justify-content: space-between; 
             align-items: center; 
-            background-color: #f1f5f9; 
-            border: 2px solid #1e293b; 
-            padding: 10px 14px; 
+            background-color: #e2e8f0; 
+            border: 2px solid #0f172a; 
+            padding: 12px 16px; 
             border-radius: 8px; 
             margin-bottom: 20px; 
             flex-wrap: wrap; 
             gap: 8px; 
         }
         .list-unstyled li {
-            font-size: 0.95rem;
+            font-size: 1rem;
             font-weight: 700;
             color: #0f172a;
         }
         .table {
             color: #0f172a;
             font-weight: 700;
+            font-size: 0.95rem;
+        }
+        .table th {
+            background-color: #0f172a !important;
+            color: #ffffff !important;
+            font-size: 0.95rem;
+            font-weight: 800;
+            text-align: center;
+            vertical-align: middle;
+            position: sticky;
+            top: 0;
+            z-index: 2;
         }
 
         /* -------------------------------------------------------------------------- */
-        /* A4 檢傷卡專屬高對比、中小字體、單頁不跨頁列印與預覽樣式 */
+        /* 視覺標籤化 (Visual Tagging) 高對比 Badge 樣式 */
+        /* -------------------------------------------------------------------------- */
+        .v-tag {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 6px;
+            font-weight: 800;
+            font-size: 0.85rem;
+            letter-spacing: 0.02em;
+            border: 1px solid rgba(0,0,0,0.25);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+            white-space: nowrap;
+        }
+        .v-tag-danger { background-color: #dc2626; color: #ffffff; }
+        .v-tag-warning { background-color: #f59e0b; color: #0f172a; }
+        .v-tag-success { background-color: #16a34a; color: #ffffff; }
+        .v-tag-dark { background-color: #0f172a; color: #ffffff; }
+        .v-tag-info { background-color: #0284c7; color: #ffffff; }
+        .v-tag-secondary { background-color: #475569; color: #ffffff; }
+        .v-tag-purple { background-color: #7c3aed; color: #ffffff; }
+
+        /* -------------------------------------------------------------------------- */
+        /* A4 檢傷卡專屬高對比、單頁不跨頁列印與預覽樣式 */
         /* -------------------------------------------------------------------------- */
         .a4-card-sheet {
             box-shadow: 0 4px 15px rgba(0,0,0,0.15);
@@ -92,7 +127,7 @@
             background-color: #ffffff;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             color: #0f172a;
-            font-size: 0.83rem; /* 修正後中小字體，防止頁面擠壓溢出 */
+            font-size: 0.83rem;
             line-height: 1.35;
             box-sizing: border-box;
         }
@@ -106,7 +141,7 @@
         .a4-card-sheet .a4-section-title {
             background-color: #1e293b;
             color: #ffffff;
-            font-weight: 700;
+            font-weight: 800;
             font-size: 0.85rem;
             padding: 3px 8px;
             border-radius: 4px;
@@ -118,47 +153,29 @@
         }
 
         .a4-card-sheet .field-label {
-            font-weight: 700;
-            color: #334155;
+            font-weight: 800;
+            color: #1e293b;
             display: inline-block;
         }
 
         .a4-card-sheet .field-value {
-            font-weight: 700;
+            font-weight: 800;
             color: #0f172a;
         }
-
-        /* 視覺標籤化 (Visual Tagging) 高對比 Badge 樣式 */
-        .v-tag {
-            display: inline-block;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-weight: 800;
-            font-size: 0.8rem;
-            letter-spacing: 0.02em;
-            border: 1px solid rgba(0,0,0,0.2);
-            box-shadow: inset 0 0 2px rgba(255,255,255,0.5);
-        }
-        .v-tag-danger { background-color: #dc2626; color: #ffffff; }
-        .v-tag-warning { background-color: #f59e0b; color: #0f172a; }
-        .v-tag-success { background-color: #16a34a; color: #ffffff; }
-        .v-tag-dark { background-color: #0f172a; color: #ffffff; }
-        .v-tag-info { background-color: #0284c7; color: #ffffff; }
-        .v-tag-secondary { background-color: #64748b; color: #ffffff; }
 
         .a4-vitals-grid {
             display: grid;
             grid-template-columns: repeat(6, 1fr);
             gap: 4px;
             background-color: #f8fafc;
-            border: 1.5px solid #64748b;
+            border: 1.5px solid #475569;
             border-radius: 6px;
             padding: 6px;
             text-align: center;
         }
 
         .a4-vitals-item {
-            border-right: 1px dashed #cbd5e1;
+            border-right: 1px dashed #94a3b8;
             padding: 0 2px;
         }
         .a4-vitals-item:last-child {
@@ -166,8 +183,8 @@
         }
         .a4-vitals-item .v-label {
             font-size: 0.75rem;
-            color: #475569;
-            font-weight: 700;
+            color: #1e293b;
+            font-weight: 800;
             display: block;
         }
         .a4-vitals-item .v-val {
@@ -177,7 +194,7 @@
         }
 
         .a4-photo-box {
-            border: 1.5px dashed #64748b;
+            border: 1.5px dashed #475569;
             background-color: #f8fafc;
             border-radius: 6px;
             padding: 4px;
@@ -249,25 +266,25 @@
 </head>
 <body>
 
-<div class="container my-4" style="max-width: 980px;">
+<div class="container my-4" style="max-width: 1200px;">
     <h2 class="text-center mb-3 fw-bold text-primary">🚑 EMS 救護紀錄查詢與大數據分析系統</h2>
 
     <div class="status-banner">
         <div>
-            <span class="fw-bold" style="font-size: 0.95rem;">當前狀態：</span>
-            <span id="modeBadge" class="badge bg-success" style="font-size: 0.95rem;">📊 查詢分析模式</span>
+            <span class="fw-bold fs-5">當前狀態：</span>
+            <span id="modeBadge" class="badge bg-primary fs-6 px-3 py-2">📊 查詢分析模式</span>
         </div>
         <div class="d-flex gap-2">
-            <a href="https://hu681123-ems-pdac.github.io/DPAC-ERU-EMS/index.html.html?openExternalBrowser=1" target="_blank" class="btn btn-sm btn-outline-danger fw-bold">🚑 前往救護紀錄系統</a>
+            <a href="https://hu681123-ems-pdac.github.io/DPAC-ERU-EMS/index.html.html?openExternalBrowser=1" target="_blank" class="btn btn-danger fw-bold fs-6">🚑 前往救護紀錄系統</a>
         </div>
     </div>
 
-    <ul class="nav nav-pills nav-fill mb-4 p-1 bg-white rounded shadow-sm border" id="mainTab" role="tablist">
+    <ul class="nav nav-pills nav-fill mb-4 p-1 bg-white rounded shadow-sm border border-2 border-secondary" id="mainTab" role="tablist">
         <li class="nav-item" role="presentation">
-            <button class="nav-link active fw-bold py-3" id="query-tab" data-bs-toggle="pill" data-bs-target="#queryPanel" type="button" onclick="loadDropdownOptions()">🔍 綜合條件查詢 (多患者相容)</button>
+            <button class="nav-link active fw-bold py-3 fs-5" id="query-tab" data-bs-toggle="pill" data-bs-target="#queryPanel" type="button" onclick="loadDropdownOptions()">🔍 綜合條件查詢 (多患者相容)</button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link fw-bold py-3" id="stats-tab" data-bs-toggle="pill" data-bs-target="#statsPanel" type="button" onclick="initAnalyticsTab()">📊 年月日大數據彙整分析</button>
+            <button class="nav-link fw-bold py-3 fs-5" id="stats-tab" data-bs-toggle="pill" data-bs-target="#statsPanel" type="button" onclick="initAnalyticsTab()">📊 年月日大數據彙整分析</button>
         </li>
     </ul>
 
@@ -276,11 +293,11 @@
         <!-- 1. 綜合條件查詢面板 -->
         <div class="tab-pane fade show active" id="queryPanel" role="tabpanel">
             <div class="card p-4 mb-4">
-                <h5 class="fw-bold text-dark mb-3">🎯 下拉選單選取 或 手動輸入 (支援模糊搜尋與多筆資料)</h5>
+                <h5 class="fw-bold text-dark mb-3 fs-4">🎯 下拉選單選取 或 手動輸入 (支援模糊搜尋與多筆資料)</h5>
                 
                 <div class="row g-3 mb-3">
                     <div class="col-md-6">
-                        <label class="form-label text-secondary">🏷️ 檢傷編號</label>
+                        <label class="form-label">🏷️ 檢傷編號</label>
                         <select id="selectTriageNo" class="form-select mb-2" onchange="onSelectChange('selectTriageNo', 'inputTriageNo')">
                             <option value="">-- 請選擇檢傷編號 --</option>
                         </select>
@@ -288,7 +305,7 @@
                     </div>
 
                     <div class="col-md-6">
-                        <label class="form-label text-secondary">👤 患者姓名</label>
+                        <label class="form-label">👤 患者姓名</label>
                         <select id="selectPatientName" class="form-select mb-2" onchange="onSelectChange('selectPatientName', 'inputPatientName')">
                             <option value="">-- 請選擇患者姓名 --</option>
                         </select>
@@ -296,7 +313,7 @@
                     </div>
 
                     <div class="col-md-6">
-                        <label class="form-label text-secondary">🧑‍⚕️ 救護人員姓名</label>
+                        <label class="form-label">🧑‍⚕️ 救護人員姓名</label>
                         <select id="selectRescuer" class="form-select mb-2" onchange="onSelectChange('selectRescuer', 'inputRescuer')">
                             <option value="">-- 請選擇救護人員 --</option>
                         </select>
@@ -304,15 +321,15 @@
                     </div>
 
                     <div class="col-md-6">
-                        <label class="form-label text-secondary">📅 日期選擇 (可留空)</label>
-                        <div style="height: 52px;"></div>
+                        <label class="form-label">📅 日期選擇 (可留空)</label>
+                        <div style="height: 56px;"></div>
                         <input type="date" id="inputDate" class="form-control">
                     </div>
                 </div>
 
                 <div class="d-flex gap-2 mt-3">
-                    <button type="button" class="btn btn-primary btn-main flex-grow-1 shadow-sm" onclick="searchRecords()">🔍 執行查詢</button>
-                    <button type="button" class="btn btn-outline-secondary fw-bold px-4" onclick="clearQueryFilters()">🔄 清除條件</button>
+                    <button type="button" class="btn btn-primary btn-main flex-grow-1 shadow-sm fs-5 fw-bold" onclick="searchRecords()">🔍 執行查詢</button>
+                    <button type="button" class="btn btn-outline-dark fw-bold px-4 fs-5" onclick="clearQueryFilters()">🔄 清除條件</button>
                 </div>
             </div>
 
@@ -322,17 +339,17 @@
         <!-- 2. 數據與大數據分析面板 -->
         <div class="tab-pane fade" id="statsPanel" role="tabpanel">
             <div class="card p-4">
-                <h5 class="fw-bold text-dark mb-3">📈 年 / 月 / 日 大數據彙整分析 (獨立選單)</h5>
+                <h5 class="fw-bold text-dark mb-3 fs-4">📈 年 / 月 / 日 大數據彙整分析 (獨立選單)</h5>
                 
-                <div class="row g-3 mb-4 bg-light p-3 rounded border">
+                <div class="row g-3 mb-4 bg-light p-3 rounded border border-2 border-secondary">
                     <div class="col-md-4">
-                        <label class="form-label text-secondary fw-bold">📅 選擇年份 (YYYY)</label>
+                        <label class="form-label">📅 選擇年份 (YYYY)</label>
                         <select id="statsYearSelect" class="form-select">
                             <option value="">-- 全部年份 --</option>
                         </select>
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label text-secondary fw-bold">🗓️ 選擇月份 (MM)</label>
+                        <label class="form-label">🗓️ 選擇月份 (MM)</label>
                         <select id="statsMonthSelect" class="form-select">
                             <option value="">-- 全部月份 --</option>
                             <option value="01">01 月</option>
@@ -350,28 +367,28 @@
                         </select>
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label text-secondary fw-bold">📆 選擇日期 (DD)</label>
+                        <label class="form-label">📆 選擇日期 (DD)</label>
                         <select id="statsDaySelect" class="form-select">
                             <option value="">-- 全部日期 --</option>
                         </select>
                     </div>
                     <div class="col-md-12 d-flex gap-2 mt-3">
-                        <button type="button" class="btn btn-secondary btn-main flex-grow-1" onclick="fetchAnalytics()">📊 產生分析報表</button>
-                        <button type="button" class="btn btn-outline-secondary fw-bold" onclick="resetAnalyticsFilters()">🔄 清除條件</button>
+                        <button type="button" class="btn btn-primary btn-main flex-grow-1 fs-5 fw-bold" onclick="fetchAnalytics()">📊 產生分析報表</button>
+                        <button type="button" class="btn btn-outline-dark fw-bold px-4 fs-5" onclick="resetAnalyticsFilters()">🔄 清除條件</button>
                     </div>
                 </div>
 
                 <div class="row g-3 mb-4">
                     <div class="col-6">
-                        <div class="p-3 bg-light rounded border text-center">
-                            <span class="text-muted small">👥 總救護傷病患人數</span>
-                            <h2 id="statTotalCount" class="fw-bold text-danger mb-0">0 人</h2>
+                        <div class="p-3 bg-light rounded border border-2 border-secondary text-center">
+                            <span class="text-dark fs-5 fw-bold">👥 總救護傷病患人數</span>
+                            <h2 id="statTotalCount" class="fw-bold text-danger mb-0 fs-1">0 人</h2>
                         </div>
                     </div>
                     <div class="col-6">
-                        <div class="p-3 bg-light rounded border text-center">
-                            <span class="text-muted small">🎂 平均年齡</span>
-                            <h2 id="statAvgAge" class="fw-bold text-primary mb-0">0 歲</h2>
+                        <div class="p-3 bg-light rounded border border-2 border-secondary text-center">
+                            <span class="text-dark fs-5 fw-bold">🎂 平均年齡</span>
+                            <h2 id="statAvgAge" class="fw-bold text-primary mb-0 fs-1">0 歲</h2>
                         </div>
                     </div>
                 </div>
@@ -380,25 +397,25 @@
                     <div class="section-header">📅 年 / 月 / 日 時間維度彙整統計</div>
                     <div class="row g-3">
                         <div class="col-md-4">
-                            <div class="p-3 bg-white rounded border">
-                                <h6 class="fw-bold text-dark border-bottom pb-2">📆 每日人次統計</h6>
-                                <ul id="statDateSummary" class="list-unstyled mb-0 small" style="max-height: 180px; overflow-y: auto;">
+                            <div class="p-3 bg-white rounded border border-2">
+                                <h6 class="fw-bold text-dark border-bottom pb-2 fs-5">📆 每日人次統計</h6>
+                                <ul id="statDateSummary" class="list-unstyled mb-0" style="max-height: 180px; overflow-y: auto;">
                                     <li class="text-muted">尚無資料</li>
                                 </ul>
                             </div>
                         </div>
                         <div class="col-md-4">
-                            <div class="p-3 bg-white rounded border">
-                                <h6 class="fw-bold text-dark border-bottom pb-2">🗓️ 月份人次彙整</h6>
-                                <ul id="statMonthSummary" class="list-unstyled mb-0 small" style="max-height: 180px; overflow-y: auto;">
+                            <div class="p-3 bg-white rounded border border-2">
+                                <h6 class="fw-bold text-dark border-bottom pb-2 fs-5">🗓️ 月份人次彙整</h6>
+                                <ul id="statMonthSummary" class="list-unstyled mb-0" style="max-height: 180px; overflow-y: auto;">
                                     <li class="text-muted">尚無資料</li>
                                 </ul>
                             </div>
                         </div>
                         <div class="col-md-4">
-                            <div class="p-3 bg-white rounded border">
-                                <h6 class="fw-bold text-dark border-bottom pb-2">📊 年度總人次彙整</h6>
-                                <ul id="statYearSummary" class="list-unstyled mb-0 small" style="max-height: 180px; overflow-y: auto;">
+                            <div class="p-3 bg-white rounded border border-2">
+                                <h6 class="fw-bold text-dark border-bottom pb-2 fs-5">📊 年度總人次彙整</h6>
+                                <ul id="statYearSummary" class="list-unstyled mb-0" style="max-height: 180px; overflow-y: auto;">
                                     <li class="text-muted">尚無資料</li>
                                 </ul>
                             </div>
@@ -408,28 +425,28 @@
 
                 <div class="mb-4">
                     <div class="section-header">🚗 後送模式數據彙整分析</div>
-                    <ul id="statTransportModeList" class="bg-light p-3 rounded border mb-0 list-unstyled" style="padding-left: 20px;">
+                    <ul id="statTransportModeList" class="bg-light p-3 rounded border border-2 mb-0 list-unstyled" style="padding-left: 20px;">
                         <li class="text-muted">請先點擊產生分析報表</li>
                     </ul>
                 </div>
 
                 <div class="mb-4">
                     <div class="section-header">🏷️ START 檢傷分類數據彙整分析</div>
-                    <ul id="statStartTriageList" class="bg-light p-3 rounded border mb-0 list-unstyled" style="padding-left: 20px;">
+                    <ul id="statStartTriageList" class="bg-light p-3 rounded border border-2 mb-0 list-unstyled" style="padding-left: 20px;">
                         <li class="text-muted">請先點擊產生分析報表</li>
                     </ul>
                 </div>
 
                 <div class="mb-3">
                     <div class="section-header">🩺 傷病問題 (分類) 統計</div>
-                    <ul id="statProblemList" class="bg-light p-3 rounded border mb-0 list-unstyled" style="padding-left: 20px;">
+                    <ul id="statProblemList" class="bg-light p-3 rounded border border-2 mb-0 list-unstyled" style="padding-left: 20px;">
                         <li class="text-muted">請先點擊產生分析報表</li>
                     </ul>
                 </div>
 
                 <div class="mb-3">
                     <div class="section-header">📍 受傷部位 (L/R) 分布</div>
-                    <ul id="statInjuryPartsList" class="bg-light p-3 rounded border mb-0 list-unstyled" style="padding-left: 20px;">
+                    <ul id="statInjuryPartsList" class="bg-light p-3 rounded border border-2 mb-0 list-unstyled" style="padding-left: 20px;">
                         <li class="text-muted">請先點擊產生分析報表</li>
                     </ul>
                 </div>
@@ -442,8 +459,8 @@
                                 <tr><th>統計指標項目</th><th>統計結果摘要</th></tr>
                             </thead>
                             <tbody id="statSummaryTable">
-                                <tr><td>有既往病史總人數</td><td><span class="text-danger">0 人</span></td></tr>
-                                <tr><td>有過敏史總人數</td><td><span class="text-danger">0 人</span></td></tr>
+                                <tr><td>有既往病史總人數</td><td><span class="text-danger fw-bold fs-5">0 人</span></td></tr>
+                                <tr><td>有過敏史總人數</td><td><span class="text-danger fw-bold fs-5">0 人</span></td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -464,7 +481,7 @@
             </div>
             <div class="modal-body bg-secondary bg-opacity-10 p-2" id="a4ModalBodyContainer">
                 
-                <!-- A4 單頁容器 (修正後中小字體，防止列印跨頁) -->
+                <!-- A4 單頁容器 (高對比、不跨頁) -->
                 <div class="a4-card-sheet">
                     <!-- 標頭區 -->
                     <div class="a4-header text-center">
@@ -483,7 +500,7 @@
                         </div>
                     </div>
 
-                    <!-- 2. 基本資料區 (對應：時間戳記、日期、接觸時間、救護人員、患者姓名、性別、年齡、電話、事故位置、處置位置、案件類型) -->
+                    <!-- 2. 基本資料區 -->
                     <div class="a4-section-title">
                         <span>👤 基本紀錄與接觸資料 (Basic Information & Contact)</span>
                         <span class="badge bg-light text-dark" style="font-size: 0.7rem;">基本資料</span>
@@ -504,7 +521,7 @@
                         <div class="col-6"><span class="field-label">🧑‍⚕️ 救護人員：</span> <span id="a4_rescuer" class="field-value text-dark">-</span></div>
                     </div>
 
-                    <!-- 3. 臨床評估與生命徵象 (對應：傷病問題、受傷部位、AVPU、GCS、生命徵象、體溫、膚色、瞳孔、是否危急) -->
+                    <!-- 3. 臨床評估與生命徵象 -->
                     <div class="a4-section-title">
                         <span>🩺 臨床評估與生命徵象 (Clinical Assessment & Vital Signs)</span>
                         <span class="badge bg-light text-dark" style="font-size: 0.7rem;">傷病情評估</span>
@@ -548,7 +565,7 @@
                         </div>
                     </div>
 
-                    <!-- 4. 處置、後送、病史與留觀 (對應：START檢傷, 後送模式, 處置狀態, 既往病史, 過敏史, 留觀1, 留觀2, 留觀3, 備註) -->
+                    <!-- 4. 處置、後送、病史與留觀 -->
                     <div class="a4-section-title">
                         <span>🚑 處置處置與處置流程 (Treatment & Transport & History)</span>
                         <span class="badge bg-light text-dark" style="font-size: 0.7rem;">後送處置</span>
@@ -573,7 +590,7 @@
                         <div class="col-12"><span class="field-label">📝 備註事項：</span> <span id="a4_memo" class="field-value text-secondary">-</span></div>
                     </div>
 
-                    <!-- 5. 現場照片 (對應：照片1, 照片2, 照片3) -->
+                    <!-- 5. 現場照片 -->
                     <div class="a4-section-title">
                         <span>📸 現場照片紀錄 (Field Photos - Max 3 Images)</span>
                         <span class="badge bg-light text-dark" style="font-size: 0.7rem;">影像紀錄</span>
@@ -663,7 +680,6 @@
                 const response = await fetch(`${GAS_URL}?${queryParams.toString()}`);
                 const rawText = await response.text();
                 
-                // 防錯處理：若傳回字串開頭為 '<' (例如 <!DOCTYPE html> 登入或權限提示網頁)，提示使用者原因
                 if (rawText.trim().startsWith('<')) {
                     throw new Error("伺服器傳回了 HTML 網頁而非 JSON 資料。這通常是因為 Google Apps Script 部署存取權限未設定為「所有人 (Anyone)」，或是 GAS 後端 doGet 函式執行發生錯誤。");
                 }
@@ -722,7 +738,7 @@
     async function searchRecords() {
         const container = document.getElementById('queryResultContainer');
         container.style.display = 'block';
-        container.innerHTML = '<div class="text-center p-4"><div class="spinner-border text-primary" role="status"></div><p class="mt-2 text-muted fw-bold">正在檢索救護紀錄中...</p></div>';
+        container.innerHTML = '<div class="text-center p-4"><div class="spinner-border text-primary" role="status"></div><p class="mt-2 text-dark fs-5 fw-bold">正在檢索救護紀錄中...</p></div>';
 
         const params = {
             triageNo: document.getElementById('inputTriageNo').value.trim(),
@@ -737,15 +753,70 @@
                 currentSearchRecords = res.records || [];
                 renderSearchResults(currentSearchRecords);
             } else {
-                container.innerHTML = `<div class="alert alert-danger fw-bold">❌ 查詢失敗：${(res && res.message) || '伺服器未回應'}</div>`;
+                container.innerHTML = `<div class="alert alert-danger fw-bold fs-5">❌ 查詢失敗：${(res && res.message) || '伺服器未回應'}</div>`;
             }
         } catch (e) {
-            container.innerHTML = `<div class="alert alert-danger fw-bold">❌ 連線發生錯誤：${e.message}</div>`;
+            container.innerHTML = `<div class="alert alert-danger fw-bold fs-5">❌ 連線發生錯誤：${e.message}</div>`;
         }
     }
 
     /**
-     * 渲染搜尋結果列表 (完全包含指定的 33 項完整欄位與操作按鈕)
+     * 生成 START 高對比戰術顏色標籤 (Visual Tagging)
+     */
+    function getStartBadgeHtml(triage) {
+        const str = String(triage || '').toLowerCase();
+        if (str.includes('紅') || str.includes('red') || str.includes('重傷')) {
+            return '<span class="v-tag v-tag-danger">🔴 紅色 (重傷)</span>';
+        } else if (str.includes('黃') || str.includes('yellow') || str.includes('中傷')) {
+            return '<span class="v-tag v-tag-warning">🟡 黃色 (中傷)</span>';
+        } else if (str.includes('綠') || str.includes('green') || str.includes('輕傷')) {
+            return '<span class="v-tag v-tag-success">🟢 綠色 (輕傷)</span>';
+        } else if (str.includes('黑') || str.includes('black') || str.includes('死亡')) {
+            return '<span class="v-tag v-tag-dark">⚫ 黑色 (死亡)</span>';
+        } else {
+            return `<span class="v-tag v-tag-secondary">${triage || '未分類'}</span>`;
+        }
+    }
+
+    /**
+     * 生成危急狀態高對比標籤
+     */
+    function getCriticalBadgeHtml(isCritical) {
+        const str = String(isCritical || '').toLowerCase();
+        if (str.includes('是') || str.includes('危急') || str.includes('ohca') || str.includes('true')) {
+            return '<span class="v-tag v-tag-danger">🚨 危急 (Critical)</span>';
+        } else {
+            return '<span class="v-tag v-tag-info">🟢 非危急</span>';
+        }
+    }
+
+    /**
+     * 生成 AVPU 意識標籤
+     */
+    function getAvpuBadgeHtml(avpu) {
+        const str = String(avpu || '').toUpperCase();
+        if (str.includes('A') || str.includes('清醒')) {
+            return '<span class="v-tag v-tag-success">A 清醒</span>';
+        } else if (str.includes('V') || str.includes('聲音')) {
+            return '<span class="v-tag v-tag-warning">V 聲音對應</span>';
+        } else if (str.includes('P') || str.includes('痛覺')) {
+            return '<span class="v-tag v-tag-danger">P 痛覺對應</span>';
+        } else if (str.includes('U') || str.includes('無反應')) {
+            return '<span class="v-tag v-tag-dark">U 無反應</span>';
+        }
+        return `<span class="v-tag v-tag-info">${avpu || '-'}</span>`;
+    }
+
+    /**
+     * 生成傷病問題標籤
+     */
+    function getProblemBadgeHtml(problem) {
+        if (!problem || problem === '-') return '-';
+        return `<span class="v-tag v-tag-purple">${problem}</span>`;
+    }
+
+    /**
+     * 渲染搜尋結果列表 (完全包含指定的 33 項完整欄位、視覺標籤化、高對比)
      */
     function renderSearchResults(records) {
         const container = document.getElementById('queryResultContainer');
@@ -757,12 +828,13 @@
         let html = `
             <div class="card p-3 shadow-sm mb-4">
                 <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
-                    <h5 class="fw-bold mb-0 text-primary">📋 搜尋結果清單 (共 ${records.length} 筆)</h5>
+                    <h5 class="fw-bold mb-0 text-primary fs-4">📋 搜尋結果清單 (共 ${records.length} 筆)</h5>
                 </div>
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle text-center text-nowrap mb-0" style="font-size: 0.9rem;">
-                        <thead class="table-dark">
+                <div class="table-responsive" style="max-height: 650px; overflow-y: auto;">
+                    <table class="table table-hover table-striped align-middle text-center text-nowrap mb-0">
+                        <thead>
                             <tr>
+                                <th>操作</th>
                                 <th>時間戳記</th>
                                 <th>檢傷編號</th>
                                 <th>日期</th>
@@ -796,7 +868,6 @@
                                 <th>照片1</th>
                                 <th>照片2</th>
                                 <th>照片3</th>
-                                <th>操作</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -805,39 +876,47 @@
         records.forEach((rec, idx) => {
             const startBadge = getStartBadgeHtml(rec.startTriage);
             const criticalBadge = getCriticalBadgeHtml(rec.isCritical);
+            const avpuBadge = getAvpuBadgeHtml(rec.avpu || rec.consciousness);
+            const problemBadge = getProblemBadgeHtml(rec.problem);
 
             const photo1Btn = rec.photo1 && rec.photo1.trim() !== '' ? `<a href="${rec.photo1}" target="_blank" class="btn btn-sm btn-outline-primary py-0 px-2 fw-bold">📷 照片1</a>` : '-';
             const photo2Btn = rec.photo2 && rec.photo2.trim() !== '' ? `<a href="${rec.photo2}" target="_blank" class="btn btn-sm btn-outline-primary py-0 px-2 fw-bold">📷 照片2</a>` : '-';
             const photo3Btn = rec.photo3 && rec.photo3.trim() !== '' ? `<a href="${rec.photo3}" target="_blank" class="btn btn-sm btn-outline-primary py-0 px-2 fw-bold">📷 照片3</a>` : '-';
 
+            const medHist = (rec.medicalHistory && rec.medicalHistory !== '無') ? `<span class="text-danger fw-bold">${rec.medicalHistory}</span>` : '無';
+            const allergy = (rec.allergy && rec.allergy !== '無') ? `<span class="text-danger fw-bold">${rec.allergy}</span>` : '無';
+
             html += `
                 <tr>
+                    <td>
+                        <button class="btn btn-sm btn-primary fw-bold px-3 text-nowrap" onclick="openA4Modal(${idx})">🆔 檢視 A4 卡</button>
+                    </td>
                     <td>${rec.timestamp || '-'}</td>
-                    <td class="fw-bold text-primary">${rec.triageNo || '-'}</td>
+                    <td class="fw-bold text-primary fs-6">${rec.triageNo || '-'}</td>
                     <td>${rec.date || '-'}</td>
                     <td>${rec.time || '-'}</td>
                     <td>${rec.rescuer || '-'}</td>
-                    <td class="fw-bold">${rec.name || '未填寫'}</td>
+                    <td class="fw-bold fs-6">${rec.name || '未填寫'}</td>
                     <td>${rec.gender || '-'}</td>
                     <td>${rec.age ? rec.age + '歲' : '-'}</td>
                     <td>${rec.phone || '-'}</td>
                     <td>${rec.location || '-'}</td>
                     <td>${rec.treatLoc || '-'}</td>
                     <td>${rec.caseType || '-'}</td>
-                    <td><span class="badge bg-light text-dark border">${rec.problem || '-'}</span></td>
-                    <td>${rec.injuryPart || '-'}</td>
-                    <td>${rec.avpu || rec.consciousness || '-'}</td>
-                    <td>${rec.gcs || '-'}</td>
-                    <td>${rec.vitalSigns || '-'}</td>
+                    <td>${problemBadge}</td>
+                    <td class="text-primary fw-bold">${rec.injuryPart || '-'}</td>
+                    <td>${avpuBadge}</td>
+                    <td><span class="v-tag v-tag-dark">${rec.gcs || '-'}</span></td>
+                    <td class="fw-bold text-danger">${rec.vitalSigns || '-'}</td>
                     <td>${rec.bt ? rec.bt + '°C' : '-'}</td>
                     <td>${rec.skin || '-'}</td>
                     <td>${rec.pupil || '-'}</td>
                     <td>${criticalBadge}</td>
                     <td>${startBadge}</td>
-                    <td>${rec.transportMode || '-'}</td>
+                    <td class="text-success fw-bold">${rec.transportMode || '-'}</td>
                     <td>${rec.treatments || '-'}</td>
-                    <td>${rec.medicalHistory || '-'}</td>
-                    <td>${rec.allergy || '-'}</td>
+                    <td>${medHist}</td>
+                    <td>${allergy}</td>
                     <td>${rec.memo || '-'}</td>
                     <td>${rec.obs1 || '-'}</td>
                     <td>${rec.obs2 || '-'}</td>
@@ -845,9 +924,6 @@
                     <td>${photo1Btn}</td>
                     <td>${photo2Btn}</td>
                     <td>${photo3Btn}</td>
-                    <td>
-                        <button class="btn btn-sm btn-primary fw-bold px-3 text-nowrap" onclick="openA4Modal(${idx})">🆔 檢視 A4 卡</button>
-                    </td>
                 </tr>
             `;
         });
@@ -860,36 +936,6 @@
         `;
 
         container.innerHTML = html;
-    }
-
-    /**
-     * 生成 START 高對比戰術顏色標籤 (Visual Tagging)
-     */
-    function getStartBadgeHtml(triage) {
-        const str = String(triage || '').toLowerCase();
-        if (str.includes('紅') || str.includes('red') || str.includes('重傷')) {
-            return '<span class="v-tag v-tag-danger">🔴 紅色 (重傷)</span>';
-        } else if (str.includes('黃') || str.includes('yellow') || str.includes('中傷')) {
-            return '<span class="v-tag v-tag-warning">🟡 黃色 (中傷)</span>';
-        } else if (str.includes('綠') || str.includes('green') || str.includes('輕傷')) {
-            return '<span class="v-tag v-tag-success">🟢 綠色 (輕傷)</span>';
-        } else if (str.includes('黑') || str.includes('black') || str.includes('死亡')) {
-            return '<span class="v-tag v-tag-dark">⚫ 黑色 (死亡)</span>';
-        } else {
-            return `<span class="v-tag v-tag-secondary">${triage || '未分類'}</span>`;
-        }
-    }
-
-    /**
-     * 生成危急狀態高對比標籤
-     */
-    function getCriticalBadgeHtml(isCritical) {
-        const str = String(isCritical || '').toLowerCase();
-        if (str.includes('是') || str.includes('危急') || str.includes('ohca') || str.includes('true')) {
-            return '<span class="v-tag v-tag-danger">🚨 危急 (Critical)</span>';
-        } else {
-            return '<span class="v-tag v-tag-info">🟢 非危急 (Non-Critical)</span>';
-        }
     }
 
     /**
@@ -970,9 +1016,9 @@
         let html = '';
         for (const key in obj) {
             html += `
-                <li class="py-1 border-bottom d-flex justify-content-between align-items-center">
-                    <span>${key}</span>
-                    <span class="badge bg-primary rounded-pill fs-6">${obj[key]} ${unit}</span>
+                <li class="py-2 border-bottom d-flex justify-content-between align-items-center">
+                    <span class="fw-bold">${key}</span>
+                    <span class="badge bg-primary rounded-pill fs-6 px-3 py-1">${obj[key]} ${unit}</span>
                 </li>
             `;
         }
@@ -1052,7 +1098,7 @@
         
         // 意識與 GCS 標籤化
         const avpuVal = rec.avpu || rec.consciousness || '-';
-        document.getElementById('a4_avpu').innerHTML = `<span class="v-tag v-tag-info">${avpuVal}</span>`;
+        document.getElementById('a4_avpu').innerHTML = getAvpuBadgeHtml(avpuVal);
         
         const gcsVal = rec.gcs || '-';
         document.getElementById('a4_gcs').innerHTML = `<span class="v-tag v-tag-dark">${gcsVal}</span>`;
