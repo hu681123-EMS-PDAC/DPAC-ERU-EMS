@@ -432,7 +432,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    const GAS_URL = typeof google !== 'undefined' && google.script ? '' : "https://script.google.com/macros/s/AKfycbyMNepgHqAt9Fw_K2rFvXls1hG6UDAueIOKmCADlMXO2kgeQ8XjKzzKHrRuo3cmt-38BA/exec";
+    const GAS_URL = typeof google !== 'undefined' && google.script ? '' : "https://script.google.com/macros/s/AKfycbxUUJQnY7tRWLpqAuWC64V8mZu2FOgbI3wfOa4rrorqKuGpK8UWIoanXXNVhXdDYjDqXQ/exec";
 
     let currentSearchRecords = [];
 
@@ -804,7 +804,7 @@
                         <img src="https://drive.google.com/thumbnail?id=${fileId}&sz=w600" class="img-fluid rounded" style="max-height: 95px; object-fit: cover;" alt="照片${pIdx + 1}">
                     </div>
                 </div>`;
-            } else if (pUrl && pUrl.startsWith('http')) {
+            } else if (pUrl && String(pUrl).startsWith('http')) {
                 photoHtml += `
                 <div class="col-4">
                     <div class="p-1 border rounded bg-white">
@@ -825,7 +825,7 @@
         let cleanUrl = String(url).trim();
         if (!cleanUrl || cleanUrl === 'undefined' || cleanUrl === 'null' || cleanUrl === '-') return '';
 
-        if (!cleanUrl.startsWith('http') && cleanUrl.length >= 20 && !cleanUrl.includes(' ')) {
+        if (!String(cleanUrl).startsWith('http') && cleanUrl.length >= 20 && !cleanUrl.includes(' ')) {
             return cleanUrl;
         }
 
@@ -878,7 +878,7 @@
             };
 
             img.src = urls[0];
-        } else if (rawUrl && (rawUrl.startsWith('http://') || rawUrl.startsWith('https://') || rawUrl.startsWith('data:image/'))) {
+        } else if (rawUrl && (String(rawUrl).startsWith('http://') || String(rawUrl).startsWith('https://') || String(rawUrl).startsWith('data:image/'))) {
             link.href = rawUrl;
             noImg.style.display = 'none';
             link.style.display = 'inline-block';
