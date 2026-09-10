@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="referrer" content="strict-origin-when-cross-origin">
-    <title>EMS 救護紀錄查詢與大數據分析面板</title>
+    <title>EMS 救護紀錄查詢與大數據分析系統</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
@@ -854,6 +854,51 @@
     }
 
     /**
+     * 專屬時間與時間戳記格式化函式（修正 1899 序列值並轉為 YYYY/MM/DD/HH/mm GMT+0800 (台北標準時間)）
+     */
+    function formatTimestampDisplay(val) {
+        if (!val) return '-';
+        let str = String(val);
+        let d = new Date(val);
+        if (!isNaN(d.getTime())) {
+            // 若為 Google Sheets 僅記錄時間導致的 1899 預設基準日
+            if (str.includes('1899') || d.getFullYear() === 1899) {
+                let hh = String(d.getHours()).padStart(2, '0');
+                let mm = String(d.getMinutes()).padStart(2, '0');
+                return `${hh}:${mm} GMT+0800 (台北標準時間)`;
+            }
+            let yyyy = d.getFullYear();
+            let mm = String(d.getMonth() + 1).padStart(2, '0');
+            let dd = String(d.getDate()).padStart(2, '0');
+            let hh = String(d.getHours()).padStart(2, '0');
+            let min = String(d.getMinutes()).padStart(2, '0');
+            return `${yyyy}/${mm}/${dd}/${hh}/${min} GMT+0800 (台北標準時間)`;
+        }
+        return str;
+    }
+
+    /**
+     * 生命徵象中文化轉換函式 (PR/RR/BP 轉繁體中文說明)
+     */
+    function formatVitalSignsChinese(vitalStr) {
+        if (!vitalStr || vitalStr === '-') return '無紀錄';
+        let str = String(vitalStr);
+        let prMatch = str.match(/PR\s*[:：]?\s*([^\s,]+)/i) || str.match(/脈搏\s*[:：]?\s*([^\s,]+)/i);
+        let rrMatch = str.match(/RR\s*[:：]?\s*([^\s,]+)/i) || str.match(/呼吸\s*[:：]?\s*([^\s,]+)/i);
+        let bpMatch = str.match(/BP\s*[:：]?\s*([^\s,]+)/i) || str.match(/血壓\s*[:：]?\s*([^\s,]+)/i);
+
+        let parts = [];
+        if (prMatch) parts.push(`脈搏：${prMatch[1]} 次/分`);
+        if (rrMatch) parts.push(`呼吸：${rrMatch[1]} 次/分`);
+        if (bpMatch) parts.push(`血壓：${bpMatch[1]} mmHg`);
+
+        if (parts.length > 0) {
+            return parts.join(' ｜ ');
+        }
+        return str;
+    }
+
+    /**
      * 下拉選單選擇與輸入框自動連動
      */
     function onSelectChange(selectId, inputId) {
@@ -978,7 +1023,21 @@
     }
 
     /**
-     * 渲染搜尋結果列表 (改為表單化卡片區塊顯示，避免長條狀與左右捲動)
+     * 轉換 Google Drive 照片連結為可預覽的縮圖網址
+     */
+    function formatDriveImageUrl(url) {
+        if (!url) return '';
+        if (url.includes('drive.google.com')) {
+            const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || url.match(/id=([a-zA-Z0-9_-]+)/);
+            if (match && match[1]) {
+                return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w800`;
+            }
+        }
+        return url;
+    }
+
+    /**
+     * 渲染搜尋結果列表 (卡片區塊顯示，照片直接顯示縮圖)
      */
     function renderSearchResults(records) {
         const container = document.getElementById('queryResultContainer');
@@ -1001,9 +1060,31 @@
             const avpuBadge = getAvpuBadgeHtml(rec.avpu || rec.consciousness);
             const problemBadge = getProblemBadgeHtml(rec.problem);
 
-            const photo1Btn = rec.photo1 && rec.photo1.trim() !== '' ? `<a href="${rec.photo1}" target="_blank" class="btn btn-sm btn-outline-primary fw-bold">📸 照片 1</a>` : '<span class="text-muted small">無照片 1</span>';
-            const photo2Btn = rec.photo2 && rec.photo2.trim() !== '' ? `<a href="${rec.photo2}" target="_blank" class="btn btn-sm btn-outline-primary fw-bold">📸 照片 2</a>` : '<span class="text-muted small">無照片 2</span>';
-            const photo3Btn = rec.photo3 && rec.photo3.trim() !== '' ? `<a href="${rec.photo3}" target="_blank" class="btn btn-sm btn-outline-primary fw-bold">📸 照片 3</a>` : '<span class="text-muted small">無照片 3</span>';
+            const formattedTimestamp = formatTimestampDisplay(rec.timestamp);
+            const formattedTime = formatTimestampDisplay(rec.time);
+            const formattedVitals = formatVitalSignsChinese(rec.vitalSigns || rec.pr);
+
+            // 照片直接顯示縮圖處理
+            let photoHtml = '';
+            [rec.photo1, rec.photo2, rec.photo3].forEach((pUrl, pIdx) => {
+                if (pUrl && pUrl.trim() !== '') {
+                    const thumbUrl = formatDriveImageUrl(pUrl);
+                    photoHtml += `
+                        <div class="d-flex align-items-center gap-2 border border-2 border-secondary p-2 rounded bg-light" style="max-width: 240px;">
+                            <a href="${pUrl}" target="_blank" title="點擊檢視原圖">
+                                <img src="${thumbUrl}" alt="照片 ${pIdx+1}" style="width: 65px; height: 65px; object-fit: cover; border-radius: 6px;" onerror="this.src='https://via.placeholder.com/65x65?text=載入失敗'">
+                            </a>
+                            <div class="small">
+                                <span class="fw-bold d-block text-dark">📸 現場照片 ${pIdx+1}</span>
+                                <a href="${pUrl}" target="_blank" class="text-decoration-none fw-bold text-primary">檢視原圖 ↗</a>
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+            if (!photoHtml) {
+                photoHtml = '<span class="text-muted small">無現場照片紀錄</span>';
+            }
 
             const medHist = (rec.medicalHistory && rec.medicalHistory !== '無') ? `<span class="text-danger fw-bold">${rec.medicalHistory}</span>` : '無';
             const allergy = (rec.allergy && rec.allergy !== '無') ? `<span class="text-danger fw-bold">${rec.allergy}</span>` : '無';
@@ -1029,17 +1110,17 @@
                         <!-- 區塊一：基本與接觸資料 -->
                         <div class="section-header py-1 px-2 mb-2 fs-6" style="background-color: #1e293b;">🕒 基本與接觸紀錄 (Basic Info & Contact)</div>
                         <div class="row g-2 mb-3 px-1 fs-6">
-                            <div class="col-md-3"><span class="text-muted">時間戳記：</span> <span class="fw-bold">${rec.timestamp || '-'}</span></div>
+                            <div class="col-md-4"><span class="text-muted">時間戳記：</span> <span class="fw-bold">${formattedTimestamp}</span></div>
                             <div class="col-md-3"><span class="text-muted">事故日期：</span> <span class="fw-bold">${rec.date || '-'}</span></div>
-                            <div class="col-md-3"><span class="text-muted">接觸時間：</span> <span class="fw-bold">${rec.time || '-'}</span></div>
-                            <div class="col-md-3"><span class="text-muted">救護人員：</span> <span class="fw-bold">${rec.rescuer || '-'}</span></div>
+                            <div class="col-md-3"><span class="text-muted">接觸時間：</span> <span class="fw-bold">${formattedTime}</span></div>
+                            <div class="col-md-2"><span class="text-muted">救護人員：</span> <span class="fw-bold">${rec.rescuer || '-'}</span></div>
                             <div class="col-md-3"><span class="text-muted">聯絡電話：</span> <span class="fw-bold">${rec.phone || '-'}</span></div>
                             <div class="col-md-3"><span class="text-muted">案件類型：</span> <span class="fw-bold">${rec.caseType || '-'}</span></div>
                             <div class="col-md-3"><span class="text-muted">事故位置：</span> <span class="fw-bold">${rec.location || '-'}</span></div>
                             <div class="col-md-3"><span class="text-muted">處置位置：</span> <span class="fw-bold">${rec.treatLoc || '-'}</span></div>
                         </div>
 
-                        <!-- 區塊二：臨床評估與生命徵象 -->
+                        <!-- 區塊二：臨床評估與生命徵象 (中文顯示) -->
                         <div class="section-header py-1 px-2 mb-2 fs-6" style="background-color: #334155;">🩺 臨床評估與生命徵象 (Clinical & Vitals)</div>
                         <div class="row g-2 mb-3 px-1 fs-6">
                             <div class="col-md-4"><span class="text-muted">傷病問題：</span> ${problemBadge}</div>
@@ -1047,8 +1128,8 @@
                             <div class="col-md-4"><span class="text-muted">AVPU 意識：</span> ${avpuBadge}</div>
                             
                             <div class="col-md-4"><span class="text-muted">GCS 昏迷指數：</span> <span class="v-tag v-tag-dark">${rec.gcs || '-'}</span></div>
-                            <div class="col-md-4"><span class="text-muted">生命徵象 (PR/RR/BP)：</span> <span class="fw-bold text-danger">${rec.vitalSigns || '-'}</span></div>
-                            <div class="col-md-4"><span class="text-muted">體溫 (BT)：</span> <span class="fw-bold text-primary">${rec.bt ? rec.bt + ' °C' : '-'}</span></div>
+                            <div class="col-md-5"><span class="text-muted">生命徵象：</span> <span class="fw-bold text-danger">${formattedVitals}</span></div>
+                            <div class="col-md-3"><span class="text-muted">體溫 (BT)：</span> <span class="fw-bold text-primary">${rec.bt ? rec.bt + ' °C' : '-'}</span></div>
 
                             <div class="col-md-4"><span class="text-muted">膚色：</span> <span class="fw-bold">${rec.skin || '-'}</span></div>
                             <div class="col-md-4"><span class="text-muted">瞳孔：</span> <span class="fw-bold">${rec.pupil || '-'}</span></div>
@@ -1068,12 +1149,10 @@
                             <div class="col-12"><span class="text-muted">備註事項：</span> <span class="fw-bold text-secondary">${rec.memo || '無'}</span></div>
                         </div>
 
-                        <!-- 區塊四：現場照片紀錄 -->
+                        <!-- 區塊四：現場照片紀錄 (直接顯示縮圖) -->
                         <div class="section-header py-1 px-2 mb-2 fs-6" style="background-color: #64748b;">📸 現場照片紀錄 (Field Photos)</div>
-                        <div class="d-flex gap-3 align-items-center px-1">
-                            ${photo1Btn}
-                            ${photo2Btn}
-                            ${photo3Btn}
+                        <div class="d-flex gap-3 align-items-center flex-wrap px-1">
+                            ${photoHtml}
                         </div>
                     </div>
                 </div>
@@ -1183,37 +1262,6 @@
     }
 
     /**
-     * 解析生命徵象字串 (Vital Signs)
-     */
-    function parseVitalSigns(vitalStr) {
-        let pr = '-', rr = '-', bp = '-';
-        if (vitalStr) {
-            const prMatch = vitalStr.match(/PR\s*[:：]?\s*(\d+)/i) || vitalStr.match(/脈搏\s*[:：]?\s*(\d+)/i);
-            const rrMatch = vitalStr.match(/RR\s*[:：]?\s*(\d+)/i) || vitalStr.match(/呼吸\s*[:：]?\s*(\d+)/i);
-            const bpMatch = vitalStr.match(/BP\s*[:：]?\s*([\d\/]+)/i) || vitalStr.match(/血壓\s*[:：]?\s*([\d\/]+)/i);
-
-            if (prMatch) pr = prMatch[1] + ' 次/分';
-            if (rrMatch) rr = rrMatch[1] + ' 次/分';
-            if (bpMatch) bp = bpMatch[1] + ' mmHg';
-        }
-        return { pr, rr, bp };
-    }
-
-    /**
-     * 轉換 Google Drive 照片連結為可預覽的縮圖網址
-     */
-    function formatDriveImageUrl(url) {
-        if (!url) return '';
-        if (url.includes('drive.google.com')) {
-            const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || url.match(/id=([a-zA-Z0-9_-]+)/);
-            if (match && match[1]) {
-                return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w800`;
-            }
-        }
-        return url;
-    }
-
-    /**
      * 開啟 A4 檢傷卡 Modal 視窗並動態填入所有 33 欄位
      */
     function openA4Modal(index) {
@@ -1228,9 +1276,9 @@
             ${getCriticalBadgeHtml(rec.isCritical)}
         `;
 
-        document.getElementById('a4_timestamp').innerText = rec.timestamp || '-';
+        document.getElementById('a4_timestamp').innerText = formatTimestampDisplay(rec.timestamp);
         document.getElementById('a4_date').innerText = rec.date || '-';
-        document.getElementById('a4_time').innerText = rec.time || '-';
+        document.getElementById('a4_time').innerText = formatTimestampDisplay(rec.time);
         document.getElementById('a4_name').innerText = rec.name || '未填寫';
         document.getElementById('a4_gender').innerText = rec.gender || '-';
         document.getElementById('a4_age').innerText = rec.age ? `${rec.age} 歲` : '-';
@@ -1251,10 +1299,11 @@
         
         document.getElementById('a4_isCritical').innerHTML = getCriticalBadgeHtml(rec.isCritical);
 
-        const vitals = parseVitalSigns(rec.vitalSigns);
-        document.getElementById('a4_vital_pr').innerText = vitals.pr !== '-' ? vitals.pr : (rec.pr || rec.vitalSigns || '-');
-        document.getElementById('a4_vital_rr').innerText = vitals.rr !== '-' ? vitals.rr : (rec.rr || '-');
-        document.getElementById('a4_vital_bp').innerText = vitals.bp !== '-' ? vitals.bp : (rec.bp || '-');
+        // 生命徵象
+        const vitalsText = formatVitalSignsChinese(rec.vitalSigns || rec.pr);
+        document.getElementById('a4_vital_pr').innerText = rec.pr || vitalsText;
+        document.getElementById('a4_vital_rr').innerText = rec.rr || '-';
+        document.getElementById('a4_vital_bp').innerText = rec.bp || '-';
         document.getElementById('a4_bt').innerText = rec.bt ? `${rec.bt} °C` : '-';
         document.getElementById('a4_skin').innerText = rec.skin || '-';
         document.getElementById('a4_pupil').innerText = rec.pupil || '-';
@@ -1304,7 +1353,7 @@
         photoContainer.innerHTML = photoHtml;
 
         const now = new Date();
-        document.getElementById('a4_printTime').innerText = now.toLocaleString('zh-TW', { hour12: false });
+        document.getElementById('a4_printTime').innerText = formatTimestampDisplay(now);
 
         const modal = new BootstrapModal('a4CardModal');
         modal.show();
