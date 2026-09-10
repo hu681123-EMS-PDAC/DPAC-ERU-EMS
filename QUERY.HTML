@@ -472,7 +472,7 @@
     </div>
 </div>
 
-<!-- 專屬 A4 檢傷卡一鍵預覽 Modal (完全對應所有 33 欄位、視覺標籤化、防跨頁) -->
+<!-- 專屬 A4 檢傷卡一鍵預覽 Modal -->
 <div class="modal fade" id="a4CardModal" tabindex="-1" aria-labelledby="a4CardModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-scrollable">
         <div class="modal-content">
@@ -482,26 +482,20 @@
             </div>
             <div class="modal-body bg-secondary bg-opacity-10 p-2" id="a4ModalBodyContainer">
                 
-                <!-- A4 單頁容器 (高對比、不跨頁) -->
                 <div class="a4-card-sheet">
-                    <!-- 標頭區 -->
                     <div class="a4-header text-center">
                         <h4 class="fw-bold text-danger mb-0" style="font-size: 1.4rem; letter-spacing: 0.03em;">🚨 台灣大量傷患 (MCI) 專屬 A4 救護檢傷記錄卡 🚨</h4>
                         <p class="text-muted mb-0 fw-bold" style="font-size: 0.82rem;">Emergency Medical Services Triage & Care Record (Single Page Compact Version)</p>
                     </div>
                     
-                    <!-- 1. 關鍵戰術標籤列：檢傷編號 + START 檢傷 + 危急度 + 案件類型 -->
                     <div class="d-flex justify-content-between align-items-center p-2 mb-2 border border-2 border-dark rounded bg-light">
                         <div class="d-flex align-items-center gap-2">
                             <span class="field-label" style="font-size: 1rem;">🆔 檢傷編號：</span>
                             <span class="fs-5 fw-bold text-primary" id="a4_triageNo">-</span>
                         </div>
-                        <div class="d-flex align-items-center gap-2" id="a4_headerBadges">
-                            <!-- 動態繪製 START 標籤與危急標籤 -->
-                        </div>
+                        <div class="d-flex align-items-center gap-2" id="a4_headerBadges"></div>
                     </div>
 
-                    <!-- 2. 基本資料區 -->
                     <div class="a4-section-title">
                         <span>👤 基本紀錄與接觸資料 (Basic Information & Contact)</span>
                         <span class="badge bg-light text-dark" style="font-size: 0.75rem;">基本資料</span>
@@ -522,7 +516,6 @@
                         <div class="col-6"><span class="field-label">🧑‍⚕️ 救護人員：</span> <span id="a4_rescuer" class="field-value text-dark">-</span></div>
                     </div>
 
-                    <!-- 3. 臨床評估與生命徵象 -->
                     <div class="a4-section-title">
                         <span>🩺 臨床評估與生命徵象 (Clinical Assessment & Vital Signs)</span>
                         <span class="badge bg-light text-dark" style="font-size: 0.75rem;">傷病情評估</span>
@@ -536,7 +529,6 @@
                         <div class="col-4"><span class="field-label">🔥 是否危急 / OHCA：</span> <span id="a4_isCritical" class="field-value">-</span></div>
 
                         <div class="col-12 mt-1">
-                            <!-- 生命徵象圖示面板 -->
                             <div class="a4-vitals-grid">
                                 <div class="a4-vitals-item">
                                     <span class="v-label">❤️ 脈搏 (PR)</span>
@@ -566,7 +558,6 @@
                         </div>
                     </div>
 
-                    <!-- 4. 處置、後送、病史與留觀 -->
                     <div class="a4-section-title">
                         <span>🚑 處置處置與處置流程 (Treatment & Transport & History)</span>
                         <span class="badge bg-light text-dark" style="font-size: 0.75rem;">後送處置</span>
@@ -591,30 +582,16 @@
                         <div class="col-12"><span class="field-label">📝 備註事項：</span> <span id="a4_memo" class="field-value text-secondary">-</span></div>
                     </div>
 
-                    <!-- 5. 現場照片 -->
                     <div class="a4-section-title">
                         <span>📸 現場照片紀錄 (Field Photos - Max 3 Images)</span>
                         <span class="badge bg-light text-dark" style="font-size: 0.75rem;">影像紀錄</span>
                     </div>
                     <div class="row g-2 text-center" id="a4_photoContainer">
-                        <div class="col-4">
-                            <div class="a4-photo-box">
-                                <span class="text-muted small">📸 照片 1</span>
-                            </div>
-                        </div>
-                        <div class="col-4">
-                            <div class="a4-photo-box">
-                                <span class="text-muted small">📸 照片 2</span>
-                            </div>
-                        </div>
-                        <div class="col-4">
-                            <div class="a4-photo-box">
-                                <span class="text-muted small">📸 照片 3</span>
-                            </div>
-                        </div>
+                        <div class="col-4"><div class="a4-photo-box"><span class="text-muted small">📸 照片 1</span></div></div>
+                        <div class="col-4"><div class="a4-photo-box"><span class="text-muted small">📸 照片 2</span></div></div>
+                        <div class="col-4"><div class="a4-photo-box"><span class="text-muted small">📸 照片 3</span></div></div>
                     </div>
 
-                    <!-- A4 底部核章註記 -->
                     <div class="d-flex justify-content-between align-items-center mt-2 pt-2 border-top border-dark text-muted" style="font-size: 0.75rem;">
                         <div>救護人員簽章：___________________</div>
                         <div>接收醫院/單位簽章：___________________</div>
@@ -626,6 +603,188 @@
             <div class="modal-footer bg-white no-print">
                 <button type="button" class="btn btn-secondary fw-bold" data-bs-dismiss="modal">❌ 關閉預覽</button>
                 <button type="button" class="btn btn-primary fw-bold px-4" onclick="window.print()">🖨️ 直接列印 A4 檢傷卡 (單頁完整)</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ✏️ 搜尋結果修改資料專屬 Modal (高對比、中大字體、圖示清晰) -->
+<div class="modal fade" id="editRecordModal" tabindex="-1" aria-labelledby="editRecordModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content border-3 border-dark">
+            <div class="modal-header bg-dark text-white">
+                <h5 class="modal-title fw-bold fs-4" id="editRecordModalLabel">✏️ 修改救護紀錄載入資料 (Edit Record)</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body bg-light p-4">
+                <form id="editRecordForm">
+                    <input type="hidden" id="edit_recordIndex">
+                    
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">🆔 檢傷編號 (Triage No)</label>
+                            <input type="text" id="edit_triageNo" class="form-control" readonly>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">🕒 時間戳記 (Timestamp)</label>
+                            <input type="text" id="edit_timestamp" class="form-control" readonly>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">📅 日期 (Date)</label>
+                            <input type="date" id="edit_date" class="form-control">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">⏱️ 接觸時間 (Time)</label>
+                            <input type="text" id="edit_time" class="form-control" placeholder="例: 12:30">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">🧑‍⚕️ 救護人員 (Rescuer)</label>
+                            <input type="text" id="edit_rescuer" class="form-control">
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">👤 患者姓名 (Name)</label>
+                            <input type="text" id="edit_name" class="form-control">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">⚧️ 性別 (Gender)</label>
+                            <select id="edit_gender" class="form-select">
+                                <option value="男">男</option>
+                                <option value="女">女</option>
+                                <option value="其他">其他</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">🎂 年齡 (Age)</label>
+                            <input type="number" id="edit_age" class="form-control">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">📞 聯絡電話 (Phone)</label>
+                            <input type="text" id="edit_phone" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">🏷️ 案件類型 (Case Type)</label>
+                            <input type="text" id="edit_caseType" class="form-control">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">📍 事故位置 (Location)</label>
+                            <input type="text" id="edit_location" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">🏥 處置位置 (Treatment Location)</label>
+                            <input type="text" id="edit_treatLoc" class="form-control">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">🩺 傷病問題 (Problem)</label>
+                            <input type="text" id="edit_problem" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">🩹 受傷部位 (Injury Part)</label>
+                            <input type="text" id="edit_injuryPart" class="form-control">
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">🧠 AVPU 意識</label>
+                            <input type="text" id="edit_avpu" class="form-control" placeholder="A/V/P/U">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">📊 GCS 昏迷指數</label>
+                            <input type="text" id="edit_gcs" class="form-control" placeholder="E4V5M6">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">🔥 是否危急 / OHCA</label>
+                            <select id="edit_isCritical" class="form-select">
+                                <option value="否">🟢 非危急</option>
+                                <option value="是">🚨 危急 / OHCA</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">❤️🫁🩸 生命徵象 (Vital Signs)</label>
+                            <input type="text" id="edit_vitalSigns" class="form-control" placeholder="PR:80, RR:20, BP:120/80">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">🌡️ 體溫 (°C)</label>
+                            <input type="text" id="edit_bt" class="form-control" placeholder="36.5">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">🎨 膚色 (Skin)</label>
+                            <input type="text" id="edit_skin" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">👁️ 瞳孔 (Pupil)</label>
+                            <input type="text" id="edit_pupil" class="form-control">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">🏷️ START 檢傷分類</label>
+                            <select id="edit_startTriage" class="form-select">
+                                <option value="紅色 (重傷)">🔴 紅色 (重傷)</option>
+                                <option value="黃色 (中傷)">🟡 黃色 (中傷)</option>
+                                <option value="綠色 (輕傷)">🟢 綠色 (輕傷)</option>
+                                <option value="黑色 (死亡)">⚫ 黑色 (死亡)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">🚗 後送模式 (Transport Mode)</label>
+                            <input type="text" id="edit_transportMode" class="form-control">
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label">🛠️ 處置狀態 / 施予項目</label>
+                            <input type="text" id="edit_treatments" class="form-control">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">📜 既往病史</label>
+                            <input type="text" id="edit_medicalHistory" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">⚠️ 過敏史</label>
+                            <input type="text" id="edit_allergy" class="form-control">
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">⏱️ 留觀記錄 1</label>
+                            <input type="text" id="edit_obs1" class="form-control">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">⏱️ 留觀記錄 2</label>
+                            <input type="text" id="edit_obs2" class="form-control">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">⏱️ 留觀記錄 3</label>
+                            <input type="text" id="edit_obs3" class="form-control">
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label">📝 備註事項</label>
+                            <textarea id="edit_memo" class="form-control" rows="2" style="height: auto;"></textarea>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">📸 照片 1 網址</label>
+                            <input type="text" id="edit_photo1" class="form-control">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">📸 照片 2 網址</label>
+                            <input type="text" id="edit_photo2" class="form-control">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">📸 照片 3 網址</label>
+                            <input type="text" id="edit_photo3" class="form-control">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer bg-white">
+                <button type="button" class="btn btn-secondary fw-bold px-4" data-bs-dismiss="modal">❌ 取消</button>
+                <button type="button" class="btn btn-primary fw-bold px-4" onclick="saveEditedRecord()">💾 儲存修改資料</button>
             </div>
         </div>
     </div>
@@ -667,6 +826,8 @@
                     google.script.run.withSuccessHandler(resolve).withFailureHandler(reject).searchRecords(params);
                 } else if (action === 'analytics') {
                     google.script.run.withSuccessHandler(resolve).withFailureHandler(reject).getAnalytics(params);
+                } else if (action === 'updateRecord') {
+                    google.script.run.withSuccessHandler(resolve).withFailureHandler(reject).updateRecord(params);
                 } else {
                     reject(new Error("未知的 API Action: " + action));
                 }
@@ -890,7 +1051,10 @@
             html += `
                 <tr>
                     <td>
-                        <button class="btn btn-sm btn-primary fw-bold px-3 text-nowrap" onclick="openA4Modal(${idx})">🆔 檢視 A4 卡</button>
+                        <div class="d-flex flex-column gap-1 align-items-center">
+                            <button class="btn btn-sm btn-primary fw-bold px-2 py-1 text-nowrap w-100" onclick="openA4Modal(${idx})">🆔 檢視A4卡</button>
+                            <button class="btn btn-sm btn-warning fw-bold px-2 py-1 text-nowrap w-100 text-dark" onclick="openEditModal(${idx})">✏️ 修改資料</button>
+                        </div>
                     </td>
                     <td>${rec.timestamp || '-'}</td>
                     <td class="fw-bold text-primary fs-6">${rec.triageNo || '-'}</td>
@@ -1071,7 +1235,6 @@
         const rec = currentSearchRecords[index];
         if (!rec) return;
 
-        // 1. 檢傷編號與標籤 Header
         document.getElementById('a4_triageNo').innerText = rec.triageNo || '無';
         
         const headerBadges = document.getElementById('a4_headerBadges');
@@ -1080,7 +1243,6 @@
             ${getCriticalBadgeHtml(rec.isCritical)}
         `;
 
-        // 2. 基本資料 (11 個欄位)
         document.getElementById('a4_timestamp').innerText = rec.timestamp || '-';
         document.getElementById('a4_date').innerText = rec.date || '-';
         document.getElementById('a4_time').innerText = rec.time || '-';
@@ -1093,11 +1255,9 @@
         document.getElementById('a4_caseType').innerText = rec.caseType || '-';
         document.getElementById('a4_rescuer').innerText = rec.rescuer || '-';
 
-        // 3. 臨床評估與生命徵象 (9 個欄位)
         document.getElementById('a4_problem').innerText = rec.problem || '-';
         document.getElementById('a4_injuryPart').innerText = rec.injuryPart || '-';
         
-        // 意識與 GCS 標籤化
         const avpuVal = rec.avpu || rec.consciousness || '-';
         document.getElementById('a4_avpu').innerHTML = getAvpuBadgeHtml(avpuVal);
         
@@ -1106,7 +1266,6 @@
         
         document.getElementById('a4_isCritical').innerHTML = getCriticalBadgeHtml(rec.isCritical);
 
-        // 生命徵象數值解析與填入
         const vitals = parseVitalSigns(rec.vitalSigns);
         document.getElementById('a4_vital_pr').innerText = vitals.pr !== '-' ? vitals.pr : (rec.pr || rec.vitalSigns || '-');
         document.getElementById('a4_vital_rr').innerText = vitals.rr !== '-' ? vitals.rr : (rec.rr || '-');
@@ -1115,7 +1274,6 @@
         document.getElementById('a4_skin').innerText = rec.skin || '-';
         document.getElementById('a4_pupil').innerText = rec.pupil || '-';
 
-        // 4. 處置、後送、病史與留觀 (10 個欄位)
         document.getElementById('a4_startTriageVal').innerHTML = getStartBadgeHtml(rec.startTriage);
         document.getElementById('a4_transportMode').innerText = rec.transportMode || '-';
         document.getElementById('a4_treatments').innerText = rec.treatments || '-';
@@ -1131,7 +1289,6 @@
         document.getElementById('a4_obs3').innerText = rec.obs3 || '無';
         document.getElementById('a4_memo').innerText = rec.memo || '-';
 
-        // 5. 現場照片 (3 個欄位: 照片1, 照片2, 照片3)
         const photoContainer = document.getElementById('a4_photoContainer');
         const photoList = [rec.photo1, rec.photo2, rec.photo3];
         let photoHtml = '';
@@ -1161,13 +1318,114 @@
         });
         photoContainer.innerHTML = photoHtml;
 
-        // 6. 設定當前列印時間
         const now = new Date();
         document.getElementById('a4_printTime').innerText = now.toLocaleString('zh-TW', { hour12: false });
 
-        // 顯現 Modal
         const modal = new BootstrapModal('a4CardModal');
         modal.show();
+    }
+
+    /**
+     * 開啟修改資料 Modal 並載入該筆紀錄
+     */
+    function openEditModal(index) {
+        const rec = currentSearchRecords[index];
+        if (!rec) return;
+
+        document.getElementById('edit_recordIndex').value = index;
+        document.getElementById('edit_triageNo').value = rec.triageNo || '';
+        document.getElementById('edit_timestamp').value = rec.timestamp || '';
+        document.getElementById('edit_date').value = rec.date || '';
+        document.getElementById('edit_time').value = rec.time || '';
+        document.getElementById('edit_rescuer').value = rec.rescuer || '';
+        document.getElementById('edit_name').value = rec.name || '';
+        document.getElementById('edit_gender').value = rec.gender || '男';
+        document.getElementById('edit_age').value = rec.age || '';
+        document.getElementById('edit_phone').value = rec.phone || '';
+        document.getElementById('edit_caseType').value = rec.caseType || '';
+        document.getElementById('edit_location').value = rec.location || '';
+        document.getElementById('edit_treatLoc').value = rec.treatLoc || '';
+        document.getElementById('edit_problem').value = rec.problem || '';
+        document.getElementById('edit_injuryPart').value = rec.injuryPart || '';
+        document.getElementById('edit_avpu').value = rec.avpu || rec.consciousness || '';
+        document.getElementById('edit_gcs').value = rec.gcs || '';
+        document.getElementById('edit_isCritical').value = (String(rec.isCritical).includes('是') || String(rec.isCritical).includes('危急')) ? '是' : '否';
+        document.getElementById('edit_vitalSigns').value = rec.vitalSigns || '';
+        document.getElementById('edit_bt').value = rec.bt || '';
+        document.getElementById('edit_skin').value = rec.skin || '';
+        document.getElementById('edit_pupil').value = rec.pupil || '';
+        document.getElementById('edit_startTriage').value = rec.startTriage || '綠色 (輕傷)';
+        document.getElementById('edit_transportMode').value = rec.transportMode || '';
+        document.getElementById('edit_treatments').value = rec.treatments || '';
+        document.getElementById('edit_medicalHistory').value = rec.medicalHistory || '';
+        document.getElementById('edit_allergy').value = rec.allergy || '';
+        document.getElementById('edit_obs1').value = rec.obs1 || '';
+        document.getElementById('edit_obs2').value = rec.obs2 || '';
+        document.getElementById('edit_obs3').value = rec.obs3 || '';
+        document.getElementById('edit_memo').value = rec.memo || '';
+        document.getElementById('edit_photo1').value = rec.photo1 || '';
+        document.getElementById('edit_photo2').value = rec.photo2 || '';
+        document.getElementById('edit_photo3').value = rec.photo3 || '';
+
+        const modal = new BootstrapModal('editRecordModal');
+        modal.show();
+    }
+
+    /**
+     * 儲存修改後的記錄並傳送至後端
+     */
+    async function saveEditedRecord() {
+        const index = document.getElementById('edit_recordIndex').value;
+        const updatedData = {
+            triageNo: document.getElementById('edit_triageNo').value,
+            timestamp: document.getElementById('edit_timestamp').value,
+            date: document.getElementById('edit_date').value,
+            time: document.getElementById('edit_time').value,
+            rescuer: document.getElementById('edit_rescuer').value,
+            name: document.getElementById('edit_name').value,
+            gender: document.getElementById('edit_gender').value,
+            age: document.getElementById('edit_age').value,
+            phone: document.getElementById('edit_phone').value,
+            caseType: document.getElementById('edit_caseType').value,
+            location: document.getElementById('edit_location').value,
+            treatLoc: document.getElementById('edit_treatLoc').value,
+            problem: document.getElementById('edit_problem').value,
+            injuryPart: document.getElementById('edit_injuryPart').value,
+            avpu: document.getElementById('edit_avpu').value,
+            gcs: document.getElementById('edit_gcs').value,
+            isCritical: document.getElementById('edit_isCritical').value,
+            vitalSigns: document.getElementById('edit_vitalSigns').value,
+            bt: document.getElementById('edit_bt').value,
+            skin: document.getElementById('edit_skin').value,
+            pupil: document.getElementById('edit_pupil').value,
+            startTriage: document.getElementById('edit_startTriage').value,
+            transportMode: document.getElementById('edit_transportMode').value,
+            treatments: document.getElementById('edit_treatments').value,
+            medicalHistory: document.getElementById('edit_medicalHistory').value,
+            allergy: document.getElementById('edit_allergy').value,
+            obs1: document.getElementById('edit_obs1').value,
+            obs2: document.getElementById('edit_obs2').value,
+            obs3: document.getElementById('edit_obs3').value,
+            memo: document.getElementById('edit_memo').value,
+            photo1: document.getElementById('edit_photo1').value,
+            photo2: document.getElementById('edit_photo2').value,
+            photo3: document.getElementById('edit_photo3').value
+        };
+
+        try {
+            const res = await callGasApi('updateRecord', updatedData);
+            if (res && res.status === 'success') {
+                alert("✅ 救護紀錄修改成功！");
+                currentSearchRecords[index] = updatedData;
+                renderSearchResults(currentSearchRecords);
+                const modal = BootstrapModal('editRecordModal');
+                modal.hide();
+            } else {
+                alert("❌ 修改失敗：" + ((res && res.message) || '未知錯誤'));
+            }
+        } catch (e) {
+            alert("❌ 儲存連線發生錯誤：" + e.message);
+        }
     }
 
     function BootstrapModal(elementId) {
