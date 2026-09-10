@@ -122,12 +122,13 @@
                 box-shadow: none !important;
                 border: 2px solid #000 !important;
                 width: 210mm !important;
-                min-height: 297mm !important;
+                height: 297mm !important;
                 max-height: 297mm !important;
                 margin: 0 auto !important;
-                padding: 10mm !important;
+                padding: 6mm !important;
                 page-break-after: avoid !important;
                 page-break-inside: avoid !important;
+                overflow: hidden !important;
             }
         }
     </style>
@@ -301,7 +302,7 @@
                 <div class="mb-4">
                     <div class="section-header">🏷️ START 檢傷分類數據彙整分析</div>
                     <ul id="statStartTriageList" class="bg-light p-3 rounded border mb-0 list-unstyled" style="padding-left: 20px;">
-                        <li class="text-muted">Please click to generate analysis report</li>
+                        <li class="text-muted">請先點擊產生分析報表</li>
                     </ul>
                 </div>
 
@@ -350,10 +351,10 @@
             <div class="modal-body bg-light p-3" id="a4ModalBodyContainer">
                 
                 <!-- A4 單頁容器 (防跨頁最佳化) -->
-                <div class="a4-card-sheet mx-auto bg-white p-4 border border-3 border-dark rounded shadow-sm" style="max-width: 210mm; font-family: sans-serif; color: #000;">
-                    <div class="text-center border-bottom border-dark pb-2 mb-2">
-                        <h3 class="fw-bold text-danger mb-1">🚨 台灣大量傷患 (MCI) 專屬 A4 檢傷卡 🚨</h3>
-                        <p class="text-muted mb-0 fw-bold" style="font-size: 0.9rem;">Emergency Medical Services Triage Card (Single Page Professional Print)</p>
+                <div class="a4-card-sheet mx-auto bg-white p-3 border border-3 border-dark rounded shadow-sm" style="max-width: 210mm; font-family: sans-serif; color: #000;">
+                    <div class="text-center border-bottom border-dark pb-1 mb-2">
+                        <h4 class="fw-bold text-danger mb-1">🚨 台灣大量傷患 (MCI) 專屬 A4 救護檢傷記錄卡 🚨</h4>
+                        <p class="text-muted mb-0 fw-bold" style="font-size: 0.85rem;">Emergency Medical Services Triage Card (Single Page Professional Print)</p>
                     </div>
                     
                     <!-- 檢傷編號與 START 高對比戰術標籤 -->
@@ -367,53 +368,53 @@
                         </div>
                     </div>
 
-                    <!-- 基本資料區 -->
-                    <div class="row g-1 mb-2 border-bottom pb-2" style="font-size: 0.95rem;">
-                        <div class="col-6"><strong>📅 日期/時間：</strong> <span id="a4_datetime">-</span></div>
-                        <div class="col-6"><strong>🧑‍⚕️ 救護人員：</strong> <span id="a4_rescuer">-</span></div>
-                        <div class="col-6"><strong>👤 姓名/性別/年齡：</strong> <span id="a4_patientInfo">-</span></div>
+                    <!-- 基本資料區 (對應完整欄位) -->
+                    <div class="row g-1 mb-2 border-bottom pb-2" style="font-size: 0.9rem;">
+                        <div class="col-6"><strong>🕒 時間戳記：</strong> <span id="a4_timestamp">-</span></div>
+                        <div class="col-6"><strong>📅 日期 / ⏱️ 接觸時間：</strong> <span id="a4_datetime">-</span></div>
+                        <div class="col-6"><strong>👤 患者姓名 / 性別 / 年齡：</strong> <span id="a4_patientInfo">-</span></div>
                         <div class="col-6"><strong>📞 聯絡電話：</strong> <span id="a4_phone">-</span></div>
                         <div class="col-12"><strong>📍 事故位置：</strong> <span id="a4_location">-</span></div>
                         <div class="col-6"><strong>🏥 處置位置：</strong> <span id="a4_treatLoc">-</span></div>
                         <div class="col-6"><strong>🏷️ 案件類型：</strong> <span id="a4_caseType">-</span></div>
+                        <div class="col-6"><strong>🧑‍⚕️ 救護人員：</strong> <span id="a4_rescuer">-</span></div>
                     </div>
 
                     <!-- 臨床評估與生命徵象 (加入清晰圖示) -->
-                    <div class="row g-1 mb-2 border-bottom pb-2" style="font-size: 0.95rem;">
-                        <div class="col-12"><div class="bg-secondary text-white p-1 rounded fw-bold">🩺 臨床評估與生命徵象 (Clinical & Vitals)</div></div>
+                    <div class="row g-1 mb-2 border-bottom pb-2" style="font-size: 0.9rem;">
+                        <div class="col-12"><div class="bg-secondary text-white p-1 rounded fw-bold">🩺 臨床評估與生命徵象 (Clinical Assessment & Vitals)</div></div>
                         <div class="col-md-6"><strong>🩺 傷病問題：</strong> <span id="a4_problem" class="text-danger">-</span></div>
-                        <div class="col-md-6"><strong>🩹 受傷部位：</strong> <span id="a4_injuryPart" class="text-primary">-</span></div>
-                        <div class="col-md-6"><strong>🧠 意識 (AVPU/GCS)：</strong> <span id="a4_consciousness">-</span></div>
-                        <div class="col-md-6"><strong>🔥 是否危急：</strong> <span id="a4_isCritical">-</span></div>
+                        <div class="col-md-6"><strong>🩹 受傷部位 (L/R)：</strong> <span id="a4_injuryPart" class="text-primary">-</span></div>
+                        <div class="col-md-6"><strong>🧠 意識 (AVPU / GCS)：</strong> <span id="a4_consciousness">-</span></div>
+                        <div class="col-md-6"><strong>🔥 是否危急 / OHCA：</strong> <span id="a4_isCritical">-</span></div>
                         <div class="col-12 mt-1">
                             <div class="p-2 bg-light border border-1 rounded">
-                                <div class="row g-1 text-dark fw-bold" style="font-size: 0.9rem;">
-                                    <div class="col-4">🩸 血壓(BP): <span id="a4_bp" class="text-danger">-</span></div>
+                                <div class="row g-1 text-dark fw-bold" style="font-size: 0.85rem;">
                                     <div class="col-4">❤️ 脈搏(PR): <span id="a4_pr" class="text-danger">-</span></div>
                                     <div class="col-4">🫁 呼吸(RR): <span id="a4_rr" class="text-danger">-</span></div>
-                                    <div class="col-4">🩸 血氧(SpO2): <span id="a4_spo2" class="text-danger">-</span></div>
+                                    <div class="col-4">🩸 血壓(BP): <span id="a4_bp" class="text-danger">-</span></div>
                                     <div class="col-4">🌡️ 體溫(BT): <span id="a4_bt" class="text-danger">-</span></div>
-                                    <div class="col-4">🍬 血糖(Glu): <span id="a4_glu" class="text-danger">-</span></div>
-                                    <div class="col-6">👁️ 瞳孔: <span id="a4_pupil" class="text-dark">-</span></div>
-                                    <div class="col-6">🎨 膚色: <span id="a4_skin" class="text-dark">-</span></div>
+                                    <div class="col-4">🎨 膚色: <span id="a4_skin" class="text-dark">-</span></div>
+                                    <div class="col-4">👁️ 瞳孔: <span id="a4_pupil" class="text-dark">-</span></div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- 處置、後送與病史 -->
-                    <div class="row g-1 mb-2 border-bottom pb-2" style="font-size: 0.95rem;">
+                    <!-- 處置、後送、病史與留觀 -->
+                    <div class="row g-1 mb-2 border-bottom pb-2" style="font-size: 0.9rem;">
                         <div class="col-12"><div class="bg-secondary text-white p-1 rounded fw-bold">🚑 處置與後送模式 (Treatment & Transport)</div></div>
                         <div class="col-12"><strong>🚗 後送模式：</strong> <span id="a4_transportMode" class="text-success">-</span></div>
-                        <div class="col-12"><strong>📋 處置項目：</strong> <span id="a4_treatments">-</span></div>
-                        <div class="col-12"><strong>📜 既往病史 / ⚠️ 過敏：</strong> <span id="a4_historyAllergy" class="text-danger">-</span></div>
+                        <div class="col-12"><strong>📋 處置狀態 / 項目：</strong> <span id="a4_treatments">-</span></div>
+                        <div class="col-12"><strong>📜 既往病史：</strong> <span id="a4_medicalHistory" class="text-danger">-</span></div>
+                        <div class="col-12"><strong>⚠️ 過敏史：</strong> <span id="a4_allergy" class="text-danger">-</span></div>
                         <div class="col-12"><strong>⏱️ 留觀記錄：</strong> <span class="text-dark">1. <span id="a4_obs1">-</span> | 2. <span id="a4_obs2">-</span> | 3. <span id="a4_obs3">-</span></span></div>
                         <div class="col-12"><strong>📝 備註：</strong> <span id="a4_memo">-</span></div>
                     </div>
 
                     <!-- 現場照片 -->
                     <div>
-                        <div class="bg-secondary text-white p-1 rounded fw-bold mb-1" style="font-size: 0.95rem;">📸 現場照片紀錄</div>
+                        <div class="bg-secondary text-white p-1 rounded fw-bold mb-1" style="font-size: 0.9rem;">📸 現場照片紀錄 (3張)</div>
                         <div class="row g-2 text-center" id="a4_photoContainer">
                             <!-- 動態帶入照片 -->
                         </div>
@@ -657,21 +658,26 @@
                             </div>
                         </div>
                         <div class="row g-3 bg-light p-3 rounded border mb-4">
+                            <div class="col-md-6"><strong>🕒 時間戳記：</strong><span class="text-dark">${d.timestamp || '-'}</span></div>
                             <div class="col-md-6"><strong>📅 日期/時間：</strong><span class="text-dark">${rDate} ${rTime}</span></div>
-                            <div class="col-md-6"><strong>⏱️ 接觸時間：</strong><span class="text-primary fw-bold">${rTime || '-'}</span></div>
+                            <div class="col-md-6"><strong>⏱️ 接觸時間：</strong><span class="text-primary fw-bold">${formatTime(d.contactTime) || rTime || '-'}</span></div>
                             <div class="col-md-6"><strong>🏷️ 檢傷編號：</strong><span class="text-primary">${d.triageNo || '-'}</span></div>
                             <div class="col-md-6"><strong>👤 姓名/性別/年齡：</strong><span class="text-dark">${d.name || '無名'} / ${d.gender || '-'} / ${ageDisplay}</span></div>
                             <div class="col-md-6"><strong>🧑‍⚕️ 救護人員：</strong><span class="text-dark">${d.rescuer || '-'}</span></div>
                             <div class="col-md-6"><strong>📞 聯絡電話：</strong><span class="text-dark">${d.phone || '-'}</span></div>
                             <div class="col-md-12"><strong>📍 事故位置：</strong><span class="text-dark">${d.location || '-'}</span></div>
+                            <div class="col-md-6"><strong>🏥 處置位置：</strong><span class="text-dark">${d.treatLoc || '-'}</span></div>
+                            <div class="col-md-6"><strong>🏷️ 案件類型：</strong><span class="text-dark">${d.caseType || '-'}</span></div>
                             <div class="col-md-6"><strong>🩺 傷病問題：</strong><span class="text-danger">${d.problem || '-'}</span></div>
                             <div class="col-md-6"><strong>🩹 受傷部位 (L/R)：</strong><span class="text-primary">${d.injuryPart || '-'}</span></div>
                             <div class="col-md-6"><strong>🧠 意識狀態 (AVPU / GCS)：</strong><span class="text-primary fw-bold">${d.consciousness || '未測量 / 正常'}</span></div>
                             <div class="col-md-6"><strong>💓 生命徵象 (Vital Signs)：</strong><span class="text-danger fw-bold">${d.vitalSigns || '未測量'}</span></div>
                             <div class="col-md-6"><strong>🚗 後送模式：</strong><span class="text-success fw-bold">${d.transportMode || '未記錄'}</span></div>
-                            <div class="col-md-6"><strong>🏷️ START 檢傷：</strong><span class="text-dark fw-bold">${d.startTriage || '未分類'}</span></div>
-                            <div class="col-md-6"><strong>🏥 既往病史：</strong><span class="text-danger">${d.medicalHistory || '無'}</span></div>
+                            <div class="col-md-6"><strong>📋 處置狀態/項目：</strong><span class="text-dark fw-bold">${d.treatments || '無'}</span></div>
+                            <div class="col-md-6"><strong>🏥 既往病史：</strong><span class="text-danger">${d.medicalHistory || d.history || '無'}</span></div>
                             <div class="col-md-6"><strong>⚠️ 過敏史：</strong><span class="text-danger">${d.allergy || '無'}</span></div>
+                            <div class="col-md-12"><strong>⏱️ 留觀記錄：</strong><span class="text-dark">1. ${d.obs1 || '無'} | 2. ${d.obs2 || '無'} | 3. ${d.obs3 || '無'}</span></div>
+                            <div class="col-md-12"><strong>📝 備註：</strong><span class="text-dark">${d.memo || '無'}</span></div>
                         </div>
 
                         <div class="section-header">📸 現場照片紀錄 (3張)</div>
@@ -732,11 +738,13 @@
 
         const rDate = formatDate(d.date || '');
         const rTime = formatTime(d.time || '');
+        const cTime = formatTime(d.contactTime || '') || rTime;
         const ageDisplay = formatAgeDisplay(d.age);
 
+        document.getElementById('a4_timestamp').innerText = d.timestamp || '-';
         document.getElementById('a4_triageNo').innerText = d.triageNo || '-';
         document.getElementById('a4_startBadgeContainer').innerHTML = getTacticalStartTriageBadge(d.startTriage);
-        document.getElementById('a4_datetime').innerText = `${rDate} ${rTime} (接觸: ${rTime || '-'})`;
+        document.getElementById('a4_datetime').innerText = `${rDate} ${rTime} (接觸: ${cTime})`;
         document.getElementById('a4_rescuer').innerText = d.rescuer || '-';
         document.getElementById('a4_patientInfo').innerText = `${d.name || '無名'} / ${d.gender || '-'} / ${ageDisplay}`;
         document.getElementById('a4_phone').innerText = d.phone || '-';
@@ -753,36 +761,31 @@
         if (critVal === 'OHCA') critHtml = `<span class="badge bg-dark">💔 OHCA</span>`;
         document.getElementById('a4_isCritical').innerHTML = critHtml;
 
-        let bp = '-', pr = '-', rr = '-', spo2 = '-', bt = '-', glu = '-', pupil = '-', skin = '-';
+        let bp = '-', pr = '-', rr = '-', bt = '-', pupil = '-', skin = '-';
         if (d.vitals) {
             const v = String(d.vitals);
             const mBp = v.match(/BP:([^,]+)/); if (mBp) bp = mBp[1].trim();
             const mPr = v.match(/PR:([^,]+)/); if (mPr) pr = mPr[1].trim();
             const mRr = v.match(/RR:([^,]+)/); if (mRr) rr = mRr[1].trim();
-            const mSp = v.match(/SpO2:([^,%]+)/); if (mSp) spo2 = mSp[1].trim();
-            const mGlu = v.match(/Glu:([^,]+)/); if (mGlu) glu = mGlu[1].trim();
             const mBt = v.match(/BT:([^,]+)/); if (mBt) bt = mBt[1].trim();
             const mPupil = v.match(/Pupil:([^,]+)/); if (mPupil) pupil = mPupil[1].trim();
             const mSkin = v.match(/Skin:([^,]+)/); if (mSkin) skin = mSkin[1].trim();
         }
         if (d.bt && bt === '-') bt = d.bt;
         if (d.skin && skin === '-') skin = d.skin;
+        if (d.pupil && pupil === '-') pupil = d.pupil;
 
         document.getElementById('a4_bp').innerText = bp;
         document.getElementById('a4_pr').innerText = pr;
         document.getElementById('a4_rr').innerText = rr;
-        document.getElementById('a4_spo2').innerText = `${spo2}%`;
         document.getElementById('a4_bt').innerText = `${bt}°C`;
-        document.getElementById('a4_glu').innerText = `${glu} mg/dL`;
         document.getElementById('a4_pupil').innerText = pupil;
         document.getElementById('a4_skin').innerText = skin;
 
         document.getElementById('a4_transportMode').innerText = d.transportMode || '未記錄';
         document.getElementById('a4_treatments').innerText = d.treatments || '無';
-        
-        const hist = d.medicalHistory || d.history || '無';
-        const allergy = d.allergy || '無';
-        document.getElementById('a4_historyAllergy').innerText = `病史: ${hist} | 過敏: ${allergy}`;
+        document.getElementById('a4_medicalHistory').innerText = d.medicalHistory || d.history || '無';
+        document.getElementById('a4_allergy').innerText = d.allergy || '無';
 
         document.getElementById('a4_obs1').innerText = d.obs1 || '無';
         document.getElementById('a4_obs2').innerText = d.obs2 || '無';
@@ -798,7 +801,7 @@
                 <div class="col-4">
                     <div class="p-1 border rounded bg-white">
                         <span class="small fw-bold text-muted">照片 ${pIdx + 1}</span>
-                        <img src="https://drive.google.com/thumbnail?id=${fileId}&sz=w600" class="img-fluid rounded" style="max-height: 110px; object-fit: cover;" alt="照片${pIdx + 1}">
+                        <img src="https://drive.google.com/thumbnail?id=${fileId}&sz=w600" class="img-fluid rounded" style="max-height: 95px; object-fit: cover;" alt="照片${pIdx + 1}">
                     </div>
                 </div>`;
             } else if (pUrl && pUrl.startsWith('http')) {
@@ -806,7 +809,7 @@
                 <div class="col-4">
                     <div class="p-1 border rounded bg-white">
                         <span class="small fw-bold text-muted">照片 ${pIdx + 1}</span>
-                        <img src="${pUrl}" class="img-fluid rounded" style="max-height: 110px; object-fit: cover;" alt="照片${pIdx + 1}">
+                        <img src="${pUrl}" class="img-fluid rounded" style="max-height: 95px; object-fit: cover;" alt="照片${pIdx + 1}">
                     </div>
                 </div>`;
             }
